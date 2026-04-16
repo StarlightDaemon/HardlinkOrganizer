@@ -6,14 +6,14 @@
   <Name>Hardlink Organizer</Name>
   <Repository>ghcr.io/starlightdaemon/hardlink-organizer:latest</Repository>
   <Registry>https://ghcr.io</Registry>
-  <Project>https://github.com/StarlightDaemon/hardlink-organizer</Project>
-  <Support>https://github.com/StarlightDaemon/hardlink-organizer/issues</Support>
+  <Project>https://github.com/StarlightDaemon/HardlinkOrganizer</Project>
+  <Support>https://github.com/StarlightDaemon/HardlinkOrganizer/issues</Support>
   <Overview>Operator-guided Unraid ingress inventory and hardlink organizer with a hosted web UI, preview-first workflow, runtime same-device validation, and CLI fallback.</Overview>
   <WebUI>http://[IP]:[PORT:7700]/</WebUI>
   <Network>bridge</Network>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
-  <Icon>https://raw.githubusercontent.com/StarlightDaemon/hardlink-organizer/main/packaging/unraid/assets/hardlink-organizer.svg</Icon>
+  <Icon>https://raw.githubusercontent.com/StarlightDaemon/HardlinkOrganizer/main/packaging/unraid/assets/hardlink-organizer.svg</Icon>
   <ExtraParams/>
   <PostArgs/>
   <TemplateURL/>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Maintainer>
   <Name>StarlightDaemon</Name>
-  <Icon>https://raw.githubusercontent.com/StarlightDaemon/hardlink-organizer/main/packaging/unraid/assets/hardlink-organizer.svg</Icon>
+  <Icon>https://raw.githubusercontent.com/StarlightDaemon/HardlinkOrganizer/main/packaging/unraid/assets/hardlink-organizer.svg</Icon>
   <GitHub>https://github.com/StarlightDaemon</GitHub>
-  <Support>https://github.com/StarlightDaemon/hardlink-organizer/issues</Support>
+  <Support>https://github.com/StarlightDaemon/HardlinkOrganizer/issues</Support>
 </Maintainer>
