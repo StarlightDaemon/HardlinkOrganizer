@@ -8,6 +8,7 @@ Narrow, single-slice prompts for unstable or high-traffic agent runs.
 - `prompt-01-packaging-smoke-check.md`
 - `prompt-02-web-dependency-verification.md`
 - `prompt-03-real-unraid-validation-prep.md`
+- `prompt-04-standalone-repo-publish-and-ghcr-baseline.md`
 - `prompt-10-release-hardening-pass.md`
 - `prompt-20-unraid-preflight-hardening.md`
 - `prompt-30-verification-job-foundation.md`

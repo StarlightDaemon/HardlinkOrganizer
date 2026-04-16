@@ -6,8 +6,8 @@ Hardlink Organizer is a hosted web UI plus CLI fallback for scanning ingress or 
 
 ### Current status
 
-- Version: `0.2.1`
-- Status: release-hardening checkpoint
+- Version: `0.3.0`
+- Status: verification foundation
 - Platform: Unraid
 - Delivery: Docker-hosted web UI with CLI fallback
 

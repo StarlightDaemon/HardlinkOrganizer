@@ -31,7 +31,7 @@ This repository is prepared to build and publish the Docker image with GitHub Ac
 
 - builds the image on pull requests for validation
 - builds and pushes branch-tagged images on pushes to `main`
-- builds and pushes versioned images on tags like `v0.2.1`
+- builds and pushes versioned images on tags like `v0.3.0`
 - publishes `latest` only for version tags
 
 ### Prerequisites
@@ -44,7 +44,7 @@ This repository is prepared to build and publish the Docker image with GitHub Ac
 
 1. Merge Docker-related changes to `main`
 2. Verify the GitHub Actions build succeeds
-3. Create and push a version tag such as `v0.2.1`
+3. Create and push a version tag such as `v0.3.0`
 4. Pull the published image from GHCR on Unraid or continue using the local compose build
 
 ## Community Apps publishing prep
@@ -159,7 +159,7 @@ This compose file now builds the image from the Hardlink Organizer root automati
 If you prefer a manual build step, run:
 
 ```bash
-docker build -f packaging/unraid/docker/Dockerfile -t hardlink-organizer:0.2.1 .
+docker build -f packaging/unraid/docker/Dockerfile -t hardlink-organizer:0.3.0 .
 ```
 
 ### 4. Access the UI

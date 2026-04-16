@@ -9,7 +9,7 @@ services:
     build:
       context: ../../..
       dockerfile: packaging/unraid/docker/Dockerfile
-    image: hardlink-organizer:0.2.1    # or ghcr.io/... when published
+    image: hardlink-organizer:0.3.0    # or ghcr.io/... when published
     container_name: hardlink-organizer
     restart: unless-stopped
     ports:

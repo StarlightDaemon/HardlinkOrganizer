@@ -1,15 +1,15 @@
 # Hardlink Organizer — Docker image
 # Minimal Python 3.11 base; all dependencies pinned via requirements.txt.
 # Build from the Hardlink Organizer root:
-#   docker build -f packaging/unraid/docker/Dockerfile -t hardlink-organizer:0.2.1 .
+#   docker build -f packaging/unraid/docker/Dockerfile -t hardlink-organizer:0.3.0 .
 # Run:
-#   docker run -p 7700:7700 -v /mnt/user/appdata/hardlink-organizer:/config -v ... hardlink-organizer:0.2.1
+#   docker run -p 7700:7700 -v /mnt/user/appdata/hardlink-organizer:/config -v ... hardlink-organizer:0.3.0
 
 FROM python:3.11-slim
 
 LABEL org.opencontainers.image.title="Hardlink Organizer"
 LABEL org.opencontainers.image.description="Safely inventory ingress content and hardlink media payloads on Unraid"
-LABEL org.opencontainers.image.version="0.2.1"
+LABEL org.opencontainers.image.version="0.3.0"
 
 # Non-root user for safety
 RUN addgroup --system hlo && adduser --system --ingroup hlo hlo
