@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hardlink Organizer</title>
-  <meta name="description" content="Hardlink Organizer — safely inventory and hardlink media payloads without moving source files.">
+  <meta name="description" content="Local-first hardlink workflow for previewing, linking, and verifying media payloads without moving source files.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
 
   {# Pass server-side config data as JS globals. #}
@@ -33,6 +33,38 @@
       </div>
     </div>
   </header>
+
+  <section class="hero-strip" aria-label="About Hardlink Organizer">
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <p class="hero-kicker">Local sandbox</p>
+        <h1 class="hero-title">Preview-first hardlinking for messy ingress folders.</h1>
+        <p class="hero-text">
+          Built for local testing and day-to-day media workflow experiments. Scan a source set,
+          choose an item, preview the plan, then link without touching the original payload.
+        </p>
+        <div class="hero-pills">
+          <span class="hero-pill">Source-safe</span>
+          <span class="hero-pill">Preview-first</span>
+          <span class="hero-pill">Verification-ready</span>
+        </div>
+      </div>
+      <div class="hero-facts" aria-label="Current project state">
+        <div class="hero-fact">
+          <span class="hero-fact-label">Version</span>
+          <span class="hero-fact-value">v{{ version }}</span>
+        </div>
+        <div class="hero-fact">
+          <span class="hero-fact-label">Status</span>
+          <span class="hero-fact-value">Local testing</span>
+        </div>
+        <div class="hero-fact">
+          <span class="hero-fact-label">Target</span>
+          <span class="hero-fact-value">Unraid workflows</span>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- ========================================================= Step Bar -->
   <div class="step-bar" role="navigation" aria-label="Workflow steps">
