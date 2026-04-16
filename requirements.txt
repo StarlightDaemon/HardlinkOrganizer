@@ -1,0 +1,13 @@
+# Hardlink Organizer — web application dependencies
+# Python 3.11+ is recommended (tomllib is stdlib); for older versions add tomli.
+
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+jinja2>=3.1.0
+
+# Testing only: httpx is required by FastAPI's TestClient
+httpx>=0.27.0
+pytest>=8.0.0
+
+# Optional: older Python TOML support (not needed on Python 3.11+)
+# tomli>=2.0.0

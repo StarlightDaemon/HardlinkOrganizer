@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hardlink Organizer</title>
+  <meta name="description" content="Hardlink Organizer — safely inventory and hardlink media payloads without moving source files.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+
+  {# Pass server-side config data as JS globals. #}
+  <script>
+    window.__SETS__      = {{ sets_json | safe }};
+    window.__SUMMARIES__ = {{ summaries_json | safe }};
+    window.__VERSION__   = {{ version | tojson }};
+  </script>
+</head>
+<body>
+
+  <!-- ============================================================ Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="header-icon">⛓</span>
+        <span class="header-title">Hardlink Organizer</span>
+        <span class="header-version">v{{ version }}</span>
+      </div>
+      <div class="header-status">
+        <span class="status-dot" id="status-dot"></span>
+        <span class="status-text" id="status-text">Initialising…</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================= Step Bar -->
+  <div class="step-bar" role="navigation" aria-label="Workflow steps">
+    <div class="step-bar-inner">
+      <div class="step-item active" id="step-1" data-step="source">
+        <span class="step-num">1</span>
+        <span class="step-label">Source</span>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-item" id="step-2" data-step="browse">
+        <span class="step-num">2</span>
+        <span class="step-label">Browse</span>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-item" id="step-3" data-step="dest">
+        <span class="step-num">3</span>
+        <span class="step-label">Destination</span>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-item" id="step-4" data-step="preview">
+        <span class="step-num">4</span>
+        <span class="step-label">Preview</span>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-item" id="step-5" data-step="result">
+        <span class="step-num">5</span>
+        <span class="step-label">Done</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================== Layout -->
+  <div class="app-layout">
+    <div class="content-grid">
+
+      <!-- Main workflow panel -->
+      <main class="main-panel" id="main-panel" role="main">
+        <!-- Populated by app.js -->
+        <div class="loading-block">
+          <span class="spinner"></span> Loading…
+        </div>
+      </main>
+
+      <!-- History sidebar -->
+      <aside class="history-panel" id="history-panel" role="complementary" aria-label="Recent operations">
+        <div class="panel-header">
+          <h2 class="panel-title">Recent Operations</h2>
+          <button class="btn-icon" onclick="App.loadHistory()" title="Refresh history" aria-label="Refresh history">↺</button>
+        </div>
+        <div class="history-list" id="history-list">
+          <div class="empty-state" style="padding:24px 18px">No operations yet.</div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== Toasts -->
+  <div class="toast-container" id="toast-container" role="status" aria-live="polite"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

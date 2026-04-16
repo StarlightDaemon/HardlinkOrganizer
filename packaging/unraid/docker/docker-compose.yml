@@ -1,0 +1,47 @@
+# Hardlink Organizer — Docker Compose example
+# Run from the Hardlink Organizer root and adjust paths to match your Unraid setup.
+# Start: docker compose -f packaging/unraid/docker/docker-compose.yml up -d
+
+version: "3.8"
+
+services:
+  hardlink-organizer:
+    build:
+      context: ../../..
+      dockerfile: packaging/unraid/docker/Dockerfile
+    image: hardlink-organizer:0.2.1    # or ghcr.io/... when published
+    container_name: hardlink-organizer
+    restart: unless-stopped
+    ports:
+      - "7700:7700"   # host_port:container_port — change host port if needed
+
+    volumes:
+      # --- Config file ---
+      # Edit /mnt/user/appdata/hardlink-organizer/config.toml before first start.
+      - /mnt/user/appdata/hardlink-organizer:/config
+
+      # --- State (SQLite DB + logs) ---
+      - /mnt/user/appdata/hardlink-organizer/data:/data
+
+      # --- Source sets (ingress / download roots) ---
+      # Add one entry per [source_sets] key in your config.toml
+      - /mnt/user/ingress/movies:/mnt/src/movies:ro
+      - /mnt/user/ingress/shows:/mnt/src/shows:ro
+      - /mnt/user/ingress/audiobooks:/mnt/src/audiobooks:ro
+
+      # --- Destination sets (library roots) ---
+      # MUST be on the same Unraid share/device as the source sets above.
+      - /mnt/user/media/movies:/mnt/dst/movies
+      - /mnt/user/media/shows:/mnt/dst/shows
+      - /mnt/user/media/audiobooks:/mnt/dst/audiobooks
+
+    environment:
+      # Override the config path if you mount it differently
+      - PYTHONUNBUFFERED=1
+
+    # Optional: resource limits
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 256m
+    #       cpus: "0.5"

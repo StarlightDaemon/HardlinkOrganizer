@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Container version="2">
+  <Beta>True</Beta>
+  <Category>Tools:Utilities</Category>
+  <Date>2026-04-15</Date>
+  <Name>Hardlink Organizer</Name>
+  <Repository>ghcr.io/starlightdaemon/hardlink-organizer:latest</Repository>
+  <Registry>https://ghcr.io</Registry>
+  <Project>https://github.com/StarlightDaemon/hardlink-organizer</Project>
+  <Support>https://github.com/StarlightDaemon/hardlink-organizer/issues</Support>
+  <Overview>Operator-guided Unraid ingress inventory and hardlink organizer with a hosted web UI, preview-first workflow, runtime same-device validation, and CLI fallback.</Overview>
+  <WebUI>http://[IP]:[PORT:7700]/</WebUI>
+  <Network>bridge</Network>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Icon>https://raw.githubusercontent.com/StarlightDaemon/hardlink-organizer/main/packaging/unraid/assets/hardlink-organizer.svg</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <TemplateURL/>
+  <Version>0.2.1</Version>
+
+  <Config Name="Web UI Port" Target="7700" Default="7700" Mode="tcp" Description="Container Port: 7700" Type="Port" Display="always" Required="true" Mask="false">7700</Config>
+  <Config Name="Config Directory" Target="/config" Default="/mnt/user/appdata/hardlink-organizer/config" Mode="rw" Description="Container Path: /config. Place config.toml here." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/hardlink-organizer/config</Config>
+  <Config Name="Data Directory" Target="/data" Default="/mnt/user/appdata/hardlink-organizer/data" Mode="rw" Description="Container Path: /data. Stores state.db, indexes, and logs." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/hardlink-organizer/data</Config>
+  <Config Name="Source 1" Target="/mnt/src/source1" Default="" Mode="ro" Description="Optional source mount. Add a matching source_sets entry in /config/config.toml." Type="Path" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="Destination 1" Target="/mnt/dst/dest1" Default="" Mode="rw" Description="Optional destination mount. Add a matching dest_sets entry in /config/config.toml." Type="Path" Display="advanced" Required="false" Mask="false"></Config>
+</Container>

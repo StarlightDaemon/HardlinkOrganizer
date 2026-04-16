@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Hardlink Organizer">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10212b"/>
+      <stop offset="100%" stop-color="#1f4b57"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="40" fill="url(#bg)"/>
+  <path d="M78 88h54c15 0 28 13 28 28s-13 28-28 28h-8" fill="none" stroke="#f8faf8" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M178 168h-54c-15 0-28-13-28-28s13-28 28-28h8" fill="none" stroke="#9ee493" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="86" cy="88" r="10" fill="#f8faf8"/>
+  <circle cx="170" cy="168" r="10" fill="#9ee493"/>
+</svg>
