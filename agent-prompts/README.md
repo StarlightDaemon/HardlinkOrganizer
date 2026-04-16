@@ -20,6 +20,8 @@ Do not use the deprecated nested copy under
 - `prompt-03-real-unraid-validation-prep.md`
 - `prompt-04-standalone-repo-publish-and-ghcr-baseline.md`
 - `prompt-05-readme-and-about-cleanup-push.md`
+- `prompt-06-recent-cleanup-review-and-scope.md`
+- `prompt-07-root-lock-and-readme-followup-commit.md`
 - `prompt-10-release-hardening-pass.md`
 - `prompt-20-unraid-preflight-hardening.md`
 - `prompt-30-verification-job-foundation.md`

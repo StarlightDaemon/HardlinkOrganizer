@@ -4,6 +4,19 @@ This directory is intended to be workable as its own agent-facing project
 workspace.
 Start here before chasing parent-repo context.
 
+## Authoritative workspace root
+
+- Active repository root: `/mnt/e/HardlinkOrganizer`
+- Windows path for the same workspace: `E:\HardlinkOrganizer`
+- Deprecated old nested path: `E:\StarlightDaemonDev\tools\internal\hardlink-organizer`
+
+Agents must treat `/mnt/e/HardlinkOrganizer` as the only live project root for
+new work.
+
+If your current working directory or prompt context points at the old nested
+copy under `StarlightDaemonDev`, stop and switch back to the standalone root
+before doing anything else.
+
 ## First files to read
 
 1. `README.md`
@@ -38,6 +51,7 @@ Start here before chasing parent-repo context.
 - Treat this folder as the local source of truth for product, roadmap, packaging, prompts, and ledger state.
 - Prefer this project's `agent-ledger/` over repo-level summaries when they disagree.
 - Only reach into repo-level docs when you need cross-repo governance, inventory, or parent-repo catalog context.
+- Do not run new work from the deprecated nested copy under `StarlightDaemonDev`.
 
 ## Repo-level files that may still matter
 

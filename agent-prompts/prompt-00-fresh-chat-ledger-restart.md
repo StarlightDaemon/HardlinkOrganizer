@@ -18,6 +18,16 @@ entire project history.
 
 `/mnt/e/HardlinkOrganizer`
 
+Windows path:
+
+`E:\HardlinkOrganizer`
+
+Hard stop rule:
+
+- if the active working directory is the old nested copy under
+  `StarlightDaemonDev/tools/internal/hardlink-organizer`, stop and switch to the
+  standalone root before continuing
+
 ## First read
 
 Read these files first and keep the context narrow:

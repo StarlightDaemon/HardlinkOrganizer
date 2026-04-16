@@ -9,6 +9,12 @@ PROMPT_FILE_PATH
 Repository root:
 /mnt/e/HardlinkOrganizer
 
+Authoritative workspace rule:
+- The only live repo root for this project is `/mnt/e/HardlinkOrganizer`.
+- On Windows, that same root is `E:\HardlinkOrganizer`.
+- Do not work from `StarlightDaemonDev/tools/internal/hardlink-organizer`.
+- If your current working directory is not the standalone root, stop and report it immediately.
+
 Instructions:
 - Open that file first and follow it exactly.
 - Keep scope limited to that one prompt.
@@ -30,6 +36,12 @@ Work only on the prompt located at:
 
 Repository root:
 /mnt/e/HardlinkOrganizer
+
+Authoritative workspace rule:
+- The only live repo root for this project is `/mnt/e/HardlinkOrganizer`.
+- On Windows, that same root is `E:\HardlinkOrganizer`.
+- Do not work from `StarlightDaemonDev/tools/internal/hardlink-organizer`.
+- If your current working directory is not the standalone root, stop and report it immediately.
 
 Instructions:
 - Open that file first and follow it exactly.

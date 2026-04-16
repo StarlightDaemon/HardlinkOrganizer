@@ -35,7 +35,7 @@ pip install -r requirements.txt
 Run the web app:
 
 ```bash
-python ./webapp/run.py --config ./config.toml --port 7700
+python3 ./webapp/run.py --config ./config.toml --port 7700
 ```
 
 Open:
@@ -47,13 +47,13 @@ http://localhost:7700
 Run the CLI:
 
 ```bash
-python ./hardlink_organizer.py --config ./config.toml scan
+python3 ./hardlink_organizer.py --config ./config.toml scan
 ```
 
 Run tests:
 
 ```bash
-python -m pytest ./tests/
+python3 -m pytest ./tests/
 ```
 
 ## Project Shape
