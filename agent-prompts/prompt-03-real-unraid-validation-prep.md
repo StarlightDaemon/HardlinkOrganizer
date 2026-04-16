@@ -8,7 +8,7 @@ Repository root:
 Read first:
 1. `./README.md`
 2. `packaging/unraid/README.md`
-3. `./V1_RELEASE_PLAN.md`
+3. `./notes/plans/V1_RELEASE_PLAN.md`
 
 Task:
 Create or refine a concise real-host validation checklist for Unraid so the next manual validation run is disciplined and reproducible.

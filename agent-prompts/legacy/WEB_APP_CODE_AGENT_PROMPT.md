@@ -10,8 +10,8 @@ Repository root:
 
 Read these first:
 1. ./README.md
-2. ./V1_RELEASE_PLAN.md
-3. ./WEB_APP_IMPLEMENTATION_PLAN.md
+2. ./notes/plans/V1_RELEASE_PLAN.md
+3. ./notes/plans/WEB_APP_IMPLEMENTATION_PLAN.md
 4. ./hardlink_organizer.py
 5. ./tests/test_hardlink_organizer.py
 6. ./agent-ledger/DECISIONS.md

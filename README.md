@@ -66,6 +66,18 @@ Main entry points:
 - `engine/db.py` — state and history persistence
 - `engine/verification.py` — verification backend
 
+## Repository Layout
+
+- `engine/` — core hardlink, DB, and verification logic
+- `webapp/` — FastAPI app, templates, and static assets
+- `tests/` — unit, integration, and route-harness coverage
+- `packaging/unraid/` — Unraid and Docker packaging notes
+- `agent-ledger/` — project continuity, decisions, and open loops
+- `agent-prompts/` — active bounded prompts for agent execution
+- `agent-prompts/legacy/` — older handoff and index docs kept for continuity
+- `notes/` — planning, roadmap, and validation notes
+- `notes/plans/` — older implementation and release plans that no longer need root placement
+
 ## Notes
 
 - Source files are meant to stay in place.
@@ -79,3 +91,5 @@ Main entry points:
 - Packaging notes: `packaging/unraid/README.md`
 - Project state: `agent-ledger/CURRENT_STATE.md`
 - Open work: `agent-ledger/OPEN_LOOPS.md`
+- Planning notes: `notes/README.md`
+- Active prompts: `agent-prompts/README.md`

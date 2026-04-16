@@ -53,8 +53,8 @@ Build the smallest complete v1 that is safe and usable on a real Unraid host. Pr
 ```text
 ./
   README.md
-  IMPLEMENTATION_PLAN.md
-  CLAUDE_CODE_HANDOFF_PROMPT.md
+  notes/plans/IMPLEMENTATION_PLAN.md
+  agent-prompts/legacy/CLAUDE_CODE_HANDOFF_PROMPT.md
   hardlink_organizer.py
   config.example.toml
   tests/

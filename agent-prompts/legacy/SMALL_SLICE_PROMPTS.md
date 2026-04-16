@@ -1,5 +1,8 @@
 # Small Slice Prompts
 
+This is a legacy index retained for continuity. The active prompt pack lives in
+`./agent-prompts/`.
+
 The prompt pack now lives in separate files under:
 
 - `./agent-prompts/`

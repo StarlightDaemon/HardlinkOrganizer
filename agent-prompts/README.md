@@ -31,6 +31,13 @@ Do not use the deprecated nested copy under
 
 Use `micro-prompt-template.md` to dispatch another agent to exactly one prompt file without re-explaining the project.
 
+## Legacy prompt material
+
+Older handoff and index docs that no longer need root-level placement now live
+under `legacy/`.
+
+See `legacy/README.md` for the legacy prompt inventory.
+
 ## Recommended usage
 
 1. Pick one prompt file.

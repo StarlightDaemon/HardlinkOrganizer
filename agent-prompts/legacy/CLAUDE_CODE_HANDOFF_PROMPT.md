@@ -12,7 +12,7 @@ Primary brief:
 ./README.md
 
 Execution plan:
-./IMPLEMENTATION_PLAN.md
+./notes/plans/IMPLEMENTATION_PLAN.md
 
 Repository conventions to follow:
 - agent-ledger/DECISIONS.md
@@ -107,7 +107,7 @@ Suggested destination name cleanup rules:
 
 What to read first:
 1. ./README.md
-2. ./IMPLEMENTATION_PLAN.md
+2. ./notes/plans/IMPLEMENTATION_PLAN.md
 3. ./agent-ledger/DECISIONS.md
 4. ./AGENTS.md
 

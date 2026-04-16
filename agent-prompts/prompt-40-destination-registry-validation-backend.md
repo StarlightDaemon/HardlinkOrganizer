@@ -23,7 +23,7 @@ cleanup, or broader verification modes.
 ## Read first
 
 1. `agent-ledger/CURRENT_STATE.md`
-2. `WORKSPACE_CONTEXT.md`
+2. `notes/WORKSPACE_CONTEXT.md`
 3. `notes/HARDLINK_ORGANIZER_NEXT_STEPS.md`
 4. `notes/HARDLINK_ORGANIZER_FEATURE_EXPANSION_PLAN.md`
 5. `README.md`
