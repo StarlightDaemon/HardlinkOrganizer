@@ -44,7 +44,7 @@ const App = (() => {
     const dot  = $('status-dot');
     const span = $('status-text');
     if (!dot || !span) return;
-    dot.className = 'status-dot' + (type ? ` ${type}` : '');
+    dot.className = 'hlo-status-dot' + (type ? ` ${type}` : '');
     span.textContent = text;
   }
 
@@ -76,12 +76,20 @@ const App = (() => {
   // Toast notifications
   // -------------------------------------------------------------------------
   function toast(msg, type = 'info', duration = 4000) {
-    const icons = { success: '✓', error: '✗', info: 'ℹ', warning: '⚠' };
+    const kindMap = { success: 'success', error: 'error', info: 'info', warning: 'warning' };
+    const kind = kindMap[type] || 'info';
     const c = $('toast-container');
     if (!c) return;
-    const t = el('div', `toast ${type}`, `<span>${icons[type] || 'ℹ'}</span> ${escHtml(msg)}`);
+    const t = el('div', `cds--toast-notification cds--toast-notification--${kind}`);
+    t.setAttribute('role', 'alert');
+    t.innerHTML = `
+      <div class="cds--toast-notification__details">
+        <p class="cds--toast-notification__subtitle">${escHtml(msg)}</p>
+      </div>
+      <button class="cds--toast-notification__close-button" type="button" aria-label="Close notification">&#x2715;</button>`;
+    t.querySelector('.cds--toast-notification__close-button').addEventListener('click', () => t.remove());
     c.prepend(t);
-    setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(10px)'; t.style.transition = '0.3s'; setTimeout(() => t.remove(), 300); }, duration);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transition = '0.3s'; setTimeout(() => t.remove(), 300); }, duration);
   }
 
   // -------------------------------------------------------------------------
@@ -115,34 +123,34 @@ const App = (() => {
   const STEP_ORDER = ['source', 'browse', 'dest', 'preview', 'result'];
 
   function updateStepIndicator() {
-    // If we're in 'verify' step, we'll just clear the active state of all steps.
+    // Carbon progress: cds--progress-step--current / --complete
     const current = STEP_ORDER.indexOf(state.step);
     STEP_ORDER.forEach((s, i) => {
-      const items = document.querySelectorAll('.step-item');
+      const items = document.querySelectorAll('.cds--progress-step');
       if (!items[i]) return;
-      const numEl = items[i].querySelector('.step-num');
-      items[i].className = 'step-item';
-      
+      items[i].classList.remove(
+        'cds--progress-step--current',
+        'cds--progress-step--complete',
+        'cds--progress-step--incomplete'
+      );
+
       if (current === -1) {
-        // verify step or similar external step
-        if (numEl) numEl.textContent = i + 1;
+        items[i].removeAttribute('style');
         items[i].onclick = () => { state.step = s; renderStep(); };
         return;
       }
 
       if (i < current) {
-        items[i].classList.add('done');
-        if (numEl) numEl.textContent = '✓';
-      } else if (i === current) {
-        items[i].classList.add('active');
-        if (numEl) numEl.textContent = i + 1;
-      } else {
-        if (numEl) numEl.textContent = i + 1;
-      }
-      // clicking on completed steps navigates back
-      if (i < current) {
+        items[i].classList.add('cds--progress-step--complete');
+        items[i].style.cursor = 'pointer';
         items[i].onclick = () => { state.step = s; renderStep(); };
+      } else if (i === current) {
+        items[i].classList.add('cds--progress-step--current');
+        items[i].style.cursor = 'default';
+        items[i].onclick = null;
       } else {
+        items[i].classList.add('cds--progress-step--incomplete');
+        items[i].style.cursor = 'default';
         items[i].onclick = null;
       }
     });
@@ -156,30 +164,38 @@ const App = (() => {
     const src = state.sets.source_sets || {};
 
     let html = `
-      <div class="panel-heading">
+      <div class="hlo-panel-heading">
         <h1>Select a Source Set</h1>
         <p>Choose the ingress directory to scan for linkable content.</p>
       </div>
-      <div class="card-grid" id="source-card-grid">`;
+      <div class="hlo-card-grid" id="source-card-grid">`;
 
     for (const [name, path] of Object.entries(src)) {
       const sum = state.summaries[name] || {};
       const scanInfo = sum.scan_time
-        ? `Last scan: ${escHtml(fmtTime(sum.scan_time))} · ${sum.entry_count ?? '?'} entries`
+        ? `Last scan: ${escHtml(fmtTime(sum.scan_time))} &middot; ${sum.entry_count ?? '?'} entries`
         : 'Not yet scanned';
 
       html += `
-        <div class="card" id="src-card-${escHtml(name)}" onclick="App.selectSource('${escHtml(name)}')">
-          <div class="card-icon">📥</div>
-          <div class="card-name">${escHtml(name)}</div>
-          <div class="card-path">${escHtml(path)}</div>
-          <div class="card-meta">${escHtml(scanInfo)}</div>
-          <div class="card-actions">
-            <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); App.scanAndSelect('${escHtml(name)}')">
-              <span class="spinner" style="display:none" id="scan-spinner-${escHtml(name)}"></span>
+        <div class="cds--tile cds--tile--clickable hlo-source-card" id="src-card-${escHtml(name)}"
+             role="button" tabindex="0"
+             onclick="App.selectSource('${escHtml(name)}')"
+             onkeydown="if(event.key==='Enter'||event.key===' ')App.selectSource('${escHtml(name)}')">
+          <div class="hlo-card-icon" aria-hidden="true">&#x1F4E5;</div>
+          <div class="hlo-card-name">${escHtml(name)}</div>
+          <div class="hlo-card-path">${escHtml(path)}</div>
+          <div class="hlo-card-meta">${scanInfo}</div>
+          <div class="hlo-card-actions">
+            <button class="cds--btn cds--btn--sm cds--btn--secondary" onclick="event.stopPropagation(); App.scanAndSelect('${escHtml(name)}')">
+              <span class="cds--loading cds--loading--small" style="display:none" id="scan-spinner-${escHtml(name)}" aria-label="Scanning">
+                <svg class="cds--loading__svg" viewBox="-75 -75 150 150" aria-hidden="true">
+                  <circle class="cds--loading__background" cx="0" cy="0" r="37.5"/>
+                  <circle class="cds--loading__stroke" cx="0" cy="0" r="37.5"/>
+                </svg>
+              </span>
               Scan &amp; Select
             </button>
-            <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); App.selectSource('${escHtml(name)}')">
+            <button class="cds--btn cds--btn--sm cds--btn--primary" onclick="event.stopPropagation(); App.selectSource('${escHtml(name)}')">
               Open
             </button>
           </div>
@@ -187,7 +203,7 @@ const App = (() => {
     }
 
     if (!Object.keys(src).length) {
-      html += `<div class="empty-state"><div class="empty-state-icon">⚙</div><p>No source sets are configured. Edit your config.toml to add [source_sets].</p></div>`;
+      html += `<div class="hlo-empty-state"><span class="hlo-empty-state-icon" aria-hidden="true">&#x2699;</span><p>No source sets are configured. Edit your config.toml to add [source_sets].</p></div>`;
     }
 
     html += `</div>`;
@@ -228,7 +244,7 @@ const App = (() => {
   async function loadInventory(sourceSet) {
     setStatus('Loading inventory…', 'busy');
     const panel = $('main-panel');
-    panel.innerHTML = `<div class="loading-block"><span class="spinner"></span> Loading inventory for <strong>${escHtml(sourceSet)}</strong>…</div>`;
+    panel.innerHTML = `<div class="hlo-loading-block"><div class="cds--loading cds--loading--small" aria-live="assertive"><svg class="cds--loading__svg" viewBox="-75 -75 150 150" aria-hidden="true"><circle class="cds--loading__background" cx="0" cy="0" r="37.5"/><circle class="cds--loading__stroke" cx="0" cy="0" r="37.5"/></svg></div> Loading inventory for <strong>${escHtml(sourceSet)}</strong>&hellip;</div>`;
     try {
       const res = await apiGet(`/api/inventory?source_set=${encodeURIComponent(sourceSet)}`);
       state.inventory = res.entries || [];
@@ -248,18 +264,22 @@ const App = (() => {
     const entries = state.inventory;
 
     let html = `
-      <div class="panel-heading">
-        <h1>Browse — <span style="color:var(--accent)">${escHtml(state.sourceSet)}</span></h1>
-        <p>${entries.length} entries · Click an entry to select it for linking.</p>
+      <div class="hlo-panel-heading">
+        <h1>Browse &mdash; <span style="color:var(--cds-link-primary)">${escHtml(state.sourceSet)}</span></h1>
+        <p>${entries.length} entries &middot; Click an entry to select it for linking.</p>
       </div>
-      <div class="inventory-toolbar">
-        <input class="inventory-search" id="inv-search" type="text" placeholder="Filter by name…" value="${escHtml(state.searchQuery)}" oninput="App.filterInventory(this.value)">
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-sm btn-secondary" onclick="App.rescan()">↻ Re-scan</button>
-          <button class="btn btn-sm btn-secondary" onclick="App.goTo('source')">← Change Set</button>
+      <div class="hlo-toolbar">
+        <div class="cds--text-input-wrapper" style="flex:1;min-width:200px;max-width:380px">
+          <label class="cds--label" for="inv-search">Filter entries</label>
+          <input id="inv-search" class="cds--text-input" type="text" placeholder="Filter by name&hellip;"
+                 value="${escHtml(state.searchQuery)}" oninput="App.filterInventory(this.value)">
+        </div>
+        <div class="hlo-toolbar-actions">
+          <button class="cds--btn cds--btn--sm cds--btn--secondary" onclick="App.rescan()">&#x21BB; Re-scan</button>
+          <button class="cds--btn cds--btn--sm cds--btn--secondary" onclick="App.goTo('source')">&larr; Change Set</button>
         </div>
       </div>
-      <div class="entry-list" id="entry-list">`;
+      <div class="hlo-entry-list" id="entry-list">`;
 
     const query = (state.searchQuery || '').toLowerCase();
     const filtered = query
@@ -267,33 +287,33 @@ const App = (() => {
       : entries;
 
     if (!filtered.length) {
-      html += `<div class="empty-state"><div class="empty-state-icon">${query ? '🔍' : '📭'}</div><p>${query ? 'No entries match your filter.' : 'No entries found. Try scanning this set first.'}</p></div>`;
+      html += `<div class="hlo-empty-state"><span class="hlo-empty-state-icon" aria-hidden="true">${query ? '&#x1F50D;' : '&#x1F4ED;'}</span><p>${query ? 'No entries match your filter.' : 'No entries found. Try scanning this set first.'}</p></div>`;
     } else {
       for (const entry of filtered) {
-        const icon = entry.entry_type === 'dir' ? '📁' : '📄';
+        const icon = entry.entry_type === 'dir' ? '&#x1F4C1;' : '&#x1F4C4;';
         const typeBadge = entry.entry_type === 'dir'
-          ? '<span class="badge badge-dir">Dir</span>'
-          : '<span class="badge badge-file">File</span>';
-        const linkedBadge = entry.linked ? '<span class="badge badge-linked">✓ Linked</span>' : '';
-        const selected = state.entry && state.entry.id === entry.id ? ' selected-entry' : '';
+          ? '<span class="cds--tag cds--tag--blue">Dir</span>'
+          : '<span class="cds--tag cds--tag--cool-gray">File</span>';
+        const linkedBadge = entry.linked ? '<span class="cds--tag cds--tag--green">&#x2713; Linked</span>' : '';
+        const selected = state.entry && state.entry.id === entry.id ? ' hlo-entry--selected' : '';
 
         html += `
-          <div class="entry-row${selected}" id="entry-${entry.id}">
-            <div class="entry-main">
-              <span class="entry-type-icon">${icon}</span>
-              <span class="entry-display-name">${escHtml(entry.display_name)}</span>
-              <span class="entry-badges">${typeBadge}${linkedBadge}</span>
-              <span class="entry-size">${escHtml(fmtBytes(entry.size_bytes))}</span>
-              <button class="entry-expand-btn" onclick="App.toggleDetail(${entry.id})" title="Show raw details">▼</button>
-              <div class="entry-actions">
-                <button class="btn btn-sm btn-primary" onclick="App.selectEntry(${entry.id})">Select</button>
+          <div class="hlo-entry-row${selected}" id="entry-${entry.id}">
+            <div class="hlo-entry-main">
+              <span class="hlo-entry-icon" aria-hidden="true">${icon}</span>
+              <span class="hlo-entry-name">${escHtml(entry.display_name)}</span>
+              <span class="hlo-entry-badges">${typeBadge}${linkedBadge}</span>
+              <span class="hlo-entry-size hlo-mono">${escHtml(fmtBytes(entry.size_bytes))}</span>
+              <button class="hlo-expand-btn" onclick="App.toggleDetail(${entry.id})" title="Show raw details" aria-label="Toggle details for ${escHtml(entry.display_name)}">&#x25BC;</button>
+              <div>
+                <button class="cds--btn cds--btn--sm cds--btn--primary" onclick="App.selectEntry(${entry.id})">Select</button>
               </div>
             </div>
-            <div class="entry-detail" id="detail-${entry.id}">
-              <div class="detail-row"><div class="detail-label">Real name</div><div class="detail-value">${escHtml(entry.real_name)}</div></div>
-              <div class="detail-row"><div class="detail-label">Full path</div><div class="detail-value">${escHtml(entry.full_path)}</div></div>
-              <div class="detail-row"><div class="detail-label">Scanned</div><div class="detail-value">${escHtml(fmtTime(entry.scan_time))}</div></div>
-              ${entry.linked ? '<div class="detail-row"><div class="detail-label">Status</div><div class="detail-value" style="color:var(--accent)">Previously linked ✓</div></div>' : ''}
+            <div class="hlo-entry-detail" id="detail-${entry.id}">
+              <div class="hlo-detail-label">Real name</div><div class="hlo-detail-value">${escHtml(entry.real_name)}</div>
+              <div class="hlo-detail-label">Full path</div><div class="hlo-detail-value">${escHtml(entry.full_path)}</div>
+              <div class="hlo-detail-label">Scanned</div><div class="hlo-detail-value">${escHtml(fmtTime(entry.scan_time))}</div>
+              ${entry.linked ? '<div class="hlo-detail-label">Status</div><div class="hlo-detail-value" style="color:var(--cds-support-success)">Previously linked &#x2713;</div>' : ''}
             </div>
           </div>`;
       }
@@ -348,43 +368,49 @@ const App = (() => {
     const dst = state.sets.dest_sets || {};
 
     let html = `
-      <div class="panel-heading">
+      <div class="hlo-panel-heading">
         <h1>Choose Destination</h1>
         <p>Linking: <strong>${escHtml(state.entry?.display_name || '')}</strong></p>
       </div>
-      <div class="card-grid" id="dest-card-grid">`;
+      <div class="hlo-card-grid" id="dest-card-grid">`;
 
     for (const [name, path] of Object.entries(dst)) {
-      const selected = state.destSet === name ? ' selected' : '';
+      const selectedCls = state.destSet === name ? ' hlo-card--selected' : '';
       html += `
-        <div class="card${selected}" id="dst-card-${escHtml(name)}" onclick="App.selectDest('${escHtml(name)}')">
-          <div class="card-icon">📤</div>
-          <div class="card-name">${escHtml(name)}</div>
-          <div class="card-path">${escHtml(path)}</div>
+        <div class="cds--tile cds--tile--clickable hlo-dest-card${selectedCls}" id="dst-card-${escHtml(name)}"
+             role="button" tabindex="0"
+             onclick="App.selectDest('${escHtml(name)}')"
+             onkeydown="if(event.key==='Enter'||event.key===' ')App.selectDest('${escHtml(name)}')">
+          <div class="hlo-card-icon" aria-hidden="true">&#x1F4E4;</div>
+          <div class="hlo-card-name">${escHtml(name)}</div>
+          <div class="hlo-card-path">${escHtml(path)}</div>
         </div>`;
     }
 
     if (!Object.keys(dst).length) {
-      html += `<div class="empty-state"><div class="empty-state-icon">⚙</div><p>No destination sets configured.</p></div>`;
+      html += `<div class="hlo-empty-state"><span class="hlo-empty-state-icon" aria-hidden="true">&#x2699;</span><p>No destination sets configured.</p></div>`;
     }
     html += `</div>`;
 
     html += `
-      <div class="subpath-block mt-16">
-        <label class="subpath-label" for="dest-subpath">Destination folder name</label>
-        <input class="subpath-input" id="dest-subpath" type="text" value="${escHtml(state.destSubpath)}"
-          placeholder="Folder name under destination root"
-          oninput="App.updateSubpath(this.value)">
-        <div class="subpath-hint">This folder will be created inside the selected destination root. Edit to override the suggested name.</div>
+      <div class="hlo-subpath-block hlo-mt-06">
+        <div class="cds--text-input-wrapper">
+          <label class="cds--label" for="dest-subpath">Destination folder name</label>
+          <input class="cds--text-input" id="dest-subpath" type="text"
+                 value="${escHtml(state.destSubpath)}"
+                 placeholder="Folder name under destination root"
+                 oninput="App.updateSubpath(this.value)">
+        </div>
+        <p class="hlo-subpath-hint">This folder will be created inside the selected destination root. Edit to override the suggested name.</p>
       </div>
 
-      <div class="action-bar">
-        <div class="action-bar-left">
-          <button class="btn btn-secondary" onclick="App.goTo('browse')">← Back</button>
+      <div class="hlo-action-bar">
+        <div class="hlo-action-bar-left">
+          <button class="cds--btn cds--btn--secondary" onclick="App.goTo('browse')">&larr; Back</button>
         </div>
-        <div class="action-bar-right">
-          <button class="btn btn-primary" id="btn-preview" onclick="App.generatePreview()" ${!state.destSet ? 'disabled' : ''}>
-            Preview Link Plan →
+        <div class="hlo-action-bar-right">
+          <button class="cds--btn cds--btn--primary" id="btn-preview" onclick="App.generatePreview()" ${!state.destSet ? 'disabled' : ''}>
+            Preview Link Plan &rarr;
           </button>
         </div>
       </div>`;
@@ -395,9 +421,9 @@ const App = (() => {
   function selectDest(name) {
     state.destSet = name;
     // Mark card as selected visually
-    document.querySelectorAll('#dest-card-grid .card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('#dest-card-grid .cds--tile').forEach(c => c.classList.remove('hlo-card--selected'));
     const card = $(`dst-card-${name}`);
-    if (card) card.classList.add('selected');
+    if (card) card.classList.add('hlo-card--selected');
     // Enable preview button
     const btn = $('btn-preview');
     if (btn) btn.disabled = false;
@@ -447,17 +473,23 @@ const App = (() => {
         ? 'Core path and device checks passed, but the mount layout warning below should be resolved before relying on real execution.'
         : 'All checks passed. This operation is safe to execute.';
       validationBlock = `
-        <div class="validation-block ok">
-          <span class="validation-icon">✓</span>
-          <div class="validation-text">${validText}</div>
+        <div class="cds--inline-notification cds--inline-notification--success" role="status" style="margin-top:var(--cds-spacing-05)">
+          <div class="cds--inline-notification__details">
+            <div class="cds--inline-notification__text-wrapper">
+              <p class="cds--inline-notification__title">Ready to link</p>
+              <p class="cds--inline-notification__subtitle">${escHtml(validText)}</p>
+            </div>
+          </div>
         </div>`;
     } else {
       const errs = p.errors.map(e => `<li>${escHtml(e)}</li>`).join('');
       validationBlock = `
-        <div class="validation-block fail">
-          <span class="validation-icon">✗</span>
-          <div class="validation-text">Validation failed — cannot proceed.
-            <ul class="validation-errors">${errs}</ul>
+        <div class="cds--inline-notification cds--inline-notification--error" role="alert" style="margin-top:var(--cds-spacing-05)">
+          <div class="cds--inline-notification__details">
+            <div class="cds--inline-notification__text-wrapper">
+              <p class="cds--inline-notification__title">Validation failed &mdash; cannot proceed.</p>
+              <p class="cds--inline-notification__subtitle"><ul style="padding-left:1rem;margin-top:var(--cds-spacing-03)">${errs}</ul></p>
+            </div>
           </div>
         </div>`;
     }
@@ -465,22 +497,21 @@ const App = (() => {
     let mountLayoutWarningBlock = '';
     if (p.warnings?.length) {
       const warnings = p.warnings.map(w => `
-        <div class="preview-warning-item">
-          <div class="preview-warning-title">${escHtml(w.title)}</div>
-          <div class="preview-warning-detail">${escHtml(w.detail)}</div>
-          <div class="preview-warning-recommendation">Recommended layout: ${escHtml(w.recommendation)}</div>
+        <div class="hlo-preview-warning-item">
+          <div class="hlo-preview-warning-title">${escHtml(w.title)}</div>
+          <div class="hlo-preview-warning-detail">${escHtml(w.detail)}</div>
+          <div class="hlo-preview-warning-recommendation">Recommended layout: ${escHtml(w.recommendation)}</div>
         </div>
       `).join('');
 
       mountLayoutWarningBlock = `
-        <div class="validation-block warn preview-warning-block">
-          <span class="validation-icon">⚠</span>
-          <div class="validation-text">
-            <strong>Mount layout warning</strong>
-            <div class="preview-warning-copy">
-              Preview can still pass while real hardlink execution fails if these paths are mounted in a risky way.
+        <div class="cds--inline-notification cds--inline-notification--warning" role="status" style="margin-top:var(--cds-spacing-05)">
+          <div class="cds--inline-notification__details">
+            <div class="cds--inline-notification__text-wrapper">
+              <p class="cds--inline-notification__title">Mount layout warning</p>
+              <p class="cds--inline-notification__subtitle">Preview can still pass while real hardlink execution fails if these paths are mounted in a risky way.</p>
+              ${warnings}
             </div>
-            ${warnings}
           </div>
         </div>`;
     }
@@ -488,53 +519,58 @@ const App = (() => {
     let prevLinkedWarning = '';
     if (p.previously_linked) {
       prevLinkedWarning = `
-        <div class="validation-block warn" style="margin-top:10px">
-          <span class="validation-icon">⚠</span>
-          <div class="validation-text">This item has been linked before. Existing destination files will be skipped — no overwrites.</div>
+        <div class="cds--inline-notification cds--inline-notification--warning" role="status" style="margin-top:var(--cds-spacing-05)">
+          <div class="cds--inline-notification__details">
+            <div class="cds--inline-notification__text-wrapper">
+              <p class="cds--inline-notification__subtitle">This item has been linked before. Existing destination files will be skipped &mdash; no overwrites.</p>
+            </div>
+          </div>
         </div>`;
     }
 
     const executeDisabled = !p.valid ? 'disabled' : '';
 
     let html = `
-      <div class="panel-heading">
+      <div class="hlo-panel-heading">
         <h1>Link Plan Preview</h1>
         <p>Review the details below before executing. Destination files are never overwritten.</p>
       </div>
 
-      <div class="preview-card">
-        <div class="preview-header">
-          <span style="font-size:1.3rem">${p.entry_type === 'dir' ? '📁' : '📄'}</span>
-          <span class="preview-header-title">${escHtml(p.display_name)}</span>
+      <div class="hlo-preview-wrap">
+        <div class="hlo-preview-header">
+          <span style="font-size:1.3rem" aria-hidden="true">${p.entry_type === 'dir' ? '&#x1F4C1;' : '&#x1F4C4;'}</span>
+          <span class="hlo-preview-header-title">${escHtml(p.display_name)}</span>
         </div>
-        <div class="preview-body">
-          <div class="preview-row">
-            <div class="preview-label">Display name</div>
-            <div class="preview-value display">${escHtml(p.display_name)}</div>
-          </div>
-          <div class="preview-row">
-            <div class="preview-label">Real name</div>
-            <div class="preview-value">${escHtml(p.real_name)}</div>
-          </div>
-          <div class="preview-row">
-            <div class="preview-label">Type</div>
-            <div class="preview-value">${escHtml(p.entry_type)}</div>
-          </div>
-          <div class="preview-row">
-            <div class="preview-label">Source path</div>
-            <div class="preview-value">${escHtml(p.source_path)}</div>
-          </div>
-          <div class="preview-row">
-            <div class="preview-label">Dest set</div>
-            <div class="preview-value">${escHtml(p.dest_set)} → ${escHtml(p.dest_root)}</div>
-          </div>
-          <div class="preview-row">
-            <div class="preview-label">Dest folder</div>
-            <div class="preview-value" style="color:var(--accent)">${escHtml(p.dest_subpath)}</div>
-          </div>
-          <div class="preview-row">
-            <div class="preview-label">Full dest path</div>
-            <div class="preview-value">${escHtml(p.dest_full)}</div>
+        <div class="cds--structured-list" style="margin:0">
+          <div class="cds--structured-list-tbody">
+            <div class="cds--structured-list-row">
+              <div class="cds--structured-list-td cds--structured-list-content--nowrap" style="width:140px">Display name</div>
+              <div class="cds--structured-list-td"><strong>${escHtml(p.display_name)}</strong></div>
+            </div>
+            <div class="cds--structured-list-row">
+              <div class="cds--structured-list-td cds--structured-list-content--nowrap">Real name</div>
+              <div class="cds--structured-list-td hlo-path-value">${escHtml(p.real_name)}</div>
+            </div>
+            <div class="cds--structured-list-row">
+              <div class="cds--structured-list-td cds--structured-list-content--nowrap">Type</div>
+              <div class="cds--structured-list-td">${escHtml(p.entry_type)}</div>
+            </div>
+            <div class="cds--structured-list-row">
+              <div class="cds--structured-list-td cds--structured-list-content--nowrap">Source path</div>
+              <div class="cds--structured-list-td hlo-path-value">${escHtml(p.source_path)}</div>
+            </div>
+            <div class="cds--structured-list-row">
+              <div class="cds--structured-list-td cds--structured-list-content--nowrap">Dest set</div>
+              <div class="cds--structured-list-td hlo-path-value">${escHtml(p.dest_set)} &rarr; ${escHtml(p.dest_root)}</div>
+            </div>
+            <div class="cds--structured-list-row">
+              <div class="cds--structured-list-td cds--structured-list-content--nowrap">Dest folder</div>
+              <div class="cds--structured-list-td hlo-accent-value">${escHtml(p.dest_subpath)}</div>
+            </div>
+            <div class="cds--structured-list-row">
+              <div class="cds--structured-list-td cds--structured-list-content--nowrap">Full dest path</div>
+              <div class="cds--structured-list-td hlo-path-value">${escHtml(p.dest_full)}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -543,20 +579,25 @@ const App = (() => {
       ${validationBlock}
       ${prevLinkedWarning}
 
-      <div class="dry-run-toggle mt-16">
+      <div class="hlo-dry-run-block">
         <input type="checkbox" id="dry-run-toggle" checked>
         <label for="dry-run-toggle">
-          <strong>Dry run mode</strong> — preview what would happen without writing any files. Uncheck to perform the real operation.
+          <strong>Dry run mode</strong> &mdash; preview what would happen without writing any files. Uncheck to perform the real operation.
         </label>
       </div>
 
-      <div class="action-bar">
-        <div class="action-bar-left">
-          <button class="btn btn-secondary" onclick="App.goTo('dest')">← Change Destination</button>
+      <div class="hlo-action-bar">
+        <div class="hlo-action-bar-left">
+          <button class="cds--btn cds--btn--secondary" onclick="App.goTo('dest')">&larr; Change Destination</button>
         </div>
-        <div class="action-bar-right">
-          <button class="btn btn-primary" id="btn-execute" ${executeDisabled} onclick="App.executeLink()">
-            <span id="exec-spinner" class="spinner" style="display:none"></span>
+        <div class="hlo-action-bar-right">
+          <button class="cds--btn cds--btn--primary" id="btn-execute" ${executeDisabled} onclick="App.executeLink()">
+            <span id="exec-spinner" class="cds--loading cds--loading--small" style="display:none" aria-label="Executing">
+              <svg class="cds--loading__svg" viewBox="-75 -75 150 150" aria-hidden="true">
+                <circle class="cds--loading__background" cx="0" cy="0" r="37.5"/>
+                <circle class="cds--loading__stroke" cx="0" cy="0" r="37.5"/>
+              </svg>
+            </span>
             Execute
           </button>
         </div>
@@ -626,56 +667,56 @@ const App = (() => {
     const r = state.result;
     if (!r) { state.step = 'source'; renderStep(); return; }
 
-    const headerClass = r.failed > 0 ? 'failed' : (r.success ? 'success' : 'partial');
+    const headerMod = r.failed > 0 ? '--error' : (r.success ? '--success' : '--warning');
     const prefix = r.dry_run ? '[DRY RUN] ' : '';
 
-    const fileSection = (label, files, colorClass) => {
+    const fileSection = (label, files, colorCls) => {
       if (!files || !files.length) return '';
       return `
-        <details class="result-file-list">
+        <details class="hlo-result-file-list">
           <summary>${label} (${files.length})</summary>
-          <div class="result-files">
-            ${files.map(f => `<div class="result-file" style="color:var(--${colorClass})">${escHtml(f)}</div>`).join('')}
+          <div class="hlo-result-files">
+            ${files.map(f => `<div class="hlo-result-file hlo-result-file--${colorCls} hlo-mono">${escHtml(f)}</div>`).join('')}
           </div>
         </details>`;
     };
 
     let html = `
-      <div class="panel-heading">
+      <div class="hlo-panel-heading">
         <h1>Operation ${r.dry_run ? 'Preview' : 'Complete'}</h1>
-        <p>${prefix}Hardlink operation for <strong>${escHtml(state.entry?.display_name || '')}</strong></p>
+        <p>${escHtml(prefix)}Hardlink operation for <strong>${escHtml(state.entry?.display_name || '')}</strong></p>
       </div>
 
-      <div class="result-card">
-        <div class="result-header ${headerClass}">
-          <div class="result-title">${r.dry_run ? '🔍 Dry Run Result' : (r.success ? '✓ Success' : r.failed > 0 ? '⚠ Completed with failures' : '✓ Done')}</div>
-          <div class="result-subtitle">${escHtml(state.sourceSet)} → ${escHtml(state.destSet)} / ${escHtml(state.destSubpath)}</div>
+      <div class="hlo-result-card">
+        <div class="hlo-result-header hlo-result-header${headerMod}">
+          <div class="hlo-result-title">${r.dry_run ? '&#x1F50D; Dry Run Result' : (r.success ? '&#x2713; Success' : r.failed > 0 ? '&#x26A0; Completed with failures' : '&#x2713; Done')}</div>
+          <div class="hlo-result-subtitle">${escHtml(state.sourceSet)} &rarr; ${escHtml(state.destSet)} / ${escHtml(state.destSubpath)}</div>
         </div>
-        <div class="result-counts">
-          <div class="result-count">
-            <div class="result-count-num linked">${r.linked}</div>
-            <div class="result-count-label">${r.dry_run ? 'Would link' : 'Linked'}</div>
+        <div class="hlo-result-counts">
+          <div class="hlo-result-count">
+            <div class="hlo-result-num hlo-result-num--linked">${r.linked}</div>
+            <div class="hlo-result-label">${r.dry_run ? 'Would link' : 'Linked'}</div>
           </div>
-          <div class="result-count">
-            <div class="result-count-num skipped">${r.skipped}</div>
-            <div class="result-count-label">Skipped</div>
+          <div class="hlo-result-count">
+            <div class="hlo-result-num hlo-result-num--skipped">${r.skipped}</div>
+            <div class="hlo-result-label">Skipped</div>
           </div>
-          <div class="result-count">
-            <div class="result-count-num failed">${r.failed}</div>
-            <div class="result-count-label">Failed</div>
+          <div class="hlo-result-count">
+            <div class="hlo-result-num hlo-result-num--failed">${r.failed}</div>
+            <div class="hlo-result-label">Failed</div>
           </div>
         </div>
-        ${fileSection('Linked files',  r.linked_files,  'success')}
-        ${fileSection('Skipped files', r.skipped_files, 'warning')}
-        ${fileSection('Failed files',  r.failed_files,  'danger')}
+        ${fileSection('Linked files',  r.linked_files,  'linked')}
+        ${fileSection('Skipped files', r.skipped_files, 'skipped')}
+        ${fileSection('Failed files',  r.failed_files,  'failed')}
       </div>
 
-      <div class="action-bar">
-        <div class="action-bar-left">
-          <button class="btn btn-secondary" onclick="App.goTo('browse')">Link Another</button>
+      <div class="hlo-action-bar">
+        <div class="hlo-action-bar-left">
+          <button class="cds--btn cds--btn--secondary" onclick="App.goTo('browse')">Link Another</button>
         </div>
-        <div class="action-bar-right">
-          <button class="btn btn-primary" onclick="App.startOver()">Start Over</button>
+        <div class="hlo-action-bar-right">
+          <button class="cds--btn cds--btn--primary" onclick="App.startOver()">Start Over</button>
         </div>
       </div>`;
 
@@ -698,26 +739,27 @@ const App = (() => {
     if (!list) return;
 
     if (!state.history.length) {
-      list.innerHTML = `<div class="empty-state" style="padding:24px 18px">No operations yet.</div>`;
+      list.innerHTML = `<div class="hlo-empty-state" style="padding: var(--cds-spacing-06) var(--cds-spacing-05)">No operations yet.</div>`;
       return;
     }
 
     list.innerHTML = state.history.map(h => {
-      const dryTag = h.dry_run ? '<span class="cnt-badge dryrun">dry</span>' : '';
+      const dryTag = h.dry_run ? '<span class="cds--tag cds--tag--teal">dry</span>' : '';
       return `
-        <div class="history-entry">
-          <div class="history-name">${escHtml(h.real_name)}</div>
-          <div class="history-meta">
-            <span>${escHtml(h.source_set)} → ${escHtml(h.dest_set)}</span>
-          </div>
-          <div class="history-meta">${escHtml(fmtTime(h.linked_at))}</div>
-          <div class="history-counts">
+        <div class="hlo-history-entry">
+          <div class="hlo-history-name">${escHtml(h.real_name)}</div>
+          <div class="hlo-history-meta">${escHtml(h.source_set)} &rarr; ${escHtml(h.dest_set)}</div>
+          <div class="hlo-history-meta">${escHtml(fmtTime(h.linked_at))}</div>
+          <div class="hlo-history-counts">
             ${dryTag}
-            <span class="cnt-badge linked">${h.linked_count} linked</span>
-            ${h.skipped_count ? `<span class="cnt-badge skipped">${h.skipped_count} skip</span>` : ''}
-            ${h.failed_count  ? `<span class="cnt-badge failed">${h.failed_count} fail</span>` : ''}
+            <span class="cds--tag cds--tag--green">${h.linked_count} linked</span>
+            ${h.skipped_count ? `<span class="cds--tag cds--tag--yellow">${h.skipped_count} skip</span>` : ''}
+            ${h.failed_count  ? `<span class="cds--tag cds--tag--red">${h.failed_count} fail</span>` : ''}
           </div>
-          ${!h.dry_run ? `<button class="btn btn-sm btn-secondary mt-8" style="width:100%" onclick="App.runVerification(${h.id}, '${escHtml(h.real_name).replace(/'/g, "\\'")}')">Verify Link Integrity</button>` : `<div class="mt-8 text-muted" style="font-size:0.75rem">No verification for dry runs.</div>`}
+          ${!h.dry_run
+            ? `<button class="cds--btn cds--btn--sm cds--btn--secondary" style="width:100%;margin-top:var(--cds-spacing-03)" onclick="App.runVerification(${h.id}, '${escHtml(h.real_name).replace(/'/g, "\\'")}')" >Verify Link Integrity</button>`
+            : `<div style="margin-top:var(--cds-spacing-03);font-size:0.72rem;color:var(--cds-text-helper)">No verification for dry runs.</div>`
+          }
         </div>`;
     }).join('');
   }
@@ -744,9 +786,9 @@ const App = (() => {
       toast(`Verification failed: ${err.message}`, 'error');
       setStatus('Error', 'error');
       const panel = $('main-panel');
-      if (panel) {
-        panel.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠</div><p>Verification failed: ${escHtml(err.message)}</p><button class="btn btn-secondary mt-16" onclick="App.startOver()">Start Over</button></div>`;
-      }
+        if (panel) {
+          panel.innerHTML = `<div class="hlo-empty-state"><span class="hlo-empty-state-icon" aria-hidden="true">&#x26A0;</span><p>Verification failed: ${escHtml(err.message)}</p><button class="cds--btn cds--btn--secondary hlo-mt-05" onclick="App.startOver()">Start Over</button></div>`;
+        }
     }
   }
 
@@ -760,63 +802,77 @@ const App = (() => {
     const v = state.verifyRun;
     
     if (!v) {
-      panel.innerHTML = `<div class="loading-block"><span class="spinner"></span> <span>Running verification…<br><small style="color:var(--text-muted)">This checks actual filesystem links and handles large scale counts gracefully. Please wait.</small></span></div>`;
+      panel.innerHTML = `<div class="hlo-loading-block"><div class="cds--loading cds--loading--small" aria-live="assertive"><svg class="cds--loading__svg" viewBox="-75 -75 150 150" aria-hidden="true"><circle class="cds--loading__background" cx="0" cy="0" r="37.5"/><circle class="cds--loading__stroke" cx="0" cy="0" r="37.5"/></svg></div> <span>Running verification&hellip;<br><small style="color:var(--cds-text-helper)">This checks actual filesystem links and handles large scale counts gracefully. Please wait.</small></span></div>`;
       return;
     }
 
-    const headerClass = v.failed_count > 0 || v.error_count > 0 ? 'failed' : (v.missing_count > 0 ? 'partial' : 'success');
+    const headerMod = v.failed_count > 0 || v.error_count > 0 ? '--error' : (v.missing_count > 0 ? '--warning' : '--success');
 
     let html = `
-      <div class="panel-heading">
+      <div class="hlo-panel-heading">
         <h1>Link Verification</h1>
         <p>Checking integrity of: <strong>${escHtml(v.title)}</strong></p>
       </div>
 
-      <div class="result-card">
-        <div class="result-header ${headerClass}">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-             <div>
-               <div class="result-title">${v.failed_count > 0 || v.error_count > 0 ? '⚠ Anomalies Found' : '✓ Fully Verified'}</div>
-               <div class="result-subtitle">Run #${v.run_id} · ${escHtml(fmtTime(v.created_at))} · Mode: ${escHtml(v.mode)}</div>
-             </div>
-             <div style="display:flex; gap:8px">
-               <a href="/api/verify/${v.run_id}/export.json" download class="btn btn-sm btn-secondary" title="Export JSON">Export JSON</a>
-               <a href="/api/verify/${v.run_id}/export.csv" download class="btn btn-sm btn-secondary" title="Export CSV">Export CSV</a>
-             </div>
+      <div class="hlo-result-card">
+        <div class="hlo-result-header hlo-result-header${headerMod}">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:var(--cds-spacing-04)">
+            <div>
+              <div class="hlo-result-title">${v.failed_count > 0 || v.error_count > 0 ? '&#x26A0; Anomalies Found' : '&#x2713; Fully Verified'}</div>
+              <div class="hlo-result-subtitle">Run #${v.run_id} &middot; ${escHtml(fmtTime(v.created_at))} &middot; Mode: ${escHtml(v.mode)}</div>
+            </div>
+            <div class="hlo-verify-actions">
+              <a href="/api/verify/${v.run_id}/export.json" download class="cds--btn cds--btn--sm cds--btn--secondary" title="Export JSON">Export JSON</a>
+              <a href="/api/verify/${v.run_id}/export.csv" download class="cds--btn cds--btn--sm cds--btn--secondary" title="Export CSV">Export CSV</a>
+            </div>
           </div>
         </div>
-        <div class="result-counts" style="grid-template-columns: repeat(4, 1fr);">
-          <div class="result-count" style="border-bottom:none">
-            <div class="result-count-num linked">${v.verified_count}</div>
-            <div class="result-count-label">Verified</div>
+        <div class="hlo-result-counts" style="grid-template-columns: repeat(4, 1fr)">
+          <div class="hlo-result-count">
+            <div class="hlo-result-num hlo-result-num--linked">${v.verified_count}</div>
+            <div class="hlo-result-label">Verified</div>
           </div>
-          <div class="result-count" style="border-bottom:none">
-            <div class="result-count-num skipped">${v.missing_count}</div>
-            <div class="result-count-label">Missing</div>
+          <div class="hlo-result-count">
+            <div class="hlo-result-num hlo-result-num--skipped">${v.missing_count}</div>
+            <div class="hlo-result-label">Missing</div>
           </div>
-          <div class="result-count" style="border-bottom:none">
-            <div class="result-count-num failed">${v.failed_count}</div>
-            <div class="result-count-label">Failed</div>
+          <div class="hlo-result-count">
+            <div class="hlo-result-num hlo-result-num--failed">${v.failed_count}</div>
+            <div class="hlo-result-label">Failed</div>
           </div>
-          <div class="result-count" style="border-bottom:none">
-            <div class="result-count-num failed">${v.error_count}</div>
-            <div class="result-count-label">Errors</div>
+          <div class="hlo-result-count">
+            <div class="hlo-result-num hlo-result-num--failed">${v.error_count}</div>
+            <div class="hlo-result-label">Errors</div>
           </div>
-        </div>
-      </div>
-
-      <div class="inventory-toolbar mt-24">
-        <select class="inventory-search" style="max-width: 200px" onchange="App.filterVerification(this.value)">
-          <option value="all" ${state.verifyFilter === 'all' ? 'selected' : ''}>All Results (${v.results.length})</option>
-          <option value="failures" ${state.verifyFilter === 'failures' ? 'selected' : ''}>Failures & Missing</option>
-          <option value="verified" ${state.verifyFilter === 'verified' ? 'selected' : ''}>Verified Only</option>
-        </select>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-sm btn-secondary" onclick="App.runVerification(${v.link_history_id}, '${escHtml(v.title).replace(/'/g, "\\'")}')">↻ Re-run</button>
         </div>
       </div>
 
-      <div class="entry-list">`;
+      <div class="hlo-verify-toolbar hlo-mt-06">
+        <div class="cds--select" style="max-width:220px">
+          <label class="cds--label" for="verify-filter">Filter results</label>
+          <div class="cds--select-input-wrapper">
+            <select id="verify-filter" class="cds--select-input" onchange="App.filterVerification(this.value)">
+              <option value="all" ${state.verifyFilter === 'all' ? 'selected' : ''}>All Results (${v.results.length})</option>
+              <option value="failures" ${state.verifyFilter === 'failures' ? 'selected' : ''}>Failures &amp; Missing</option>
+              <option value="verified" ${state.verifyFilter === 'verified' ? 'selected' : ''}>Verified Only</option>
+            </select>
+          </div>
+        </div>
+        <div class="hlo-verify-actions">
+          <button class="cds--btn cds--btn--sm cds--btn--secondary" onclick="App.runVerification(${v.link_history_id}, '${escHtml(v.title).replace(/'/g, "\\'")}')">&#x21BB; Re-run</button>
+        </div>
+      </div>
+
+      <div class="cds--data-table-container hlo-mt-05">
+        <table class="cds--data-table">
+          <thead>
+            <tr>
+              <th scope="col"><div class="cds--table-header-label">Status</div></th>
+              <th scope="col"><div class="cds--table-header-label">Source path</div></th>
+              <th scope="col"><div class="cds--table-header-label">Notes</div></th>
+            </tr>
+          </thead>
+          <tbody>`;
 
     let rowsToRender = v.results || [];
     if (state.verifyFilter === 'failures') {
@@ -826,32 +882,31 @@ const App = (() => {
     }
 
     if (!rowsToRender.length) {
-       html += `<div class="empty-state">No items match this filter.</div>`;
+       html += `<tr><td colspan="3"><div class="hlo-empty-state">No items match this filter.</div></td></tr>`;
     } else {
       for (const r of rowsToRender) {
          const isOk = r.status === 'verified_hardlinked';
-         const icon = isOk ? '✓' : '⚠';
-         const color = isOk ? 'var(--success)' : 'var(--danger)';
+         const statusTag = isOk
+           ? '<span class="cds--tag cds--tag--green">&#x2713; verified</span>'
+           : '<span class="cds--tag cds--tag--red">&#x26A0; ' + escHtml(r.status) + '</span>';
          html += `
-           <div class="entry-row">
-             <div class="entry-main" style="align-items:start">
-               <span class="entry-type-icon" style="color:${color}">${icon}</span>
-               <div style="flex:1; width:100%">
-                 <div class="entry-display-name" style="white-space:normal; font-family:var(--font-mono); font-size:0.75rem">${escHtml(r.source_path)}</div>
-                 <div class="entry-size" style="margin-top:2px">Status: <strong style="color:${color}">${escHtml(r.status)}</strong> ${r.notes ? `— ${escHtml(r.notes)}` : ''}</div>
-               </div>
-             </div>
-           </div>`;
+           <tr>
+             <td>${statusTag}</td>
+             <td class="hlo-mono" style="font-size:0.75rem;word-break:break-all">${escHtml(r.source_path)}</td>
+             <td style="font-size:0.8125rem">${r.notes ? escHtml(r.notes) : '&mdash;'}</td>
+           </tr>`;
       }
     }
 
     html += `
-       </div>
-       <div class="action-bar mb-32" style="margin-bottom: 32px">
-         <div class="action-bar-left">
-           <button class="btn btn-primary" onclick="App.startOver()">Done</button>
-         </div>
-       </div>
+          </tbody>
+        </table>
+      </div>
+      <div class="hlo-action-bar hlo-mb-06">
+        <div class="hlo-action-bar-left">
+          <button class="cds--btn cds--btn--primary" onclick="App.startOver()">Done</button>
+        </div>
+      </div>
     `;
 
     panel.innerHTML = html;

@@ -1,14 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-carbon-theme="g100">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hardlink Organizer</title>
   <meta name="description" content="Local-first hardlink workflow for previewing, linking, and verifying media payloads without moving source files.">
+
+  <!-- IBM Carbon G100 dark theme via CDN -->
+  <link rel="stylesheet"
+        href="https://unpkg.com/@carbon/styles@1/css/styles.min.css">
+
+  <!-- IBM Plex fonts (Carbon standard) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+  <!-- Carbon overrides (token-only, no hex) -->
+  <link rel="stylesheet" href="/static/carbon-overrides.css">
 
   {# Pass server-side config data as JS globals. #}
   <script>
@@ -20,152 +29,186 @@
 <body>
 
   <!-- ============================================================ Header -->
-  <header class="app-header">
-    <div class="header-inner">
-      <div class="header-brand">
-        <span class="header-icon">⛓</span>
-        <span class="header-title">Hardlink Organizer</span>
-        <span class="header-version">v{{ version }}</span>
-      </div>
-      <div class="header-status">
-        <span class="status-dot" id="status-dot"></span>
-        <span class="status-text" id="status-text">Initialising…</span>
+  <header class="cds--header" role="banner">
+    <a class="cds--header__name" href="/" aria-label="Hardlink Organizer home">
+      <span class="cds--header__name--prefix" aria-hidden="true">⛓</span>&nbsp;Hardlink Organizer
+    </a>
+    <div class="cds--header__global">
+      <span class="hlo-version-tag">v{{ version }}</span>
+      <div class="hlo-status-group" aria-live="polite" aria-label="Application status">
+        <span class="hlo-status-dot" id="status-dot" aria-hidden="true"></span>
+        <span class="hlo-status-text" id="status-text">Initialising…</span>
       </div>
     </div>
   </header>
 
-  <section class="hero-strip" aria-label="About Hardlink Organizer">
-    <div class="hero-inner">
-      <div class="hero-copy">
-        <p class="hero-kicker">Local sandbox</p>
-        <h1 class="hero-title">Preview-first hardlinking for messy ingress folders.</h1>
-        <p class="hero-text">
-          Built for local testing and day-to-day media workflow experiments. Scan a source set,
-          choose an item, preview the plan, then link without touching the original payload.
-        </p>
-        <div class="hero-pills">
-          <span class="hero-pill">Source-safe</span>
-          <span class="hero-pill">Preview-first</span>
-          <span class="hero-pill">Verification-ready</span>
-        </div>
-        <div class="hero-cta-row" aria-label="Quick actions">
-          <a class="hero-cta hero-cta-primary" href="#main-panel">Open workflow</a>
-          <a class="hero-cta hero-cta-secondary" href="#history-panel">View recent activity</a>
-          <span class="hero-status-badge">
-            <span class="hero-status-dot" aria-hidden="true"></span>
-            Local sandbox active
-          </span>
-        </div>
-        <div class="hero-flow" aria-label="Workflow highlights">
-          <div class="hero-flow-item">
-            <span class="hero-flow-step">01</span>
-            <div>
-              <span class="hero-flow-label">Scan</span>
-              <p class="hero-flow-text">Pull a source set into view without touching the payload.</p>
+  <!-- Spacer below fixed Carbon header -->
+  <div class="cds--content hlo-page-content">
+
+    <!-- ======================================================== Hero Section -->
+    <section class="cds--grid cds--grid--full-width hlo-hero-section" aria-label="About Hardlink Organizer">
+      <div class="cds--row" style="padding: var(--cds-spacing-07) var(--cds-spacing-05);">
+        <div class="cds--col-lg-10 cds--col-md-6 cds--col-sm-4">
+          <div class="cds--tile hlo-hero-tile">
+            <p class="hlo-hero-kicker">Local sandbox</p>
+            <h1 class="hlo-hero-title">
+              Preview-first hardlinking for messy ingress folders.
+            </h1>
+            <p style="color: var(--cds-text-secondary); margin-top: var(--cds-spacing-05);">
+              Scan a source set, choose an item, preview the plan, then link without
+              touching the original payload.
+            </p>
+            <div style="display:flex; gap: var(--cds-spacing-03); margin-top: var(--cds-spacing-05); flex-wrap:wrap;">
+              <span class="cds--tag cds--tag--cool-gray">Source-safe</span>
+              <span class="cds--tag cds--tag--cool-gray">Preview-first</span>
+              <span class="cds--tag cds--tag--cool-gray">Verification-ready</span>
+            </div>
+            <div style="margin-top: var(--cds-spacing-05); display:flex; gap: var(--cds-spacing-03); flex-wrap:wrap;">
+              <a class="cds--btn cds--btn--primary" href="#main-panel">Open workflow</a>
+              <a class="cds--btn cds--btn--secondary" href="#history-panel">View recent activity</a>
+            </div>
+            <!-- Hero flow steps -->
+            <div class="hlo-hero-flow" aria-label="Workflow highlights">
+              <div class="hlo-hero-flow-item">
+                <span class="hlo-flow-step-num" aria-hidden="true">01</span>
+                <div>
+                  <span class="hlo-flow-label">Scan</span>
+                  <p class="hlo-flow-text">Pull a source set into view without touching the payload.</p>
+                </div>
+              </div>
+              <div class="hlo-hero-flow-item">
+                <span class="hlo-flow-step-num" aria-hidden="true">02</span>
+                <div>
+                  <span class="hlo-flow-label">Preview</span>
+                  <p class="hlo-flow-text">Check pathing and validation before anything mutates.</p>
+                </div>
+              </div>
+              <div class="hlo-hero-flow-item">
+                <span class="hlo-flow-step-num" aria-hidden="true">03</span>
+                <div>
+                  <span class="hlo-flow-label">Link</span>
+                  <p class="hlo-flow-text">Write only after the plan looks right.</p>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="hero-flow-item">
-            <span class="hero-flow-step">02</span>
-            <div>
-              <span class="hero-flow-label">Preview</span>
-              <p class="hero-flow-text">Check pathing and validation before anything mutates.</p>
-            </div>
-          </div>
-          <div class="hero-flow-item">
-            <span class="hero-flow-step">03</span>
-            <div>
-              <span class="hero-flow-label">Link</span>
-              <p class="hero-flow-text">Write only after the plan looks right.</p>
+        </div>
+        <div class="cds--col-lg-6 cds--col-md-2 cds--col-sm-4 hlo-facts-col">
+          <div class="cds--tile hlo-facts-tile">
+            <div class="cds--structured-list cds--structured-list--condensed">
+              <div class="cds--structured-list-tbody">
+                <div class="cds--structured-list-row">
+                  <div class="cds--structured-list-td cds--structured-list-content--nowrap hlo-fact-label">Version</div>
+                  <div class="cds--structured-list-td hlo-fact-value">v{{ version }}</div>
+                </div>
+                <div class="cds--structured-list-row">
+                  <div class="cds--structured-list-td cds--structured-list-content--nowrap hlo-fact-label">Status</div>
+                  <div class="cds--structured-list-td hlo-fact-value">Local testing</div>
+                </div>
+                <div class="cds--structured-list-row">
+                  <div class="cds--structured-list-td cds--structured-list-content--nowrap hlo-fact-label">Target</div>
+                  <div class="cds--structured-list-td hlo-fact-value">NAS / homelab workflows</div>
+                </div>
+                <div class="cds--structured-list-row">
+                  <div class="cds--structured-list-td cds--structured-list-content--nowrap hlo-fact-label">Rhythm</div>
+                  <div class="cds--structured-list-td hlo-fact-value">Scan → Preview → Link</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="hero-facts" aria-label="Current project state">
-        <div class="hero-fact">
-          <span class="hero-fact-label">Version</span>
-          <span class="hero-fact-value">v{{ version }}</span>
-        </div>
-        <div class="hero-fact">
-          <span class="hero-fact-label">Status</span>
-          <span class="hero-fact-value">Local testing</span>
-          <span class="hero-fact-note">GitHub is being used mainly as a working test home.</span>
-        </div>
-        <div class="hero-fact">
-          <span class="hero-fact-label">Target</span>
-          <span class="hero-fact-value">NAS / homelab workflows</span>
-        </div>
-        <div class="hero-fact hero-fact-signal">
-          <span class="hero-fact-label">Rhythm</span>
-          <span class="hero-fact-value">Scan → Preview → Link</span>
-          <div class="hero-signal" aria-hidden="true">
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
+    </section>
+
+    <!-- ======================================================= Step Progress -->
+    <div class="hlo-stepbar-wrap" role="navigation" aria-label="Workflow steps">
+      <div class="cds--grid cds--grid--full-width">
+        <div class="cds--row">
+          <div class="cds--col">
+            <ul class="cds--progress" data-progress data-progress-current id="step-progress">
+              <li class="cds--progress-step cds--progress-step--current" id="step-1" data-step="source">
+                <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+                     fill="currentColor" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                  <circle cx="8" cy="8" r="7.5" class="cds--progress__line"/>
+                </svg>
+                <p class="cds--progress-label">Source</p>
+                <span class="cds--progress-line"></span>
+              </li>
+              <li class="cds--progress-step" id="step-2" data-step="browse">
+                <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+                     fill="currentColor" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                  <circle cx="8" cy="8" r="7.5" class="cds--progress__line"/>
+                </svg>
+                <p class="cds--progress-label">Browse</p>
+                <span class="cds--progress-line"></span>
+              </li>
+              <li class="cds--progress-step" id="step-3" data-step="dest">
+                <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+                     fill="currentColor" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                  <circle cx="8" cy="8" r="7.5" class="cds--progress__line"/>
+                </svg>
+                <p class="cds--progress-label">Destination</p>
+                <span class="cds--progress-line"></span>
+              </li>
+              <li class="cds--progress-step" id="step-4" data-step="preview">
+                <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+                     fill="currentColor" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                  <circle cx="8" cy="8" r="7.5" class="cds--progress__line"/>
+                </svg>
+                <p class="cds--progress-label">Preview</p>
+                <span class="cds--progress-line"></span>
+              </li>
+              <li class="cds--progress-step" id="step-5" data-step="result">
+                <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+                     fill="currentColor" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                  <circle cx="8" cy="8" r="7.5" class="cds--progress__line"/>
+                </svg>
+                <p class="cds--progress-label">Done</p>
+                <span class="cds--progress-line"></span>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- ========================================================= Step Bar -->
-  <div class="step-bar" role="navigation" aria-label="Workflow steps">
-    <div class="step-bar-inner">
-      <div class="step-item active" id="step-1" data-step="source">
-        <span class="step-num">1</span>
-        <span class="step-label">Source</span>
-      </div>
-      <div class="step-connector"></div>
-      <div class="step-item" id="step-2" data-step="browse">
-        <span class="step-num">2</span>
-        <span class="step-label">Browse</span>
-      </div>
-      <div class="step-connector"></div>
-      <div class="step-item" id="step-3" data-step="dest">
-        <span class="step-num">3</span>
-        <span class="step-label">Destination</span>
-      </div>
-      <div class="step-connector"></div>
-      <div class="step-item" id="step-4" data-step="preview">
-        <span class="step-num">4</span>
-        <span class="step-label">Preview</span>
-      </div>
-      <div class="step-connector"></div>
-      <div class="step-item" id="step-5" data-step="result">
-        <span class="step-num">5</span>
-        <span class="step-label">Done</span>
+    <!-- =========================================================== Layout -->
+    <div class="cds--grid cds--grid--full-width hlo-layout-grid">
+      <div class="cds--row hlo-layout-row">
+
+        <!-- Main workflow panel -->
+        <main class="cds--col-lg-12 cds--col-md-6 cds--col-sm-4 hlo-main-panel" id="main-panel" role="main">
+          <!-- Populated by app.js -->
+          <div class="hlo-loading-block">
+            <div class="cds--loading cds--loading--small" aria-live="assertive">
+              <svg class="cds--loading__svg" viewBox="-75 -75 150 150" aria-hidden="true">
+                <circle class="cds--loading__background" cx="0" cy="0" r="37.5"/>
+                <circle class="cds--loading__stroke" cx="0" cy="0" r="37.5"/>
+              </svg>
+            </div>
+            <span>Loading…</span>
+          </div>
+        </main>
+
+        <!-- History sidebar -->
+        <aside class="cds--col-lg-4 cds--col-md-2 cds--col-sm-4 hlo-history-panel" id="history-panel" role="complementary" aria-label="Recent operations">
+          <div class="hlo-history-header">
+            <h2 class="hlo-history-title">Recent Operations</h2>
+            <button class="cds--btn cds--btn--ghost cds--btn--sm hlo-refresh-btn"
+                    onclick="App.loadHistory()" title="Refresh history" aria-label="Refresh history">↺</button>
+          </div>
+          <div class="hlo-history-list" id="history-list">
+            <div class="hlo-empty-state" style="padding: var(--cds-spacing-06) var(--cds-spacing-05);">No operations yet.</div>
+          </div>
+        </aside>
+
       </div>
     </div>
-  </div>
 
-  <!-- =========================================================== Layout -->
-  <div class="app-layout">
-    <div class="content-grid">
-
-      <!-- Main workflow panel -->
-      <main class="main-panel" id="main-panel" role="main">
-        <!-- Populated by app.js -->
-        <div class="loading-block">
-          <span class="spinner"></span> Loading…
-        </div>
-      </main>
-
-      <!-- History sidebar -->
-      <aside class="history-panel" id="history-panel" role="complementary" aria-label="Recent operations">
-        <div class="panel-header">
-          <h2 class="panel-title">Recent Operations</h2>
-          <button class="btn-icon" onclick="App.loadHistory()" title="Refresh history" aria-label="Refresh history">↺</button>
-        </div>
-        <div class="history-list" id="history-list">
-          <div class="empty-state" style="padding:24px 18px">No operations yet.</div>
-        </div>
-      </aside>
-
-    </div>
-  </div>
+  </div><!-- end cds--content -->
 
   <!-- ======================================================== Toasts -->
-  <div class="toast-container" id="toast-container" role="status" aria-live="polite"></div>
+  <div class="hlo-toast-container" id="toast-container" role="region" aria-label="Notifications"></div>
 
   <script src="/static/app.js"></script>
 </body>
