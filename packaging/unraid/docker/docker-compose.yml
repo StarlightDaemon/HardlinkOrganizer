@@ -36,8 +36,9 @@ services:
       - /mnt/user/media/audiobooks:/mnt/dst/audiobooks
 
     environment:
-      # Override the config path if you mount it differently
       - PYTHONUNBUFFERED=1
+      - PUID=1000   # set to your host user's UID (id -u)
+      - PGID=1000   # set to your host user's GID (id -g)
 
     # Optional: resource limits
     # deploy:

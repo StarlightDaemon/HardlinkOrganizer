@@ -3,16 +3,20 @@
 # Build from the Hardlink Organizer root:
 #   docker build -f packaging/unraid/docker/Dockerfile -t hardlink-organizer:0.3.0 .
 # Run:
-#   docker run -p 7700:7700 -v /mnt/user/appdata/hardlink-organizer:/config -v ... hardlink-organizer:0.3.0
+#   docker run -p 7700:7700 -v /path/to/config:/config -e PUID=1000 -e PGID=1000 hardlink-organizer:0.3.0
 
 FROM python:3.11-slim
 
 LABEL org.opencontainers.image.title="Hardlink Organizer"
-LABEL org.opencontainers.image.description="Safely inventory ingress content and hardlink media payloads on Unraid"
+LABEL org.opencontainers.image.description="Safely plan and execute hardlinks across NAS storage pools with a preview-first web UI"
 LABEL org.opencontainers.image.version="0.3.0"
 
 # Non-root user for safety
 RUN addgroup --system hlo && adduser --system --ingroup hlo hlo
+
+# Install gosu for PUID/PGID privilege-drop entrypoint
+RUN apt-get update && apt-get install -y --no-install-recommends gosu \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -29,15 +33,17 @@ COPY ./config.example.toml .
 # Data directory (db, logs) and config directory will be mounted from host
 RUN mkdir -p /config /data && chown -R hlo:hlo /config /data
 
-# Switch to non-root
-USER hlo
-
 # Default environment
 ENV HARDLINK_CONFIG=/config/config.toml
 ENV PYTHONUNBUFFERED=1
+ENV PUID=1000
+ENV PGID=1000
 
 EXPOSE 7700
 
-# Entrypoint: launch from CLI so --config can be overridden via CMD or env
-ENTRYPOINT ["python", "webapp/run.py"]
-CMD ["--config", "/config/config.toml", "--host", "0.0.0.0", "--port", "7700"]
+# entrypoint.sh runs as root, remaps hlo UID/GID to PUID/PGID, chowns the
+# writable mounts, then drops privilege via gosu before exec-ing the CMD.
+COPY packaging/unraid/docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["python", "webapp/run.py", "--config", "/config/config.toml", "--host", "0.0.0.0", "--port", "7700"]
