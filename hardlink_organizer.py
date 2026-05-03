@@ -463,6 +463,13 @@ _UNRAID_SHARE_RECOMMENDATION = (
     "inside that single mount."
 )
 
+_MERGERFS_RECOMMENDATION = (
+    "Prefer mounting the underlying disk path directly instead of the MergerFS "
+    "pool. For example, use /srv/dev-disk-by-label/MyDisk:/mnt/media instead of "
+    "/srv/mergerfs/pool:/mnt/media. Both source and destination must resolve to "
+    "the same underlying filesystem for hardlinks to succeed."
+)
+
 
 def _unescape_mountinfo_path(value: str) -> str:
     """Decode the limited escape sequences used in /proc/self/mountinfo."""
@@ -512,7 +519,7 @@ def _find_mount_point(path: str, mount_points: list[str]) -> str | None:
 
 
 def _classify_mount_layout_path(path: str) -> str:
-    """Classify a path into a coarse Unraid-related layout kind."""
+    """Classify a path into a coarse platform-aware layout kind."""
     normalized = os.path.normpath(path)
     if normalized == "/mnt/user" or normalized.startswith("/mnt/user/"):
         return "user_share"
@@ -524,6 +531,12 @@ def _classify_mount_layout_path(path: str) -> str:
         return "disk_mount"
     if re.match(r"^/mnt/(?:cache|pool[^/]*)(?:/|$)", normalized):
         return "pool_mount"
+    # MergerFS union mount — OMV default pool path (same EXDEV risk as Unraid shfs)
+    if normalized == "/srv/mergerfs" or normalized.startswith("/srv/mergerfs/"):
+        return "mergerfs_pool"
+    # OMV underlying disk paths — direct access, safe (equivalent to Unraid disk_mount)
+    if re.match(r"^/srv/dev-disk-by-(?:label|uuid|id)/", normalized):
+        return "omv_disk_mount"
     return "other"
 
 
@@ -579,6 +592,21 @@ def assess_mount_layout(
             )
         )
 
+    if source_kind == "mergerfs_pool" or dest_kind == "mergerfs_pool":
+        warnings.append(
+            MountLayoutWarning(
+                code="mergerfs_pool_path",
+                title="MergerFS pool paths can hide device layout and cause EXDEV",
+                detail=(
+                    "At least one path is under a MergerFS pool mount (/srv/mergerfs/). "
+                    "Like Unraid's /mnt/user, MergerFS pools can report the same device "
+                    "ID while a real hardlink operation later fails with EXDEV because "
+                    "the underlying files resolve to different physical disks."
+                ),
+                recommendation=_MERGERFS_RECOMMENDATION,
+            )
+        )
+
     if (
         same_device is True
         and source_mount_point
@@ -589,8 +617,15 @@ def assess_mount_layout(
             or dest_kind != "other"
             or source_mount_point.startswith("/mnt/")
             or dest_mount_point.startswith("/mnt/")
+            or source_mount_point.startswith("/srv/")
+            or dest_mount_point.startswith("/srv/")
         )
     ):
+        _separate_recommendation = (
+            _MERGERFS_RECOMMENDATION
+            if (source_kind == "mergerfs_pool" or dest_kind == "mergerfs_pool")
+            else _UNRAID_SHARE_RECOMMENDATION
+        )
         warnings.append(
             MountLayoutWarning(
                 code="separate_mount_points",
@@ -598,10 +633,10 @@ def assess_mount_layout(
                 detail=(
                     "These paths currently report the same device, but they resolve "
                     f"through different mount points ({source_mount_point} vs "
-                    f"{dest_mount_point}). Real Unraid tests showed this layout can "
+                    f"{dest_mount_point}). Real tests showed this layout can "
                     "still fail during hardlink execution."
                 ),
-                recommendation=_UNRAID_SHARE_RECOMMENDATION,
+                recommendation=_separate_recommendation,
             )
         )
 

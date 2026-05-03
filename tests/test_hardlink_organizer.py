@@ -442,6 +442,33 @@ class TestMountLayoutAssessment(unittest.TestCase):
         )
         self.assertEqual(assessment.warnings, ())
 
+    def test_warns_for_mergerfs_pool_paths(self):
+        assessment = hlo.assess_mount_layout(
+            "/srv/mergerfs/pool/ingress/movie.mkv",
+            "/srv/mergerfs/pool/media",
+            source_device=11,
+            dest_device=11,
+            mountinfo_text=(
+                "24 1 0:43 / /srv/mergerfs/pool rw,relatime "
+                "- fuse.mergerfs mergerfs rw\n"
+            ),
+        )
+        codes = {warning.code for warning in assessment.warnings}
+        self.assertIn("mergerfs_pool_path", codes)
+
+    def test_omv_underlying_disk_layout_has_no_warnings(self):
+        assessment = hlo.assess_mount_layout(
+            "/srv/dev-disk-by-label/Media/ingress/movie.mkv",
+            "/srv/dev-disk-by-label/Media/library",
+            source_device=22,
+            dest_device=22,
+            mountinfo_text=(
+                "31 1 8:3 / /srv/dev-disk-by-label/Media "
+                "rw,relatime - ext4 /dev/sdb1 rw\n"
+            ),
+        )
+        self.assertEqual(assessment.warnings, ())
+
 
 # ---------------------------------------------------------------------------
 # Hardlink execution tests (integration — same filesystem)
