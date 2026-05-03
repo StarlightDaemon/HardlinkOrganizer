@@ -1,5 +1,18 @@
 # Work Log
 
+## 2026-05-03 Docker-first multi-platform hardening session
+
+- Confirmed: PUID/PGID runtime privilege-drop added to Docker image (`packaging/docker/entrypoint.sh` + Dockerfile); container remaps `hlo` UID/GID at start via `gosu`; defaults 1000:1000.
+- Confirmed: Dockerfile `LABEL` description updated to platform-neutral copy; `USER hlo` removed in favour of entrypoint privilege drop.
+- Confirmed: `packaging/` restructured to Docker-first multi-platform layout. Canonical Dockerfile and entrypoint moved to `packaging/docker/`. Platform dirs created: `unraid/`, `truenas/`, `omv/`, `portainer/` — each with README and compose/stack file.
+- Confirmed: CI workflow (`hardlink-organizer-image.yml`) updated to reference `packaging/docker/Dockerfile`.
+- Confirmed: mount-layout warning system extended for MergerFS/OMV. `_classify_mount_layout_path()` now returns `mergerfs_pool` and `omv_disk_mount` kinds. New `mergerfs_pool_path` warning emitted with `_MERGERFS_RECOMMENDATION`. `separate_mount_points` condition generalized to cover `/srv/` mount prefixes. All 5 mount-layout tests pass.
+- Confirmed: `README.md` updated: At A Glance target now reflects Docker-first multi-platform; repo map and More Detail entries updated to `.raiden/state/` and `.raiden/local/prompts/`; stale `agent-ledger/` and `agent-prompts/` paths removed.
+- Confirmed: `LEGACY_REVIEW.md` updated — all three legacy artifacts (AGENTS.md, agent-ledger, agent-prompts) marked resolved with dates and actions.
+- Confirmed: all dead `agent-ledger/` and `agent-prompts/` path references fixed across all prompt files under `.raiden/local/prompts/`.
+- Inferred: frontend review completed; two immediate fixes identified (mount warning Unraid-specific copy, hero Target fact); four lower-priority items deferred. See CURRENT_STATE.md open frontend items.
+- Inferred: next session should open with the two small frontend fixes, then proceed to LOOP-010 destination registry backend (`prompt-40`).
+
 ## 2026-05-03 RAIDEN Instance install and governance migration
 
 - Confirmed: RAIDEN Instance installed from central RAIDEN repo (`/mnt/e/Raiden`) using `raiden_guide.py install` with sample_package (Edict v0.2.0).
