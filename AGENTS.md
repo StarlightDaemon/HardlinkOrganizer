@@ -1,63 +1,52 @@
-# Hardlink Organizer Agent Guide
+# Hardlink Organizer — Agent Startup
 
-This directory is intended to be workable as its own agent-facing project
-workspace.
-Start here before chasing parent-repo context.
+Read `.raiden/README.md` before doing any repo-local work. It describes the
+RAIDEN Instance control plane for this repo.
 
 ## Authoritative workspace root
 
-- Active repository root: `/mnt/e/HardlinkOrganizer`
-- Windows path for the same workspace: `E:\HardlinkOrganizer`
-- Deprecated old nested path: `E:\StarlightDaemonDev\tools\internal\hardlink-organizer`
+- WSL path: `/mnt/e/HardlinkOrganizer`
+- Windows path: `E:\HardlinkOrganizer`
+- Deprecated nested path: `E:\StarlightDaemonDev\tools\internal\hardlink-organizer`
 
-Agents must treat `/mnt/e/HardlinkOrganizer` as the only live project root for
-new work.
+Treat `/mnt/e/HardlinkOrganizer` as the only live project root. If your
+context points at the deprecated nested copy, stop and switch back here before
+doing anything.
 
-If your current working directory or prompt context points at the old nested
-copy under `StarlightDaemonDev`, stop and switch back to the standalone root
-before doing anything else.
+## Control plane
+
+The RAIDEN Instance control plane lives under `.raiden/`:
+
+- `.raiden/state/CURRENT_STATE.md` — live project snapshot
+- `.raiden/state/OPEN_LOOPS.md` — the only entry point for new execution work
+- `.raiden/state/GOALS.md` — current and near-term goals
+- `.raiden/state/DECISIONS.md` — durable decision record
+- `.raiden/state/WORK_LOG.md` — session history
+- `.raiden/local/prompts/` — bounded agent prompt slices
 
 ## First files to read
 
-1. `README.md`
-   - Product brief, current version, run commands, API surface, and config model.
-2. `agent-ledger/README.md`
-   - Project-local control plane and ledger file map.
-3. `agent-ledger/CURRENT_STATE.md`
-   - Evidence-based current project snapshot.
-4. `agent-ledger/OPEN_LOOPS.md`
-   - The only entry point for new execution work.
-5. `notes/README.md`
-   - Index of tool-local planning and roadmap notes.
-6. `packaging/unraid/README.md`
-   - Unraid mount layout, Docker hosting model, and release packaging details.
-7. `agent-prompts/README.md`
-   - Narrow prompts for handing one bounded slice to another agent.
+1. `README.md` — product brief, current version, run commands, API surface, config model
+2. `.raiden/state/CURRENT_STATE.md` — evidence-based current project snapshot
+3. `.raiden/state/OPEN_LOOPS.md` — bounded work entry point
+4. `notes/README.md` — index of planning and roadmap notes
+5. `packaging/unraid/README.md` — Unraid mount layout, Docker hosting, release packaging
+6. `.raiden/local/prompts/README.md` — narrow prompts for handing a slice to another agent
 
 ## Code entry points
 
-- `hardlink_organizer.py`: CLI entry point.
-- `webapp/app.py`: FastAPI app and routes.
-- `webapp/run.py`: local web server launcher.
-- `engine/db.py`: persisted scan and link history.
-- `engine/verification.py`: verification-run backend.
+- `hardlink_organizer.py` — CLI entry point
+- `webapp/app.py` — FastAPI app and routes
+- `webapp/run.py` — local web server launcher
+- `engine/db.py` — persisted scan and link history
+- `engine/verification.py` — verification-run backend
 
 ## Tests
 
-- `tests/`: unit, integration, and smoke coverage for CLI, web app, DB, and verification flows.
+- `tests/` — unit, integration, and smoke coverage for CLI, web app, DB, and verification flows
 
 ## Working assumptions
 
-- Treat this folder as the local source of truth for product, roadmap, packaging, prompts, and ledger state.
-- Prefer this project's `agent-ledger/` over repo-level summaries when they disagree.
-- Only reach into repo-level docs when you need cross-repo governance, inventory, or parent-repo catalog context.
+- Treat this folder as the local source of truth for product, roadmap, packaging, prompts, and state.
+- The `.raiden/state/` control plane is authoritative for project continuity. The retired `agent-ledger/` is preserved in git history only.
 - Do not run new work from the deprecated nested copy under `StarlightDaemonDev`.
-
-## Repo-level files that may still matter
-
-- `../../../../agent-ledger/CURRENT_STATE.md`
-- `../../../../agent-ledger/OPEN_LOOPS.md`
-- `../../../../docs/tool-catalog.md`
-
-Their Hardlink Organizer content is now summary material only. The primary
-control plane for this project lives under `./agent-ledger/`.

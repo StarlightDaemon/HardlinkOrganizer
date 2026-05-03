@@ -14,7 +14,7 @@ Read these first:
 3. ./notes/plans/WEB_APP_IMPLEMENTATION_PLAN.md
 4. ./hardlink_organizer.py
 5. ./tests/test_hardlink_organizer.py
-6. ./agent-ledger/DECISIONS.md
+6. .raiden/state/DECISIONS.md
 7. ./AGENTS.md
 
 Task:

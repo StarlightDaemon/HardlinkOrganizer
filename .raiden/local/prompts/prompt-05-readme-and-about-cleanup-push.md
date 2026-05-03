@@ -25,8 +25,8 @@ work, or broader product restructuring.
 1. `./README.md`
 2. `./webapp/templates/index.html`
 3. `./webapp/static/style.css`
-4. `./agent-prompts/README.md`
-5. `./agent-prompts/micro-prompt-template.md`
+4. `.raiden/local/prompts/README.md`
+5. `.raiden/local/prompts/micro-prompt-template.md`
 
 ## Current expected state
 
@@ -96,7 +96,7 @@ Out of scope:
 - `./README.md`
 - `./webapp/templates/index.html`
 - `./webapp/static/style.css`
-- `./agent-prompts/README.md` only if you need to register this prompt
+- `.raiden/local/prompts/README.md` only if you need to register this prompt
 
 ## Verification expectations
 

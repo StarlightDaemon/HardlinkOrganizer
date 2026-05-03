@@ -23,12 +23,12 @@ new work lands.
 ## Read first
 
 1. `./README.md`
-2. `./agent-prompts/README.md`
+2. `.raiden/local/prompts/README.md`
 3. `./notes/README.md`
 4. `./notes/plans/README.md`
-5. `./agent-prompts/legacy/README.md`
-6. `./agent-prompts/prompt-05-readme-and-about-cleanup-push.md`
-7. `./agent-prompts/micro-prompt-template.md`
+5. `.raiden/local/prompts/legacy/README.md`
+6. `.raiden/local/prompts/prompt-05-readme-and-about-cleanup-push.md`
+7. `.raiden/local/prompts/micro-prompt-template.md`
 
 Then inspect the recent git history and the current working tree.
 
@@ -44,8 +44,8 @@ Focus on these recent cleanup results:
 Assume the branch may still contain unrelated uncommitted changes in:
 
 - `AGENTS.md`
-- `agent-prompts/micro-prompt-template.md`
-- `agent-prompts/prompt-00-fresh-chat-ledger-restart.md`
+- `.raiden/local/prompts/micro-prompt-template.md`
+- `.raiden/local/prompts/prompt-00-fresh-chat-ledger-restart.md`
 
 Treat those uncommitted files as out of scope unless they directly block your
 ability to review the cleanup work above.
@@ -85,7 +85,7 @@ Out of scope:
 - whether `README.md` is now short, accurate, and still useful as the repo front page
 - whether the UI-about cleanup still matches the actual project state
 - whether the root now contains the right entry files and not too much planning clutter
-- whether `notes/`, `notes/plans/`, `agent-prompts/`, and `agent-prompts/legacy/` are easy to understand without digging
+- whether `notes/`, `notes/plans/`, `.raiden/local/prompts/`, and `.raiden/local/prompts/legacy/` are easy to understand without digging
 - whether any active prompt still points to pre-move root paths
 - whether the cleanup commits introduced structure that is neat locally but confusing for future contributors or agent handoffs
 

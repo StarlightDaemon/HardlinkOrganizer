@@ -24,11 +24,11 @@ reorganization, feature work, or broad prompt rewriting.
 
 1. `./README.md`
 2. `./AGENTS.md`
-3. `./agent-prompts/README.md`
-4. `./agent-prompts/micro-prompt-template.md`
-5. `./agent-prompts/prompt-00-fresh-chat-ledger-restart.md`
-6. `./agent-prompts/prompt-06-recent-cleanup-review-and-scope.md`
-7. `./agent-prompts/prompt-07-root-lock-and-readme-followup-commit.md`
+3. `.raiden/local/prompts/README.md`
+4. `.raiden/local/prompts/micro-prompt-template.md`
+5. `.raiden/local/prompts/prompt-00-fresh-chat-ledger-restart.md`
+6. `.raiden/local/prompts/prompt-06-recent-cleanup-review-and-scope.md`
+7. `.raiden/local/prompts/prompt-07-root-lock-and-readme-followup-commit.md`
 
 Then inspect the working tree before acting.
 
@@ -45,10 +45,10 @@ Assume the working tree may currently contain these intended follow-up changes:
 
 - `README.md`
 - `AGENTS.md`
-- `agent-prompts/README.md`
-- `agent-prompts/micro-prompt-template.md`
-- `agent-prompts/prompt-00-fresh-chat-ledger-restart.md`
-- `agent-prompts/prompt-06-recent-cleanup-review-and-scope.md`
+- `.raiden/local/prompts/README.md`
+- `.raiden/local/prompts/micro-prompt-template.md`
+- `.raiden/local/prompts/prompt-00-fresh-chat-ledger-restart.md`
+- `.raiden/local/prompts/prompt-06-recent-cleanup-review-and-scope.md`
 
 Verify the actual tree before acting.
 
@@ -81,7 +81,7 @@ Out of scope:
 - more root reorganization
 - new feature prompts
 - broader README rewriting
-- changing agent-ledger content
+- changing `.raiden/state/` content
 - editing unrelated historical prompt files
 
 ## What to check carefully
@@ -90,7 +90,7 @@ Out of scope:
 - whether root-lock wording consistently points to `/mnt/e/HardlinkOrganizer`
   and `E:\HardlinkOrganizer`
 - whether the micro prompt and `prompt-00` match the current standalone-root rule
-- whether `prompt-06` is present and correctly listed in `agent-prompts/README.md`
+- whether `prompt-06` is present and correctly listed in `.raiden/local/prompts/README.md`
 - whether any of the touched files drift into broader policy or planning changes
 
 ## Constraints
@@ -104,15 +104,15 @@ Out of scope:
 
 - `./README.md`
 - `./AGENTS.md`
-- `./agent-prompts/README.md`
-- `./agent-prompts/micro-prompt-template.md`
-- `./agent-prompts/prompt-00-fresh-chat-ledger-restart.md`
-- `./agent-prompts/prompt-06-recent-cleanup-review-and-scope.md`
+- `.raiden/local/prompts/README.md`
+- `.raiden/local/prompts/micro-prompt-template.md`
+- `.raiden/local/prompts/prompt-00-fresh-chat-ledger-restart.md`
+- `.raiden/local/prompts/prompt-06-recent-cleanup-review-and-scope.md`
 
 ## Verification expectations
 
 - run `git status --short --branch`
-- review `git diff -- README.md AGENTS.md agent-prompts/README.md agent-prompts/micro-prompt-template.md agent-prompts/prompt-00-fresh-chat-ledger-restart.md agent-prompts/prompt-06-recent-cleanup-review-and-scope.md`
+- review `git diff -- README.md AGENTS.md .raiden/local/prompts/README.md .raiden/local/prompts/micro-prompt-template.md .raiden/local/prompts/prompt-00-fresh-chat-ledger-restart.md .raiden/local/prompts/prompt-06-recent-cleanup-review-and-scope.md`
 - inspect the staged diff before committing
 - run `git show --stat --oneline --summary HEAD` after the commit
 - run `git status --short --branch`

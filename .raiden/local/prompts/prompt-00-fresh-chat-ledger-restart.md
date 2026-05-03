@@ -32,10 +32,10 @@ Hard stop rule:
 
 Read these files first and keep the context narrow:
 
-1. `agent-ledger/README.md`
-2. `agent-ledger/CURRENT_STATE.md`
-3. `agent-ledger/OPEN_LOOPS.md`
-4. `agent-ledger/WORK_LOG.md`
+1. `.raiden/README.md`
+2. `.raiden/state/CURRENT_STATE.md`
+3. `.raiden/state/OPEN_LOOPS.md`
+4. `.raiden/state/WORK_LOG.md`
 
 Then read only the files directly relevant to the selected task.
 
@@ -43,9 +43,9 @@ Then read only the files directly relevant to the selected task.
 
 Work on exactly one of the following:
 
-- one `LOOP-xxx` item from `agent-ledger/OPEN_LOOPS.md`
-- one specific project planning file in `agent-ledger/`
-- one specific prompt file under `./agent-prompts/`
+- one `LOOP-xxx` item from `.raiden/state/OPEN_LOOPS.md`
+- one specific project planning file in `.raiden/state/`
+- one specific prompt file under `.raiden/local/prompts/`
 
 Do not combine multiple ledger tasks in one pass unless the selected task explicitly
 requires it.
@@ -68,7 +68,7 @@ Important current realities:
 Use this order:
 
 1. `notes/HARDLINK_ORGANIZER_NEXT_STEPS.md`
-2. `./agent-prompts/prompt-20-unraid-preflight-hardening.md`
+2. `.raiden/local/prompts/prompt-20-unraid-preflight-hardening.md`
 3. `notes/HARDLINK_ORGANIZER_FEATURE_EXPANSION_PLAN.md`
 4. `notes/COMMUNITY_APPS_ROADMAP.md`
 
@@ -112,7 +112,7 @@ The new agent should end with:
 
 When using this prompt in a new chat, append one short task directive after it, for example:
 
-- `Selected task: ./agent-prompts/prompt-20-unraid-preflight-hardening.md`
+- `Selected task: .raiden/local/prompts/prompt-20-unraid-preflight-hardening.md`
 - `Selected task: LOOP-010`
 - `Selected task: notes/COMMUNITY_APPS_ROADMAP.md stage 3 planning`
 

@@ -25,8 +25,5 @@ into adjacent work.
 
 ## Provenance
 
-- Model: GPT-5 Codex
-- Reasoning level: structured workspace promotion
-- Date: 2026-04-16
-- Inputs: existing repo-level Hardlink Organizer loop records, current project roadmap notes, and user direction to give this project its own ledger
-- Confidence: high
+- Migrated from `agent-ledger/OPEN_LOOPS.md` on 2026-05-03 during RAIDEN Instance install
+- Original model: GPT-5 Codex — Date: 2026-04-16

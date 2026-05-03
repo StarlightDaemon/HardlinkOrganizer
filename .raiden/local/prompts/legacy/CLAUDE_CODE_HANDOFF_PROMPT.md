@@ -15,8 +15,8 @@ Execution plan:
 ./notes/plans/IMPLEMENTATION_PLAN.md
 
 Repository conventions to follow:
-- agent-ledger/DECISIONS.md
-- agent-ledger/OPEN_LOOPS.md
+- .raiden/state/DECISIONS.md
+- .raiden/state/OPEN_LOOPS.md
 - AGENTS.md
 
 Task:
@@ -108,7 +108,7 @@ Suggested destination name cleanup rules:
 What to read first:
 1. ./README.md
 2. ./notes/plans/IMPLEMENTATION_PLAN.md
-3. ./agent-ledger/DECISIONS.md
+3. .raiden/state/DECISIONS.md
 4. ./AGENTS.md
 
 What to produce:

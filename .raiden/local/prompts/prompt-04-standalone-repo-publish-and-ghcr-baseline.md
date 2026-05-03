@@ -23,7 +23,7 @@ This is a bounded repo-publication pass, not broader release or feature work.
 
 1. `./README.md`
 2. `./VERSION`
-3. `./agent-ledger/CURRENT_STATE.md`
+3. `.raiden/state/CURRENT_STATE.md`
 4. `./notes/COMMUNITY_APPS_ROADMAP.md`
 5. `./packaging/unraid/README.md`
 6. `./.github/workflows/hardlink-organizer-image.yml`
@@ -102,7 +102,7 @@ Out of scope:
 - `./packaging/unraid/templates/hardlink-organizer.xml`
 - `./packaging/unraid/docker/Dockerfile`
 - `./packaging/unraid/docker/docker-compose.yml`
-- `./agent-prompts/README.md` only if you add or register this prompt file
+- `.raiden/local/prompts/README.md` only if you add or register this prompt file
 
 ## Verification expectations
 

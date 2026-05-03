@@ -17,8 +17,5 @@
 
 ## Provenance
 
-- Model: GPT-5 Codex
-- Reasoning level: structured workspace promotion
-- Date: 2026-04-16
-- Inputs: current Hardlink Organizer roadmap notes, README, and user direction to treat this workspace as its own project
-- Confidence: high
+- Migrated from `agent-ledger/GOALS.md` on 2026-05-03 during RAIDEN Instance install
+- Original model: GPT-5 Codex — Date: 2026-04-16

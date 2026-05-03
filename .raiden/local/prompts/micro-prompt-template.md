@@ -32,7 +32,7 @@ Final response requirements:
 
 ```text
 Work only on the prompt located at:
-./agent-prompts/prompt-02-web-dependency-verification.md
+.raiden/local/prompts/prompt-02-web-dependency-verification.md
 
 Repository root:
 /mnt/e/HardlinkOrganizer

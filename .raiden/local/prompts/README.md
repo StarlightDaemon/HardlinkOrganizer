@@ -2,6 +2,10 @@
 
 Narrow, single-slice prompts for unstable or high-traffic agent runs.
 
+Moved from `agent-prompts/` to `.raiden/local/prompts/` on 2026-05-03 during
+RAIDEN Instance install. Path references in older prompt files may still cite
+`agent-prompts/` — treat `.raiden/local/prompts/` as the canonical location.
+
 ## Root lock
 
 All prompt execution should happen from the standalone repository root:

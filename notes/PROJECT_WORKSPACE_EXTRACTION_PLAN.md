@@ -1,9 +1,17 @@
 # Hardlink Organizer Workspace Extraction Plan
 
-This note describes how to move Hardlink Organizer out of
-`StarlightDaemonDev/tools/internal/hardlink-organizer/` into its own top-level
-workspace and Git repository without losing continuity or shipping a half-moved
-state.
+Status note:
+
+- The standalone workspace now lives at `/mnt/e/HardlinkOrganizer` in WSL and
+  `E:\HardlinkOrganizer` on Windows.
+- References in this note to `StarlightDaemonDev/tools/internal/hardlink-organizer/`
+  are historical context from the pre-extraction planning phase, not the active
+  project root.
+
+This note records the planning approach that was used to move Hardlink Organizer
+out of `StarlightDaemonDev/tools/internal/hardlink-organizer/` into its own
+top-level workspace and Git repository without losing continuity or shipping a
+half-moved state.
 
 ## Goal
 
