@@ -29,7 +29,8 @@
 - Confirmed: `webapp/app.py` routes: `GET /api/destinations`, `POST /api/destinations`, `POST /api/destinations/validate`, `PATCH /api/destinations/{id}`, `DELETE /api/destinations/{id}`.
 - Confirmed: validation checks existence, directory type, unsafe-root blocklist (`_UNSAFE_DEST_ROOTS`), writability, Unraid `/mnt/user` (`unraid_user_share`), and MergerFS pool (`mergerfs_pool_path`) — returns structured `DestinationValidateResponse`.
 - Confirmed: two frontend copy fixes applied: mount warning is now platform-neutral; hero Target now says "NAS / homelab workflows".
-- Confirmed: test suite — 47 DB tests + 54 webapp tests (2 skipped on non-Linux) — all pass.
+- Confirmed: full Carbon G100 dark theme rebuild committed (f97c762). CDN injection via `@carbon/styles@1`; all values token-only via `var(--cds-*)`. `carbon-overrides.css` added (787 lines); `style.css` emptied. `index.html` and `app.js` fully rebuilt with Carbon component markup.
+- Confirmed: test suite — 176 tests pass (47 DB + 129 webapp, 2 skipped on non-Linux) — 0 regressions post-Carbon rebuild.
 
 ## Open frontend items (deferred to a later pass)
 3. Inline `onclick` JS string injection in history/verify buttons — replace with `data-*` + delegated listeners before public release.
