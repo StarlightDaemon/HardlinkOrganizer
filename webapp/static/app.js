@@ -478,7 +478,7 @@ const App = (() => {
           <div class="validation-text">
             <strong>Mount layout warning</strong>
             <div class="preview-warning-copy">
-              Preview can still pass while a real Unraid hardlink fails if these paths are mounted in a risky way.
+              Preview can still pass while real hardlink execution fails if these paths are mounted in a risky way.
             </div>
             ${warnings}
           </div>
