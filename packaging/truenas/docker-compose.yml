@@ -1,0 +1,41 @@
+# Hardlink Organizer — TrueNAS SCALE Docker Compose
+# Run from the Hardlink Organizer root.
+# Adjust dataset paths to match your TrueNAS pool layout.
+# Start: docker compose -f packaging/truenas/docker-compose.yml up -d
+
+version: "3.8"
+
+services:
+  hardlink-organizer:
+    build:
+      context: ../..
+      dockerfile: packaging/docker/Dockerfile
+    image: hardlink-organizer:0.3.0    # or ghcr.io/... when published
+    container_name: hardlink-organizer
+    restart: unless-stopped
+    ports:
+      - "7700:7700"   # host_port:container_port — change host port if needed
+
+    volumes:
+      # --- Config file ---
+      # Edit before first start (copy from config.example.toml).
+      - /mnt/tank/apps/hardlink-organizer:/config
+
+      # --- State (SQLite DB + logs) ---
+      - /mnt/tank/apps/hardlink-organizer/data:/data
+
+      # --- Source sets ---
+      # Mount the pool-level parent so source and destination share one device.
+      # Adjust dataset paths to match your TrueNAS layout.
+      - /mnt/tank/media/ingress/movies:/mnt/src/movies:ro
+      - /mnt/tank/media/ingress/shows:/mnt/src/shows:ro
+
+      # --- Destination sets ---
+      # Must be on the same pool as source sets above.
+      - /mnt/tank/media/library/movies:/mnt/dst/movies
+      - /mnt/tank/media/library/shows:/mnt/dst/shows
+
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PUID=1000   # set to your TrueNAS dataset owner's UID (id -u)
+      - PGID=1000   # set to your TrueNAS dataset owner's GID (id -g)

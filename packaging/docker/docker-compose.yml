@@ -1,0 +1,47 @@
+# Hardlink Organizer — Generic Docker Compose
+# Run from the Hardlink Organizer root directory.
+# Start: docker compose -f packaging/docker/docker-compose.yml up -d
+
+version: "3.8"
+
+services:
+  hardlink-organizer:
+    build:
+      context: ../..
+      dockerfile: packaging/docker/Dockerfile
+    image: hardlink-organizer:0.3.0    # or ghcr.io/<github-owner>/hardlink-organizer:<tag>
+    container_name: hardlink-organizer
+    restart: unless-stopped
+    ports:
+      - "7700:7700"   # host_port:container_port — change host port if needed
+
+    volumes:
+      # --- Config file ---
+      # Edit ./config/config.toml before first start (copy from config.example.toml).
+      - ./config:/config
+
+      # --- State (SQLite DB + logs) ---
+      - ./data:/data
+
+      # --- Source sets (ingress / download roots) ---
+      # Adjust paths to match your source directories.
+      # Add one entry per [source_sets] key in your config.toml.
+      - /path/to/source/movies:/mnt/src/movies:ro
+      - /path/to/source/shows:/mnt/src/shows:ro
+
+      # --- Destination sets (library roots) ---
+      # MUST reside on the same underlying device as the source sets above.
+      - /path/to/dest/movies:/mnt/dst/movies
+      - /path/to/dest/shows:/mnt/dst/shows
+
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PUID=1000   # set to your host user's UID (id -u)
+      - PGID=1000   # set to your host user's GID (id -g)
+
+    # Optional: resource limits
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 256m
+    #       cpus: "0.5"

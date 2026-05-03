@@ -1,14 +1,14 @@
-# Hardlink Organizer — Docker Compose example
+# Hardlink Organizer — Unraid Docker Compose
 # Run from the Hardlink Organizer root and adjust paths to match your Unraid setup.
-# Start: docker compose -f packaging/unraid/docker/docker-compose.yml up -d
+# Start: docker compose -f packaging/unraid/docker-compose.yml up -d
 
 version: "3.8"
 
 services:
   hardlink-organizer:
     build:
-      context: ../../..
-      dockerfile: packaging/unraid/docker/Dockerfile
+      context: ../..
+      dockerfile: packaging/docker/Dockerfile
     image: hardlink-organizer:0.3.0    # or ghcr.io/... when published
     container_name: hardlink-organizer
     restart: unless-stopped

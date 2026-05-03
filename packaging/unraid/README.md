@@ -152,14 +152,14 @@ port = 7700
 ### 3. Start the container
 
 ```bash
-docker compose -f packaging/unraid/docker/docker-compose.yml up -d
+docker compose -f packaging/unraid/docker-compose.yml up -d
 ```
 
 This compose file now builds the image from the Hardlink Organizer root automatically.
 If you prefer a manual build step, run:
 
 ```bash
-docker build -f packaging/unraid/docker/Dockerfile -t hardlink-organizer:0.3.0 .
+docker build -f packaging/docker/Dockerfile -t hardlink-organizer:0.3.0 .
 ```
 
 ### 4. Access the UI
@@ -198,8 +198,8 @@ docker exec -it hardlink-organizer \
 ## Upgrade procedure
 
 ```bash
-docker compose -f packaging/unraid/docker/docker-compose.yml build
-docker compose -f packaging/unraid/docker/docker-compose.yml up -d --force-recreate
+docker compose -f packaging/unraid/docker-compose.yml build
+docker compose -f packaging/unraid/docker-compose.yml up -d --force-recreate
 ```
 
 If a registry image is published later from GitHub Actions, `docker pull ghcr.io/<github-owner>/hardlink-organizer:<tag>` can replace the local build step.

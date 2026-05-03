@@ -1,7 +1,7 @@
 # Hardlink Organizer — Docker image
 # Minimal Python 3.11 base; all dependencies pinned via requirements.txt.
 # Build from the Hardlink Organizer root:
-#   docker build -f packaging/unraid/docker/Dockerfile -t hardlink-organizer:0.3.0 .
+#   docker build -f packaging/docker/Dockerfile -t hardlink-organizer:0.3.0 .
 # Run:
 #   docker run -p 7700:7700 -v /path/to/config:/config -e PUID=1000 -e PGID=1000 hardlink-organizer:0.3.0
 
@@ -43,7 +43,7 @@ EXPOSE 7700
 
 # entrypoint.sh runs as root, remaps hlo UID/GID to PUID/PGID, chowns the
 # writable mounts, then drops privilege via gosu before exec-ing the CMD.
-COPY packaging/unraid/docker/entrypoint.sh /entrypoint.sh
+COPY packaging/docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["python", "webapp/run.py", "--config", "/config/config.toml", "--host", "0.0.0.0", "--port", "7700"]

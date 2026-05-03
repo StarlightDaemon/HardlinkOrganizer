@@ -1,0 +1,37 @@
+# Hardlink Organizer — Portainer Stack
+# Deploy via Portainer: Stacks → Add stack → paste or upload this file.
+# Adjust volume paths to match your host filesystem before deploying.
+
+version: "3.8"
+
+services:
+  hardlink-organizer:
+    image: hardlink-organizer:0.3.0    # or ghcr.io/<github-owner>/hardlink-organizer:<tag>
+    container_name: hardlink-organizer
+    restart: unless-stopped
+    ports:
+      - "7700:7700"   # host_port:container_port — change host port if needed
+
+    volumes:
+      # --- Config file ---
+      # Edit config.toml before first start (copy from config.example.toml).
+      - /path/to/appdata/hardlink-organizer:/config
+
+      # --- State (SQLite DB + logs) ---
+      - /path/to/appdata/hardlink-organizer/data:/data
+
+      # --- Source sets ---
+      # Adjust paths to match your source directories.
+      # Add one entry per [source_sets] key in your config.toml.
+      - /path/to/source/movies:/mnt/src/movies:ro
+      - /path/to/source/shows:/mnt/src/shows:ro
+
+      # --- Destination sets ---
+      # Must reside on the same underlying device as source sets above.
+      - /path/to/dest/movies:/mnt/dst/movies
+      - /path/to/dest/shows:/mnt/dst/shows
+
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PUID=1000   # set to your host user's UID (id -u)
+      - PGID=1000   # set to your host user's GID (id -g)

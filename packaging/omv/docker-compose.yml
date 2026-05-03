@@ -1,0 +1,40 @@
+# Hardlink Organizer — OpenMediaVault Docker Compose
+# Run from the Hardlink Organizer root.
+# Adjust shared folder paths to match your OMV disk layout.
+# Start: docker compose -f packaging/omv/docker-compose.yml up -d
+
+version: "3.8"
+
+services:
+  hardlink-organizer:
+    build:
+      context: ../..
+      dockerfile: packaging/docker/Dockerfile
+    image: hardlink-organizer:0.3.0    # or ghcr.io/... when published
+    container_name: hardlink-organizer
+    restart: unless-stopped
+    ports:
+      - "7700:7700"   # host_port:container_port — change host port if needed
+
+    volumes:
+      # --- Config file ---
+      # Adjust UUID to match your OMV data disk.
+      - /srv/dev-disk-by-uuid-REPLACE_ME/appdata/hardlink-organizer:/config
+
+      # --- State (SQLite DB + logs) ---
+      - /srv/dev-disk-by-uuid-REPLACE_ME/appdata/hardlink-organizer/data:/data
+
+      # --- Source sets ---
+      # Replace UUID and folder names to match your OMV shared folders.
+      - /srv/dev-disk-by-uuid-REPLACE_ME/ingress/movies:/mnt/src/movies:ro
+      - /srv/dev-disk-by-uuid-REPLACE_ME/ingress/shows:/mnt/src/shows:ro
+
+      # --- Destination sets ---
+      # Must be on the same physical disk as source sets above.
+      - /srv/dev-disk-by-uuid-REPLACE_ME/library/movies:/mnt/dst/movies
+      - /srv/dev-disk-by-uuid-REPLACE_ME/library/shows:/mnt/dst/shows
+
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PUID=1000   # set to your OMV user's UID (id -u)
+      - PGID=1000   # set to your OMV user's GID (id -g)
