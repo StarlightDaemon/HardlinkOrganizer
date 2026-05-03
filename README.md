@@ -19,7 +19,7 @@ fully polished public release.
 | --- | --- |
 | Version | `0.3.0` |
 | Status | `verification foundation` |
-| Primary target | `local / Unraid-oriented testing` |
+| Primary target | `Docker — Unraid, TrueNAS, OMV, and generic Linux` |
 | Interface | hosted web UI with CLI fallback |
 | Safety stance | preview-first, source-safe, same-device validation |
 
@@ -89,10 +89,9 @@ python3 -m pytest ./tests/
 | `engine/` | core hardlink, DB, and verification logic |
 | `webapp/` | FastAPI app, templates, and static assets |
 | `tests/` | unit, integration, and route-harness coverage |
-| `packaging/unraid/` | Unraid and Docker packaging notes |
-| `agent-ledger/` | project continuity, decisions, and open loops |
-| `agent-prompts/` | active bounded prompts for agent execution |
-| `agent-prompts/legacy/` | older handoff and index docs kept for continuity |
+| `packaging/` | Docker and platform packaging (Unraid, TrueNAS, OMV, Portainer) |
+| `.raiden/state/` | project continuity, decisions, and open loops |
+| `.raiden/local/prompts/` | bounded prompts for agent execution |
 | `notes/` | planning, roadmap, and validation notes |
 | `notes/plans/` | older implementation and release plans that no longer need root placement |
 
@@ -100,13 +99,13 @@ python3 -m pytest ./tests/
 
 - Source files are meant to stay in place.
 - Preview-first behavior is the default expectation.
-- Unraid and Docker packaging notes still live under `packaging/unraid/`.
-- Deeper project planning and continuity docs live under `agent-ledger/` and `notes/`.
+- Docker and platform packaging notes live under `packaging/`.
+- Project planning and continuity docs live under `.raiden/state/` and `notes/`.
 
 ## More Detail
 
-- Packaging notes: `packaging/unraid/README.md`
-- Project state: `agent-ledger/CURRENT_STATE.md`
-- Open work: `agent-ledger/OPEN_LOOPS.md`
+- Packaging notes: `packaging/README.md`
+- Project state: `.raiden/state/CURRENT_STATE.md`
+- Open work: `.raiden/state/OPEN_LOOPS.md`
 - Planning notes: `notes/README.md`
-- Active prompts: `agent-prompts/README.md`
+- Active prompts: `.raiden/local/prompts/README.md`
