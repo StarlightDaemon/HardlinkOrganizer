@@ -1,8 +1,139 @@
 /* ============================================================
    Hardlink Organizer — Carbon G100 Overrides
-   ALL color values MUST use Carbon CSS custom properties.
-   NO hex, NO rgba() with literal values, NO hardcoded colors.
    ============================================================ */
+
+/* === Carbon G100 dark theme — verbatim @carbon/themes@11 ===
+   The CDN styles.min.css only ships the white-theme :root.
+   We stamp the G100 palette here so every var(--cds-*) call
+   resolves to dark values regardless of CDN bundle version.
+   =========================================================== */
+:root {
+  /* backgrounds */
+  --cds-background:                  #161616;
+  --cds-background-hover:            #282828;
+  --cds-background-active:           #525252;
+  --cds-background-selected:         #393939;
+  --cds-background-selected-hover:   #474747;
+  --cds-background-inverse:          #f4f4f4;
+  --cds-background-inverse-hover:    #e8e8e8;
+  --cds-background-brand:            #0f62fe;
+
+  /* layers */
+  --cds-layer-01:                    #262626;
+  --cds-layer-02:                    #393939;
+  --cds-layer-03:                    #525252;
+  --cds-layer-hover-01:              #333333;
+  --cds-layer-hover-02:              #474747;
+  --cds-layer-hover-03:              #636363;
+  --cds-layer-active-01:             #525252;
+  --cds-layer-active-02:             #6f6f6f;
+  --cds-layer-active-03:             #8d8d8d;
+  --cds-layer-selected-01:           #393939;
+  --cds-layer-selected-02:           #525252;
+  --cds-layer-selected-03:           #6f6f6f;
+  --cds-layer-selected-hover-01:     #474747;
+  --cds-layer-selected-hover-02:     #636363;
+  --cds-layer-selected-hover-03:     #7a7a7a;
+  --cds-layer-selected-inverse:      #f4f4f4;
+  --cds-layer-selected-disabled:     #525252;
+  --cds-layer-accent-01:             #393939;
+  --cds-layer-accent-02:             #525252;
+  --cds-layer-accent-03:             #6f6f6f;
+  --cds-layer-accent-hover-01:       #474747;
+  --cds-layer-accent-hover-02:       #636363;
+  --cds-layer-accent-hover-03:       #7a7a7a;
+  --cds-layer-accent-active-01:      #6f6f6f;
+  --cds-layer-accent-active-02:      #8d8d8d;
+  --cds-layer-accent-active-03:      #a8a8a8;
+
+  /* fields */
+  --cds-field-01:                    #262626;
+  --cds-field-02:                    #393939;
+  --cds-field-03:                    #525252;
+  --cds-field-hover-01:              #333333;
+  --cds-field-hover-02:              #474747;
+  --cds-field-hover-03:              #636363;
+
+  /* borders */
+  --cds-border-subtle:               #393939;
+  --cds-border-subtle-00:            #393939;
+  --cds-border-subtle-01:            #525252;
+  --cds-border-subtle-02:            #6f6f6f;
+  --cds-border-subtle-03:            #8d8d8d;
+  --cds-border-strong:               #6f6f6f;
+  --cds-border-strong-01:            #6f6f6f;
+  --cds-border-strong-02:            #8d8d8d;
+  --cds-border-strong-03:            #a8a8a8;
+  --cds-border-tile-01:              #525252;
+  --cds-border-tile-02:              #6f6f6f;
+  --cds-border-tile-03:              #8d8d8d;
+  --cds-border-interactive:          #4589ff;
+  --cds-border-disabled:             #525252;
+
+  /* text */
+  --cds-text-primary:                #f4f4f4;
+  --cds-text-secondary:              #c6c6c6;
+  --cds-text-placeholder:            #6f6f6f;
+  --cds-text-helper:                 #8d8d8d;
+  --cds-text-error:                  #ff8389;
+  --cds-text-inverse:                #161616;
+  --cds-text-on-color:               #ffffff;
+  --cds-text-on-color-disabled:      #525252;
+  --cds-text-disabled:               #525252;
+
+  /* links */
+  --cds-link-primary:                #78a9ff;
+  --cds-link-primary-hover:          #a6c8ff;
+  --cds-link-secondary:              #a6c8ff;
+  --cds-link-inverse:                #0f62fe;
+  --cds-link-visited:                #be95ff;
+  --cds-link-inverse-visited:        #8a3ffc;
+
+  /* icons */
+  --cds-icon-primary:                #f4f4f4;
+  --cds-icon-secondary:              #c6c6c6;
+  --cds-icon-inverse:                #161616;
+  --cds-icon-on-color:               #ffffff;
+  --cds-icon-on-color-disabled:      #8d8d8d;
+  --cds-icon-interactive:            #ffffff;
+  --cds-icon-disabled:               #525252;
+
+  /* support */
+  --cds-support-error:               #ff8389;
+  --cds-support-warning:             #f1c21b;
+  --cds-support-success:             #42be65;
+  --cds-support-info:                #4589ff;
+  --cds-support-error-inverse:       #da1e28;
+  --cds-support-warning-inverse:     #f1c21b;
+  --cds-support-success-inverse:     #24a148;
+  --cds-support-info-inverse:        #0043ce;
+  --cds-support-caution-minor:       #f1c21b;
+  --cds-support-caution-major:       #ff832b;
+  --cds-support-caution-undefined:   #a56eff;
+
+  /* interactive / focus / misc */
+  --cds-interactive:                 #4589ff;
+  --cds-highlight:                   #002d9c;
+  --cds-toggle-off:                  #6f6f6f;
+  --cds-overlay:                     #000000a6;
+  --cds-shadow:                      #000000cc;
+  --cds-focus:                       #ffffff;
+  --cds-focus-inset:                 #161616;
+  --cds-focus-inverse:               #0f62fe;
+
+  /* skeleton */
+  --cds-skeleton-background:         #353535;
+  --cds-skeleton-element:            #525252;
+
+  /* button tokens the white theme sets differently */
+  --cds-button-primary:              #0f62fe;
+  --cds-button-secondary:            #6f6f6f;
+  --cds-button-tertiary:             #ffffff;
+  --cds-button-danger-primary:       #da1e28;
+  --cds-button-danger-secondary:     #ff8389;
+  --cds-button-disabled:             #393939;
+  --cds-button-separator:            #161616;
+}
 
 /* --- Fonts ------------------------------------------------- */
 body,
@@ -63,18 +194,94 @@ select {
   white-space: nowrap;
 }
 
+/* --- Rounded corners (Carbon uses 0; we add soft radius) --- */
+/* Tiles */
+.cds--tile {
+  border-radius: 8px;
+}
+/* Hero tiles are bigger so get a larger radius */
+.hlo-hero-tile,
+.hlo-facts-tile {
+  border-radius: 12px;
+}
+/* Workflow cards */
+.hlo-source-card,
+.hlo-dest-card {
+  border-radius: 10px;
+}
+/* Flow step boxes */
+.hlo-hero-flow-item {
+  border-radius: 6px;
+}
+/* Entry rows in browse / verify lists */
+.hlo-entry-row {
+  border-radius: 4px;
+}
+/* Preview and result cards */
+.hlo-preview-wrap,
+.hlo-result-card,
+.hlo-subpath-block,
+.hlo-dry-run-block {
+  border-radius: 6px;
+}
+/* Inline notifications */
+.cds--inline-notification {
+  border-radius: 6px;
+}
+/* Toast notifications */
+.cds--toast-notification {
+  border-radius: 8px;
+}
+
+/* --- Page background (forces G100 tokens onto body) -------- */
+html,
+body {
+  background: var(--cds-background);
+  color: var(--cds-text-primary);
+}
+
 /* --- Page content wrapper ---------------------------------- */
 .hlo-page-content {
   padding: 0;
+  background: var(--cds-background);
 }
 
 /* --- Hero section ------------------------------------------ */
 .hlo-hero-section {
+  background: var(--cds-layer-01);
   border-bottom: 1px solid var(--cds-border-subtle);
 }
 
+.hlo-hero-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--cds-spacing-07);
+  padding: var(--cds-spacing-10) var(--cds-spacing-08);
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.hlo-hero-main {
+  flex: 1 1 0;
+  min-width: min(100%, 32rem);
+}
+
+.hlo-hero-facts {
+  flex: 0 0 clamp(16rem, 26%, 22rem);
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 1056px) {
+  .hlo-hero-row   { padding: var(--cds-spacing-08) var(--cds-spacing-06); }
+  .hlo-hero-facts { flex: 1 1 100%; }
+}
+
 .hlo-hero-tile {
-  padding: var(--cds-spacing-07);
+  padding: var(--cds-spacing-08);
   height: 100%;
 }
 
@@ -88,19 +295,19 @@ select {
 }
 
 .hlo-hero-title {
-  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+  font-size: clamp(1.75rem, 2.8vw, 2.5rem);
   font-weight: 600;
   line-height: 1.15;
   color: var(--cds-text-primary);
-  margin-top: var(--cds-spacing-03);
+  margin-top: var(--cds-spacing-04);
   margin-bottom: 0;
 }
 
 .hlo-hero-flow {
-  margin-top: var(--cds-spacing-06);
+  margin-top: var(--cds-spacing-07);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--cds-spacing-04);
+  gap: var(--cds-spacing-05);
 }
 
 @media (max-width: 600px) {
@@ -110,9 +317,9 @@ select {
 .hlo-hero-flow-item {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: var(--cds-spacing-04);
+  gap: var(--cds-spacing-05);
   align-items: start;
-  padding: var(--cds-spacing-04);
+  padding: var(--cds-spacing-06);
   border: 1px solid var(--cds-border-subtle);
   background: var(--cds-layer-02);
 }
@@ -153,7 +360,7 @@ select {
 
 .hlo-facts-tile {
   flex: 1;
-  padding: var(--cds-spacing-06);
+  padding: var(--cds-spacing-08);
   height: 100%;
 }
 
@@ -172,11 +379,13 @@ select {
 .hlo-stepbar-wrap {
   background: var(--cds-layer-01);
   border-bottom: 1px solid var(--cds-border-subtle);
-  padding: var(--cds-spacing-05) 0;
+  padding: var(--cds-spacing-07) 0;
 }
 
 .cds--progress {
-  padding: 0 var(--cds-spacing-05);
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--cds-spacing-08);
 }
 
 /* Done steps: cursor pointer to navigate back */
@@ -186,24 +395,34 @@ select {
 
 /* --- Layout grid ------------------------------------------- */
 .hlo-layout-grid {
-  flex: 1;
+  background: var(--cds-background);
 }
 
 .hlo-layout-row {
-  min-height: calc(100vh - 12rem);
+  display: flex;
+  flex-wrap: nowrap;
   align-items: stretch;
+  min-height: calc(100vh - 14rem);
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 /* --- Main panel -------------------------------------------- */
 .hlo-main-panel {
-  padding: var(--cds-spacing-07) var(--cds-spacing-08);
+  flex: 1;
+  min-width: 0;
+  padding: var(--cds-spacing-09) var(--cds-spacing-09);
   border-right: 1px solid var(--cds-border-subtle);
   overflow-y: auto;
+  background: var(--cds-background);
 }
 
 @media (max-width: 1056px) {
+  .hlo-layout-row { flex-direction: column; flex-wrap: wrap; }
   .hlo-main-panel {
-    padding: var(--cds-spacing-05) var(--cds-spacing-05);
+    flex: 1 1 100%;
+    padding: var(--cds-spacing-07) var(--cds-spacing-06);
     border-right: none;
     border-bottom: 1px solid var(--cds-border-subtle);
   }
@@ -211,6 +430,8 @@ select {
 
 /* --- History panel ----------------------------------------- */
 .hlo-history-panel {
+  flex: 0 0 clamp(20rem, 24%, 28rem);
+  min-width: 0;
   display: flex;
   flex-direction: column;
   background: var(--cds-layer-01);
@@ -222,7 +443,7 @@ select {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--cds-spacing-04) var(--cds-spacing-05);
+  padding: var(--cds-spacing-05) var(--cds-spacing-06);
   border-bottom: 1px solid var(--cds-border-subtle);
   background: var(--cds-layer-01);
   position: sticky;
@@ -252,7 +473,7 @@ select {
 
 /* History entries as structured-list-like rows */
 .hlo-history-entry {
-  padding: var(--cds-spacing-04) var(--cds-spacing-05);
+  padding: var(--cds-spacing-05) var(--cds-spacing-06);
   border-bottom: 1px solid var(--cds-border-subtle-00);
   transition: background 100ms ease;
 }
@@ -283,28 +504,29 @@ select {
 
 /* --- Panel heading ----------------------------------------- */
 .hlo-panel-heading {
-  margin-bottom: var(--cds-spacing-06);
+  margin-bottom: var(--cds-spacing-07);
 }
 
 .hlo-panel-heading h1 {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: var(--cds-text-primary);
   margin: 0;
 }
 
 .hlo-panel-heading p {
-  margin-top: var(--cds-spacing-02);
-  font-size: 0.875rem;
+  margin-top: var(--cds-spacing-03);
+  font-size: 0.9375rem;
   color: var(--cds-text-secondary);
+  line-height: 1.5;
 }
 
 /* --- Source/Dest card grid --------------------------------- */
 .hlo-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--cds-spacing-04);
-  margin-top: var(--cds-spacing-04);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--cds-spacing-06);
+  margin-top: var(--cds-spacing-06);
 }
 
 @media (max-width: 600px) {
@@ -316,7 +538,7 @@ select {
 .hlo-dest-card {
   display: flex;
   flex-direction: column;
-  padding: var(--cds-spacing-05);
+  padding: var(--cds-spacing-07);
   text-align: left;
   width: 100%;
   height: 100%;
@@ -330,35 +552,36 @@ select {
 }
 
 .hlo-card-icon {
-  font-size: 1.5rem;
-  margin-bottom: var(--cds-spacing-03);
+  font-size: 2rem;
+  margin-bottom: var(--cds-spacing-05);
   line-height: 1;
 }
 
 .hlo-card-name {
-  font-size: 0.9375rem;
+  font-size: 1.0625rem;
   font-weight: 600;
   color: var(--cds-text-primary);
 }
 
 .hlo-card-path {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-family: 'IBM Plex Mono', monospace;
   color: var(--cds-text-helper);
-  margin-top: var(--cds-spacing-02);
+  margin-top: var(--cds-spacing-03);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .hlo-card-meta {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: var(--cds-text-secondary);
-  margin-top: var(--cds-spacing-04);
+  margin-top: var(--cds-spacing-05);
+  line-height: 1.5;
 }
 
 .hlo-card-actions {
-  margin-top: var(--cds-spacing-04);
+  margin-top: var(--cds-spacing-06);
   display: flex;
   gap: var(--cds-spacing-03);
 }
@@ -770,9 +993,11 @@ button:focus-visible {
 
 /* --- Responsive ------------------------------------------- */
 @media (max-width: 1056px) {
-  .hlo-layout-row { flex-direction: column; }
-  .hlo-history-panel { max-height: 20rem; border-top: 1px solid var(--cds-border-subtle); }
-  .hlo-facts-col { margin-top: var(--cds-spacing-04); }
+  .hlo-history-panel {
+    flex: 1 1 100%;
+    max-height: 20rem;
+    border-top: 1px solid var(--cds-border-subtle);
+  }
 }
 
 @media (max-width: 672px) {
