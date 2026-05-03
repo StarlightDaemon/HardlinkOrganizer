@@ -199,3 +199,64 @@ class VerificationRunResponse(BaseModel):
     error_count: int
     notes: str | None = None
     results: list[VerificationResultItem]
+
+
+# ---------------------------------------------------------------------------
+# Destination registry
+# ---------------------------------------------------------------------------
+
+class DestinationCreate(BaseModel):
+    label: str
+    path: str
+    tag: Optional[str] = None
+    enabled: bool = True
+    notes: Optional[str] = None
+
+
+class DestinationUpdate(BaseModel):
+    label: Optional[str] = None
+    path: Optional[str] = None
+    tag: Optional[str] = None
+    enabled: Optional[bool] = None
+    notes: Optional[str] = None
+
+
+class DestinationEntry(BaseModel):
+    id: int
+    label: str
+    path: str
+    tag: Optional[str] = None
+    enabled: bool
+    notes: Optional[str] = None
+    created_at: str
+    updated_at: str
+
+
+class DestinationListResponse(BaseModel):
+    destinations: list[DestinationEntry]
+    total: int
+
+
+class DestinationValidateRequest(BaseModel):
+    path: str
+
+
+class DestinationValidateChecks(BaseModel):
+    exists: bool
+    is_directory: bool
+    is_writable: Optional[bool] = None
+    is_unsafe_root: bool
+
+
+class DestinationValidateWarning(BaseModel):
+    code: str
+    severity: str
+    message: str
+
+
+class DestinationValidateResponse(BaseModel):
+    path: str
+    valid: bool
+    checks: DestinationValidateChecks
+    warnings: list[DestinationValidateWarning] = Field(default_factory=list)
+    errors: list[str] = Field(default_factory=list)

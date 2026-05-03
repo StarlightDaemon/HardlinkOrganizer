@@ -373,6 +373,103 @@ class TestVerificationDB(unittest.TestCase):
         self.assertEqual(r["notes"], "different inode")
 
 
+class TestDestinationDB(unittest.TestCase):
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.db = Database(str(Path(self.tmp.name) / "test.db"))
+
+    def tearDown(self):
+        self.db.close()
+        self.tmp.cleanup()
+
+    def _add(self, label="Movies Dest", path="/dest/movies", **kwargs) -> int:
+        now = "2026-01-01T00:00:00Z"
+        return self.db.add_destination(
+            label=label,
+            path=path,
+            tag=kwargs.get("tag"),
+            enabled=kwargs.get("enabled", True),
+            notes=kwargs.get("notes"),
+            created_at=now,
+            updated_at=now,
+        )
+
+    def test_schema_creates_destinations_table(self):
+        conn = self.db._conn()
+        tables = {
+            r[0] for r in conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            ).fetchall()
+        }
+        self.assertIn("destinations", tables)
+
+    def test_add_destination_returns_id(self):
+        dest_id = self._add()
+        self.assertIsInstance(dest_id, int)
+        self.assertGreater(dest_id, 0)
+
+    def test_list_destinations_empty(self):
+        self.assertEqual(self.db.list_destinations(), [])
+
+    def test_list_destinations_returns_all(self):
+        self._add(label="Movies", path="/dest/movies")
+        self._add(label="Shows", path="/dest/shows")
+        rows = self.db.list_destinations()
+        self.assertEqual(len(rows), 2)
+
+    def test_get_destination_returns_row(self):
+        dest_id = self._add(label="Movies", path="/dest/movies", tag="media", notes="main")
+        row = self.db.get_destination(dest_id)
+        self.assertIsNotNone(row)
+        self.assertEqual(row["label"], "Movies")
+        self.assertEqual(row["path"], "/dest/movies")
+        self.assertEqual(row["tag"], "media")
+        self.assertEqual(row["notes"], "main")
+        self.assertEqual(row["enabled"], 1)
+
+    def test_get_destination_not_found(self):
+        self.assertIsNone(self.db.get_destination(999999))
+
+    def test_update_destination_label(self):
+        dest_id = self._add(label="Old Label")
+        updated = self.db.update_destination(dest_id, label="New Label", updated_at="2026-02-01T00:00:00Z")
+        self.assertTrue(updated)
+        row = self.db.get_destination(dest_id)
+        self.assertEqual(row["label"], "New Label")
+
+    def test_update_destination_enabled_false(self):
+        dest_id = self._add(enabled=True)
+        self.db.update_destination(dest_id, enabled=False, updated_at="2026-02-01T00:00:00Z")
+        row = self.db.get_destination(dest_id)
+        self.assertEqual(row["enabled"], 0)
+
+    def test_update_destination_not_found_returns_false(self):
+        result = self.db.update_destination(999999, label="X", updated_at="2026-01-01T00:00:00Z")
+        self.assertFalse(result)
+
+    def test_delete_destination_removes_row(self):
+        dest_id = self._add()
+        deleted = self.db.delete_destination(dest_id)
+        self.assertTrue(deleted)
+        self.assertIsNone(self.db.get_destination(dest_id))
+
+    def test_delete_destination_not_found_returns_false(self):
+        self.assertFalse(self.db.delete_destination(999999))
+
+    def test_path_unique_constraint(self):
+        self._add(path="/dest/movies")
+        with self.assertRaises(Exception):
+            self._add(path="/dest/movies")
+
+    def test_list_destinations_ordered_by_id(self):
+        id1 = self._add(label="A", path="/dest/a")
+        id2 = self._add(label="B", path="/dest/b")
+        rows = self.db.list_destinations()
+        self.assertEqual(rows[0]["id"], id1)
+        self.assertEqual(rows[1]["id"], id2)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
 

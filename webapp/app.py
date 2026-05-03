@@ -7,6 +7,7 @@ config and database instances.
 """
 from __future__ import annotations
 
+import os
 import sys
 import time
 from pathlib import Path
@@ -36,6 +37,7 @@ from engine import (
     ScanError,
     ConfigError,
 )
+from hardlink_organizer import _classify_mount_layout_path
 from engine.db import Database
 from engine.verification import run_verification_for_link_history
 from webapp.models import (
@@ -55,10 +57,93 @@ from webapp.models import (
     VerifyRequest,
     VerificationResultItem,
     VerificationRunResponse,
+    DestinationCreate,
+    DestinationUpdate,
+    DestinationEntry,
+    DestinationListResponse,
+    DestinationValidateRequest,
+    DestinationValidateChecks,
+    DestinationValidateWarning,
+    DestinationValidateResponse,
 )
 
 _TEMPLATES_DIR = Path(__file__).parent / "templates"
 _STATIC_DIR = Path(__file__).parent / "static"
+
+# Paths that must never be accepted as a managed destination.
+_UNSAFE_DEST_ROOTS = frozenset({
+    "/",
+    "/bin", "/boot", "/config", "/data", "/dev",
+    "/etc", "/lib", "/lib64", "/proc", "/root",
+    "/run", "/sbin", "/sys", "/usr", "/var",
+})
+
+
+def _validate_dest_path(path: str) -> DestinationValidateResponse:
+    """Run safety checks on a candidate destination path and return structured results."""
+    normalized = os.path.normpath(path)
+
+    exists = os.path.exists(normalized)
+    is_directory = os.path.isdir(normalized) if exists else False
+    is_writable: bool | None = os.access(normalized, os.W_OK) if exists else None
+    is_unsafe_root = normalized in _UNSAFE_DEST_ROOTS
+
+    errors: list[str] = []
+    warnings: list[DestinationValidateWarning] = []
+
+    if not exists:
+        errors.append(f"Path does not exist: {normalized!r}")
+    elif not is_directory:
+        errors.append(f"Path is not a directory: {normalized!r}")
+
+    if is_unsafe_root:
+        errors.append(
+            f"Path {normalized!r} is a system or reserved root and cannot be used as a destination."
+        )
+
+    if exists and is_directory and is_writable is False:
+        warnings.append(DestinationValidateWarning(
+            code="not_writable",
+            severity="warn",
+            message=f"Path {normalized!r} is not writable by the current process.",
+        ))
+
+    path_kind = _classify_mount_layout_path(normalized)
+    if path_kind == "user_share":
+        warnings.append(DestinationValidateWarning(
+            code="unraid_user_share",
+            severity="warn",
+            message=(
+                "This path is under /mnt/user, which is Unraid's share-style virtual mount. "
+                "Hardlinks to this destination may still fail with EXDEV at execution time even "
+                "when preview passes. Prefer a disk-level mount such as /mnt/disk3/..."
+            ),
+        ))
+    elif path_kind == "mergerfs_pool":
+        warnings.append(DestinationValidateWarning(
+            code="mergerfs_pool_path",
+            severity="warn",
+            message=(
+                "This path is under a MergerFS pool mount (/srv/mergerfs/). Like Unraid's "
+                "/mnt/user, pool mounts can hide the underlying device layout and cause EXDEV "
+                "failures. Prefer a direct disk path for reliable hardlinks."
+            ),
+        ))
+
+    valid = exists and is_directory and not is_unsafe_root
+
+    return DestinationValidateResponse(
+        path=normalized,
+        valid=valid,
+        checks=DestinationValidateChecks(
+            exists=exists,
+            is_directory=is_directory,
+            is_writable=is_writable,
+            is_unsafe_root=is_unsafe_root,
+        ),
+        warnings=warnings,
+        errors=errors,
+    )
 
 
 def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
@@ -552,5 +637,93 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
             headers={"Content-Disposition": f'attachment; filename="verification_run_{run_id}.csv"'},
             media_type="text/csv",
         )
+
+    # -----------------------------------------------------------------------
+    # Destination registry
+    # -----------------------------------------------------------------------
+
+    @app.get("/api/destinations", response_model=DestinationListResponse)
+    async def list_destinations(request: Request):
+        d: Database = request.app.state.db
+        rows = d.list_destinations()
+        destinations = [
+            DestinationEntry(
+                id=r["id"],
+                label=r["label"],
+                path=r["path"],
+                tag=r.get("tag"),
+                enabled=bool(r["enabled"]),
+                notes=r.get("notes"),
+                created_at=r["created_at"],
+                updated_at=r["updated_at"],
+            )
+            for r in rows
+        ]
+        return DestinationListResponse(destinations=destinations, total=len(destinations))
+
+    @app.post("/api/destinations/validate", response_model=DestinationValidateResponse)
+    async def validate_destination(request: Request, body: DestinationValidateRequest):
+        return _validate_dest_path(body.path)
+
+    @app.post("/api/destinations", response_model=DestinationEntry, status_code=201)
+    async def create_destination(request: Request, body: DestinationCreate):
+        d: Database = request.app.state.db
+        now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        try:
+            dest_id = d.add_destination(
+                label=body.label,
+                path=body.path,
+                tag=body.tag,
+                enabled=body.enabled,
+                notes=body.notes,
+                created_at=now,
+                updated_at=now,
+            )
+        except Exception as exc:
+            if "UNIQUE constraint failed" in str(exc):
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"A destination with path {body.path!r} already exists.",
+                )
+            raise
+        row = d.get_destination(dest_id)
+        return DestinationEntry(
+            id=row["id"],
+            label=row["label"],
+            path=row["path"],
+            tag=row.get("tag"),
+            enabled=bool(row["enabled"]),
+            notes=row.get("notes"),
+            created_at=row["created_at"],
+            updated_at=row["updated_at"],
+        )
+
+    @app.patch("/api/destinations/{dest_id}", response_model=DestinationEntry)
+    async def update_destination(request: Request, dest_id: int, body: DestinationUpdate):
+        d: Database = request.app.state.db
+        now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        patch: dict = {k: v for k, v in body.model_dump().items() if v is not None}
+        patch["updated_at"] = now
+        updated = d.update_destination(dest_id, **patch)
+        if not updated:
+            raise HTTPException(status_code=404, detail=f"Destination {dest_id} not found.")
+        row = d.get_destination(dest_id)
+        return DestinationEntry(
+            id=row["id"],
+            label=row["label"],
+            path=row["path"],
+            tag=row.get("tag"),
+            enabled=bool(row["enabled"]),
+            notes=row.get("notes"),
+            created_at=row["created_at"],
+            updated_at=row["updated_at"],
+        )
+
+    @app.delete("/api/destinations/{dest_id}", status_code=204)
+    async def delete_destination(request: Request, dest_id: int):
+        d: Database = request.app.state.db
+        deleted = d.delete_destination(dest_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail=f"Destination {dest_id} not found.")
 
     return app

@@ -85,6 +85,17 @@ CREATE TABLE IF NOT EXISTS verification_results (
     status           TEXT    NOT NULL,
     notes            TEXT
 );
+
+CREATE TABLE IF NOT EXISTS destinations (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    label      TEXT    NOT NULL,
+    path       TEXT    NOT NULL UNIQUE,
+    tag        TEXT,
+    enabled    INTEGER NOT NULL DEFAULT 1,
+    notes      TEXT,
+    created_at TEXT    NOT NULL,
+    updated_at TEXT    NOT NULL
+);
 """
 
 
@@ -410,3 +421,71 @@ class Database:
         run = dict(run_row)
         run["results"] = [dict(r) for r in result_rows]
         return run
+
+    # ------------------------------------------------------------------
+    # Destination registry
+    # ------------------------------------------------------------------
+
+    def add_destination(
+        self,
+        label: str,
+        path: str,
+        tag: str | None,
+        enabled: bool,
+        notes: str | None,
+        created_at: str,
+        updated_at: str,
+    ) -> int:
+        """Insert a managed destination and return its id."""
+        with self._lock:
+            conn = self._conn()
+            cur = conn.execute(
+                """INSERT INTO destinations
+                   (label, path, tag, enabled, notes, created_at, updated_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (label, path, tag, int(enabled), notes, created_at, updated_at),
+            )
+            conn.commit()
+            return cur.lastrowid
+
+    def list_destinations(self) -> list[dict]:
+        """Return all managed destinations ordered by id."""
+        with self._lock:
+            rows = self._conn().execute(
+                "SELECT * FROM destinations ORDER BY id"
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+    def get_destination(self, dest_id: int) -> dict | None:
+        """Return a single destination row by id, or None if not found."""
+        with self._lock:
+            row = self._conn().execute(
+                "SELECT * FROM destinations WHERE id = ?", (dest_id,)
+            ).fetchone()
+        return dict(row) if row else None
+
+    def update_destination(self, dest_id: int, **fields) -> bool:
+        """Patch one or more fields on a destination row. Returns True if a row was updated."""
+        _allowed = {"label", "path", "tag", "enabled", "notes", "updated_at"}
+        updates: dict = {k: v for k, v in fields.items() if k in _allowed}
+        if "enabled" in updates:
+            updates["enabled"] = int(updates["enabled"])
+        if not updates:
+            return False
+        cols = ", ".join(f"{k} = ?" for k in updates)
+        vals = list(updates.values()) + [dest_id]
+        with self._lock:
+            conn = self._conn()
+            cur = conn.execute(
+                f"UPDATE destinations SET {cols} WHERE id = ?", vals
+            )
+            conn.commit()
+        return cur.rowcount > 0
+
+    def delete_destination(self, dest_id: int) -> bool:
+        """Delete a destination row. Returns True if a row was deleted."""
+        with self._lock:
+            conn = self._conn()
+            cur = conn.execute("DELETE FROM destinations WHERE id = ?", (dest_id,))
+            conn.commit()
+        return cur.rowcount > 0

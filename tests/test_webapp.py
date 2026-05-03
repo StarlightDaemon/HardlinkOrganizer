@@ -79,6 +79,12 @@ class _RouteHarnessClient:
     def post(self, url: str, json: dict | None = None):
         return self._request("POST", url, json_body=json)
 
+    def patch(self, url: str, json: dict | None = None):
+        return self._request("PATCH", url, json_body=json)
+
+    def delete(self, url: str):
+        return self._request("DELETE", url)
+
     def _request(self, method: str, url: str, json_body: dict | None = None):
         split = urlsplit(url)
         path = split.path
@@ -159,9 +165,14 @@ class _RouteHarnessClient:
             body = result.body
             return _TestResponse(result.status_code, dict(result.headers), body)
 
+        if result is None:
+            status_code = getattr(target, "status_code", 204)
+            return _TestResponse(status_code, {}, "")
+
         payload = jsonable_encoder(result)
+        route_status = getattr(target, "status_code", None) or 200
         return _TestResponse(
-            200,
+            route_status,
             {"content-type": "application/json"},
             json.dumps(payload),
         )
@@ -685,6 +696,183 @@ class TestVerifyAPI(unittest.TestCase):
     def test_get_verify_export_csv_unknown_returns_404(self):
         res = self.client.get("/api/verify/999999/export.csv")
         self.assertEqual(res.status_code, 404)
+
+
+class TestDestinationAPI(unittest.TestCase):
+    """Tests for the destination registry API routes."""
+
+    @classmethod
+    def setUpClass(cls):
+        try:
+            from engine.db import Database
+            from webapp.app import create_app
+            cls._skip = False
+            cls._Database = Database
+            cls._create_app = staticmethod(create_app)
+        except ImportError as exc:
+            cls._skip = True
+            cls._skip_reason = str(exc)
+
+    def setUp(self):
+        if self._skip:
+            self.skipTest(f"Skipping destination tests — missing dependency: {self._skip_reason}")
+
+        self.tmp = tempfile.TemporaryDirectory()
+        root = Path(self.tmp.name)
+        src_root = str(root / "src")
+        dst_root = str(root / "dst")
+        Path(src_root).mkdir()
+        Path(dst_root).mkdir()
+        db_path = str(root / "test.db")
+        cfg = _make_cfg(src_root, dst_root, db_path)
+        self.db = self._Database(db_path)
+        self.dst_root = dst_root
+        app = self._create_app(cfg, self.db, "test-config.toml")
+        self.client = _RouteHarnessClient(app)
+
+    def tearDown(self):
+        if hasattr(self, "db") and self.db:
+            self.db.close()
+        self.tmp.cleanup()
+
+    # -----------------------------------------------------------------------
+    # List
+    # -----------------------------------------------------------------------
+
+    def test_list_destinations_empty(self):
+        res = self.client.get("/api/destinations")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["destinations"], [])
+        self.assertEqual(data["total"], 0)
+
+    # -----------------------------------------------------------------------
+    # Create
+    # -----------------------------------------------------------------------
+
+    def test_create_destination_returns_201(self):
+        res = self.client.post("/api/destinations", json={
+            "label": "My Movies",
+            "path": self.dst_root,
+        })
+        self.assertEqual(res.status_code, 201)
+        data = res.json()
+        self.assertIn("id", data)
+        self.assertEqual(data["label"], "My Movies")
+        self.assertEqual(data["path"], self.dst_root)
+        self.assertTrue(data["enabled"])
+
+    def test_create_destination_appears_in_list(self):
+        self.client.post("/api/destinations", json={"label": "Movies", "path": self.dst_root})
+        res = self.client.get("/api/destinations")
+        data = res.json()
+        self.assertEqual(data["total"], 1)
+        self.assertEqual(data["destinations"][0]["label"], "Movies")
+
+    def test_create_duplicate_path_returns_409(self):
+        self.client.post("/api/destinations", json={"label": "A", "path": self.dst_root})
+        res = self.client.post("/api/destinations", json={"label": "B", "path": self.dst_root})
+        self.assertEqual(res.status_code, 409)
+
+    def test_create_destination_with_tag_and_notes(self):
+        res = self.client.post("/api/destinations", json={
+            "label": "Docs",
+            "path": self.dst_root,
+            "tag": "media",
+            "notes": "primary media share",
+        })
+        data = res.json()
+        self.assertEqual(data["tag"], "media")
+        self.assertEqual(data["notes"], "primary media share")
+
+    # -----------------------------------------------------------------------
+    # Patch
+    # -----------------------------------------------------------------------
+
+    def test_patch_destination_label(self):
+        res = self.client.post("/api/destinations", json={"label": "Old", "path": self.dst_root})
+        dest_id = res.json()["id"]
+        res2 = self.client.patch(f"/api/destinations/{dest_id}", json={"label": "New"})
+        self.assertEqual(res2.status_code, 200)
+        self.assertEqual(res2.json()["label"], "New")
+
+    def test_patch_destination_enabled_false(self):
+        res = self.client.post("/api/destinations", json={"label": "D", "path": self.dst_root})
+        dest_id = res.json()["id"]
+        res2 = self.client.patch(f"/api/destinations/{dest_id}", json={"enabled": False})
+        self.assertEqual(res2.status_code, 200)
+        self.assertFalse(res2.json()["enabled"])
+
+    def test_patch_destination_not_found_returns_404(self):
+        res = self.client.patch("/api/destinations/999999", json={"label": "X"})
+        self.assertEqual(res.status_code, 404)
+
+    # -----------------------------------------------------------------------
+    # Delete
+    # -----------------------------------------------------------------------
+
+    def test_delete_destination_returns_204(self):
+        res = self.client.post("/api/destinations", json={"label": "D", "path": self.dst_root})
+        dest_id = res.json()["id"]
+        res2 = self.client.delete(f"/api/destinations/{dest_id}")
+        self.assertEqual(res2.status_code, 204)
+
+    def test_delete_destination_removes_from_list(self):
+        res = self.client.post("/api/destinations", json={"label": "D", "path": self.dst_root})
+        dest_id = res.json()["id"]
+        self.client.delete(f"/api/destinations/{dest_id}")
+        res2 = self.client.get("/api/destinations")
+        self.assertEqual(res2.json()["total"], 0)
+
+    def test_delete_destination_not_found_returns_404(self):
+        res = self.client.delete("/api/destinations/999999")
+        self.assertEqual(res.status_code, 404)
+
+    # -----------------------------------------------------------------------
+    # Validate
+    # -----------------------------------------------------------------------
+
+    def test_validate_existing_directory_is_valid(self):
+        res = self.client.post("/api/destinations/validate", json={"path": self.dst_root})
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data["valid"])
+        self.assertTrue(data["checks"]["exists"])
+        self.assertTrue(data["checks"]["is_directory"])
+        self.assertFalse(data["checks"]["is_unsafe_root"])
+
+    def test_validate_nonexistent_path_is_invalid(self):
+        res = self.client.post("/api/destinations/validate", json={"path": "/no/such/path/xyz"})
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertFalse(data["valid"])
+        self.assertFalse(data["checks"]["exists"])
+        self.assertGreater(len(data["errors"]), 0)
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "POSIX path test")
+    def test_validate_unsafe_root_is_invalid(self):
+        res = self.client.post("/api/destinations/validate", json={"path": "/"})
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertFalse(data["valid"])
+        self.assertTrue(data["checks"]["is_unsafe_root"])
+        self.assertGreater(len(data["errors"]), 0)
+
+    def test_validate_response_has_checks_and_warnings_fields(self):
+        res = self.client.post("/api/destinations/validate", json={"path": self.dst_root})
+        data = res.json()
+        self.assertIn("checks", data)
+        self.assertIn("warnings", data)
+        self.assertIn("errors", data)
+        self.assertIn("valid", data)
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "POSIX path test")
+    def test_validate_unraid_user_share_warns(self):
+        res = self.client.post("/api/destinations/validate", json={"path": "/mnt/user/Movies"})
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        codes = [w["code"] for w in data["warnings"]]
+        self.assertIn("unraid_user_share", codes)
 
 
 if __name__ == "__main__":
