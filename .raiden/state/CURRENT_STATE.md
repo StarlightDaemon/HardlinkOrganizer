@@ -10,7 +10,7 @@
 - Confirmed: packaging is now Docker-first and multi-platform. `packaging/docker/` holds the canonical Dockerfile and entrypoint. Per-platform directories exist for Unraid, TrueNAS, OMV, and Portainer.
 - Confirmed: mount-layout warnings now cover MergerFS/OMV (`mergerfs_pool_path` warning code) alongside the existing Unraid patterns. The `separate_mount_points` condition is platform-neutral. All 5 mount-layout tests pass.
 - Confirmed: `README.md` framing updated to Docker-first multi-platform; all stale `agent-ledger/` and `agent-prompts/` path references replaced with `.raiden/state/` and `.raiden/local/prompts/`.
-- Confirmed: the next bounded `LOOP-010` slice is destination registry and validation backend, with destination-management UI and naming work still pending after that.
+- Confirmed: the LOOP-010 destination registry and validation backend is complete. The `destinations` table, all five API routes, and full test coverage are merged. The destination-management UI and naming work remain as the next slice after this.
 - Confirmed: RAIDEN Instance installed 2026-05-03; governance migration complete; LEGACY_REVIEW.md shows all three legacy artifacts resolved.
 - Confirmed: planning can generally assume access to these model families in this workspace context: `Gemini 3.1 Pro (high)`, `Gemini 3.1 Pro (low)`, `Gemini 3 Flash`, `Claude Sonnet 4.6 (thinking)`, `Claude Opus 4.6 (thinking)`, `GPT-OSS-120b`, `GPT-5.4`, `GPT-5.2-Codex`, `GPT-5.1-Codex-Max`, `GPT-5.4-Mini`, `GPT-5.3-Codex`, `GPT-5.2`, and `GPT-5.1-Codex-Mini`.
 
@@ -24,15 +24,14 @@
 - Confirmed: `README.md` At A Glance table shows `Docker — Unraid, TrueNAS, OMV, and generic Linux` as primary target.
 - Confirmed: `.github/workflows/hardlink-organizer-image.yml` references `packaging/docker/Dockerfile` (updated from `packaging/unraid/docker/Dockerfile`).
 - Confirmed: `notes/HARDLINK_ORGANIZER_NEXT_STEPS.md` and `notes/HARDLINK_ORGANIZER_FEATURE_EXPANSION_PLAN.md` identify destination management with safe path validation as the next major milestone after verification.
-- Confirmed: `.raiden/local/prompts/prompt-40-destination-registry-validation-backend.md` defines the current next bounded backend slice under `LOOP-010`.
+- Confirmed: `.raiden/local/prompts/prompt-40-destination-registry-validation-backend.md` defined the now-complete LOOP-010 backend slice.
+- Confirmed: `engine/db.py` has a `destinations` table (id, label, path UNIQUE, tag, enabled, notes, created_at, updated_at) with full CRUD methods.
+- Confirmed: `webapp/app.py` routes: `GET /api/destinations`, `POST /api/destinations`, `POST /api/destinations/validate`, `PATCH /api/destinations/{id}`, `DELETE /api/destinations/{id}`.
+- Confirmed: validation checks existence, directory type, unsafe-root blocklist (`_UNSAFE_DEST_ROOTS`), writability, Unraid `/mnt/user` (`unraid_user_share`), and MergerFS pool (`mergerfs_pool_path`) — returns structured `DestinationValidateResponse`.
+- Confirmed: two frontend copy fixes applied: mount warning is now platform-neutral; hero Target now says "NAS / homelab workflows".
+- Confirmed: test suite — 47 DB tests + 54 webapp tests (2 skipped on non-Linux) — all pass.
 
-## Open frontend items (identified, not yet fixed)
-
-Two fixes needed from the frontend review session (small, bounded):
-1. `webapp/static/app.js` ~line 481: mount layout warning copy says "real Unraid hardlink fails" — should be platform-neutral after Phase 2 MergerFS work.
-2. `webapp/templates/index.html` line 95: hero Target fact still says "Unraid workflows" — should say "NAS / homelab workflows".
-
-Lower-priority frontend items deferred to a later pass:
+## Open frontend items (deferred to a later pass)
 3. Inline `onclick` JS string injection in history/verify buttons — replace with `data-*` + delegated listeners before public release.
 4. History sidebar shows `real_name` instead of `display_name`.
 5. Step bar blanks out during verify step.
