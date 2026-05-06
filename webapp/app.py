@@ -18,10 +18,8 @@ if str(_TOOL_DIR) not in sys.path:
     sys.path.insert(0, str(_TOOL_DIR))
 
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-import json
 import csv
 import io
 
@@ -67,8 +65,8 @@ from webapp.models import (
     DestinationValidateResponse,
 )
 
-_TEMPLATES_DIR = Path(__file__).parent / "templates"
 _STATIC_DIR = Path(__file__).parent / "static"
+_DIST_DIR = _STATIC_DIR / "dist"
 
 # Paths that must never be accepted as a managed destination.
 _UNSAFE_DEST_ROOTS = frozenset({
@@ -167,38 +165,6 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
     app.state.cfg = cfg
     app.state.db = db
     app.state.config_path = config_path
-
-    templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
-    app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
-
-    # -----------------------------------------------------------------------
-    # UI route
-    # -----------------------------------------------------------------------
-
-    @app.get("/", response_class=HTMLResponse, include_in_schema=False)
-    async def index(request: Request):
-        c: Config = request.app.state.cfg
-        d: Database = request.app.state.db
-
-        source_summaries: dict[str, dict] = {}
-        for name in c["source_sets"]:
-            summary = d.get_scan_summary(name)
-            source_summaries[name] = summary or {}
-
-        sets_payload = {
-            "source_sets": c["source_sets"],
-            "dest_sets": c["dest_sets"],
-        }
-
-        return templates.TemplateResponse(
-            request=request,
-            name="index.html",
-            context={
-                "version": __version__,
-                "sets_json": json.dumps(sets_payload),
-                "summaries_json": json.dumps(source_summaries),
-            },
-        )
 
     # -----------------------------------------------------------------------
     # Health
@@ -725,5 +691,8 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
         deleted = d.delete_destination(dest_id)
         if not deleted:
             raise HTTPException(status_code=404, detail=f"Destination {dest_id} not found.")
+
+    # Serve the built React SPA — must be mounted last so API routes take priority.
+    app.mount("/", StaticFiles(directory=str(_DIST_DIR), html=True), name="spa")
 
     return app

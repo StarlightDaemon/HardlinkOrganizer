@@ -1,5 +1,20 @@
 # Work Log
 
+## 2026-05-05 React SPA + Fujin UI rebuild session
+
+- Confirmed: `webapp/frontend/` scaffolded with Vite 5 + React 18 + TypeScript 5. `@fujin` alias → `/mnt/e/Fujin/components`; `@tokens` alias → `/mnt/e/Fujin/tokens.json`. Build outputs to `webapp/static/dist/`.
+- Confirmed: `webapp/app.py` — Jinja2 template route and imports removed; `StaticFiles(directory=dist, html=True)` mounted at `/` after all API routes.
+- Confirmed: `src/api/types.ts` — TypeScript interfaces mirroring all Pydantic models in `webapp/models.py` exactly.
+- Confirmed: `src/api/client.ts` — typed fetch wrappers for every API endpoint (health, config/sets, scan, inventory, preview, execute, history, verify, destinations CRUD + validate).
+- Confirmed: `src/state/AppState.tsx` — React context with `view` (workflow/destinations), `step`, sourceSet/entry/destSet/preview/result/verifyRun/history/sets state; all setters clear downstream state appropriately; `refreshHistory()` and `refreshSets()` available to components; health check on mount.
+- Confirmed: `src/components/AppLayout.tsx` — fixed 48px header with status dot, app name, version, and two nav tabs (Workflow / Destination Registry); flex-row body with main content + 320px aside sidebar.
+- Confirmed: 5 workflow step components: SourceStep (scan & select cards), BrowseStep (searchable DataTable + DataColumn, Re-scan), DestStep (dest set grid + subpath + Preview button), PreviewStep (detail grid, warnings collapsible, dry-run Checkbox, Execute), ResultStep (DataCard with count stats, collapsible file lists, Link Another / Start Over).
+- Confirmed: `HistorySidebar.tsx` — per-entry verify button triggers `POST /api/verify` → `GET /api/verify/{run_id}` → sets verifyRun + step='verify'; StatusBadge tags for dry-run / linked / failed counts.
+- Confirmed: `VerifyPanel.tsx` — summary counts, All/Failures/Verified filter toggles, DataTable with StatusBadge per result, JSON/CSV export via direct `<a download>` links.
+- Confirmed: `DestRegistry.tsx` — DataTable with ActionMenu (Edit / Enable-Disable / Delete), inline add/edit FormShell, live path validate-on-blur via `POST /api/destinations/validate` with left-border-accent result display.
+- Confirmed: all components use only Fujin CSS vars (`var(--fujin-*)`) and `tokens.*` values; no hardcoded hex/px/font-name; `borderRadius: 0` throughout; no Carbon artifacts.
+- Confirmed: toast notifications wired to all async success/error paths via `useToast()`.
+
 ## 2026-05-03 Docker-first multi-platform hardening session
 
 - Confirmed: PUID/PGID runtime privilege-drop added to Docker image (`packaging/docker/entrypoint.sh` + Dockerfile); container remaps `hlo` UID/GID at start via `gosu`; defaults 1000:1000.

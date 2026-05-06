@@ -1,0 +1,23 @@
+{
+  "name": "hardlink-organizer-frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "react": "^18",
+    "react-dom": "^18",
+    "@mantine/core": "^7",
+    "@mantine/hooks": "^7"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "vite": "^5",
+    "@vitejs/plugin-react": "^4",
+    "@types/react": "^18",
+    "@types/react-dom": "^18"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  }
+}

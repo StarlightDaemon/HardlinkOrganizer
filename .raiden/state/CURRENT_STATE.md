@@ -2,6 +2,7 @@
 
 ## Summary
 
+- Confirmed: React SPA frontend (Fujin UI kit) fully scaffolded and implemented at `webapp/frontend/`. All Carbon CSS, `--cds-*` vars, IBM Plex, and Jinja2 server-side injection removed. FastAPI now serves `webapp/static/dist/` via `StaticFiles(html=True)`. Build: `cd webapp/frontend && npm install && npm run build`. Dev: `npm run dev` (proxies `/api` → port 8000).
 - Confirmed: Hardlink Organizer now operates as its own standalone project workspace rooted at `/mnt/e/HardlinkOrganizer` in WSL (`E:\HardlinkOrganizer` on Windows), with a RAIDEN Instance control plane under `.raiden/`.
 - Confirmed: the project is at `0.3.0` verification foundation status.
 - Confirmed: the hosted web UI and CLI both exist, with verification runs persisted and reviewable.
