@@ -44,8 +44,13 @@
 
 - Confirmed: model availability and token ceilings may vary by session even when the planning baseline model pool remains broader.
 - Confirmed: each new loop should re-check current model or token status with the user when model choice or handoff strategy could materially affect the work.
-- Confirmed: Community Apps publication still depends on external steps including GHCR publication, real host validation, support-thread publication, and template submission.
+- Confirmed: LOOP-009 (Community Apps) retired and superseded by the LOOP-011–015 multi-platform 1.0 release structure. See `.raiden/local/prompts/prompt-60` through `prompt-64`.
+- Confirmed: LOOP-011 complete 2026-05-07. Repo public at https://github.com/StarlightDaemon/HardlinkOrganizer (tip commit 0f10d62). GHA image workflow ran successfully on both main push and tag push. RC tag v1.0.0-rc.1 published and workflow confirmed success. GHCR image visibility must be confirmed manually — check https://github.com/StarlightDaemon?tab=packages and set hardlink-organizer to Public if needed.
+- Confirmed: LOOP-013 Steps 1+2 complete (commit 0f10d62). TrueNAS SCALE catalog entry at `packaging/truenas/catalog/` — full Jinja2 template structure (app.yaml, ix_values.yaml, questions.yaml, templates/docker-compose.yaml, test_values). PR to truenas/apps pending real-host validation.
+- Confirmed: 1.0 platform targets are Unraid (Community Apps), TrueNAS SCALE (native catalog via truenas/apps PR), and OMV (compose plugin + community posts). Next open loop is LOOP-012 (Unraid CA) — requires real Unraid host. LOOP-013 PR can proceed once GHCR visibility confirmed and host validation done.
 - Confirmed: full HTTP-level integration coverage remains a separate follow-up because the current local FastAPI dependency stack hangs under `TestClient`.
+
+- Confirmed: LOOP-011 complete 2026-05-07. GHA run 25513495017 (main push) and 25513628167 (v1.0.0-rc.1 tag) both completed success. GHCR image published at ghcr.io/starlightdaemon/hardlink-organizer:latest and ghcr.io/starlightdaemon/hardlink-organizer:v1.0.0-rc.1. Visibility pending manual confirmation — Node.js 20 deprecation warning in workflow is non-blocking (deadline Sept 2026).
 
 ## Provenance
 

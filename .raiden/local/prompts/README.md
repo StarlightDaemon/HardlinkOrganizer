@@ -32,6 +32,19 @@ Do not use the deprecated nested copy under
 - `prompt-31-verification-followup-exports-and-history-lookup.md`
 - `prompt-32-history-driven-verification-ui.md`
 - `prompt-40-destination-registry-validation-backend.md`
+- `prompt-50-carbon-ui-rebuild.md`
+- `prompt-51-fujin-spa-review.md`
+
+## 1.0 release loops (LOOP-011 through LOOP-015)
+
+These five loops replace LOOP-009 (Community Apps) and cover the full 1.0
+multi-platform release path. Execute in order — each loop depends on the previous.
+
+- `prompt-60-ghcr-publication.md` — LOOP-011: ✓ DONE 2026-05-07 — repo pushed, GHCR image live, v1.0.0-rc.1 tagged
+- `prompt-61-unraid-community-apps.md` — LOOP-012: Unraid real-host validation → CA submission → acceptance
+- `prompt-62-truenas-scale-catalog.md` — LOOP-013: TrueNAS SCALE native catalog submission
+- `prompt-63-omv-release.md` — LOOP-014: OMV compose validation + community presence
+- `prompt-64-v1-release-tag.md` — LOOP-015: CHANGELOG, GitHub Release v1.0.0, platform badges
 
 ## Micro prompt
 
