@@ -1,0 +1,38 @@
+# Hardlink Organizer — TrueNAS SCALE reference compose
+#
+# This is a HUMAN-READABLE reference for manual deployment and local testing.
+# The TrueNAS SCALE catalog uses templates/docker-compose.yaml (Jinja2) instead.
+#
+# Adjust volume paths to match your TrueNAS pool layout.
+# Start: docker compose -f packaging/truenas/catalog/docker-compose.yml up -d
+
+services:
+  hardlink-organizer:
+    image: ghcr.io/starlightdaemon/hardlink-organizer:latest
+    container_name: hardlink-organizer
+    restart: unless-stopped
+    ports:
+      - "7700:7700"   # host_port:container_port — change host port if needed
+
+    volumes:
+      # --- Config file ---
+      # Edit config.toml before first start (copy from config.example.toml).
+      - /mnt/tank/apps/hardlink-organizer:/config
+
+      # --- State (SQLite DB + logs) ---
+      - /mnt/tank/apps/hardlink-organizer/data:/data
+
+      # --- Media pool mount ---
+      # Mount at the pool level so source and destination share one device.
+      # Source and destination datasets MUST be on the same pool (same ZFS vdev).
+      # Adjust dataset paths to match your TrueNAS layout.
+      - /mnt/tank/media/ingress/movies:/mnt/src/movies:ro
+      - /mnt/tank/media/ingress/shows:/mnt/src/shows:ro
+      - /mnt/tank/media/library/movies:/mnt/dst/movies
+      - /mnt/tank/media/library/shows:/mnt/dst/shows
+
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PUID=568    # set to your TrueNAS dataset owner's UID (id -u <user>)
+      - PGID=568    # set to your TrueNAS dataset owner's GID (id -g <user>)
+      - TZ=UTC      # e.g. America/Chicago

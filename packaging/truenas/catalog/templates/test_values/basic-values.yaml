@@ -1,0 +1,35 @@
+resources:
+  limits:
+    cpus: 2
+    memory: 1024
+
+hlo:
+  timezone: "UTC"
+  additional_envs: []
+
+run_as:
+  user: 568
+  group: 568
+
+network:
+  host_network: false
+  web_port:
+    bind_mode: published
+    port_number: 30770  # Non-default port for CI testing
+
+ix_volumes:
+  test_hlo_config: /opt/tests/mnt/hlo/config
+  test_hlo_data: /opt/tests/mnt/hlo/data
+
+storage:
+  config:
+    type: ix_volume
+    ix_volume_config:
+      dataset_name: test_hlo_config
+      create_host_path: true
+  data:
+    type: ix_volume
+    ix_volume_config:
+      dataset_name: test_hlo_data
+      create_host_path: true
+  additional_storage: []

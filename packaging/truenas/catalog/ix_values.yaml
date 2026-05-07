@@ -1,0 +1,16 @@
+images:
+  image:
+    repository: ghcr.io/starlightdaemon/hardlink-organizer
+    tag: "1.0.0"
+  container_utils_image:
+    repository: ixsystems/container-utils
+    tag: 1.0.2
+
+consts:
+  hlo_container_name: hardlink-organizer
+  perms_container_name: permissions
+  # HLO entrypoint remaps this user to PUID/PGID at runtime via gosu.
+  # The run_as values here are the catalog defaults; users override via env vars.
+  user_id: 568
+  group_id: 568
+  internal_http_port: 7700
