@@ -2,7 +2,7 @@
 
 ## Summary
 
-- Confirmed: React SPA frontend (Fujin UI kit) fully scaffolded and implemented at `webapp/frontend/`. All Carbon CSS, `--cds-*` vars, IBM Plex, and Jinja2 server-side injection removed. FastAPI now serves `webapp/static/dist/` via `StaticFiles(html=True)`. Build: `cd webapp/frontend && npm install && npm run build`. Dev: `npm run dev` (proxies `/api` → port 8000).
+- Confirmed: React SPA frontend (Fujin UI kit) fully scaffolded and implemented at `webapp/frontend/`. `FujinThemeProvider` now encapsulates `MantineProvider` and supports Open Color presets (currently using `violet`). All Carbon CSS, `--cds-*` vars, IBM Plex, and Jinja2 server-side injection removed. FastAPI now serves `webapp/static/dist/` via `StaticFiles(html=True)`. Build: `cd webapp/frontend && npm install && npm run build`. Dev: `npm run dev` (proxies `/api` → port 8000).
 - Confirmed: Hardlink Organizer now operates as its own standalone project workspace rooted at `/mnt/e/HardlinkOrganizer` in WSL (`E:\HardlinkOrganizer` on Windows), with a RAIDEN Instance control plane under `.raiden/`.
 - Confirmed: the project is at `0.3.0` verification foundation status.
 - Confirmed: the hosted web UI and CLI both exist, with verification runs persisted and reviewable.
@@ -30,8 +30,11 @@
 - Confirmed: `webapp/app.py` routes: `GET /api/destinations`, `POST /api/destinations`, `POST /api/destinations/validate`, `PATCH /api/destinations/{id}`, `DELETE /api/destinations/{id}`.
 - Confirmed: validation checks existence, directory type, unsafe-root blocklist (`_UNSAFE_DEST_ROOTS`), writability, Unraid `/mnt/user` (`unraid_user_share`), and MergerFS pool (`mergerfs_pool_path`) — returns structured `DestinationValidateResponse`.
 - Confirmed: two frontend copy fixes applied: mount warning is now platform-neutral; hero Target now says "NAS / homelab workflows".
-- Confirmed: full Carbon G100 dark theme rebuild committed (f97c762). CDN injection via `@carbon/styles@1`; all values token-only via `var(--cds-*)`. `carbon-overrides.css` added (787 lines); `style.css` emptied. `index.html` and `app.js` fully rebuilt with Carbon component markup.
+- Confirmed: Fujin design system compliance audit complete. All components use only Fujin CSS vars (`var(--fujin-*)`) and `tokens.json` values; no hardcoded hex/px/font-name; `borderRadius: 0` throughout; all Carbon artifacts removed. Integration with Mantine's Open Color system via `FujinThemeProvider` presets is live.
 - Confirmed: test suite — 176 tests pass (47 DB + 129 webapp, 2 skipped on non-Linux) — 0 regressions post-Carbon rebuild.
+
+- Confirmed: Fujin theme color issue resolved. `slate` primary override removed. Chrome (header/statusbar/nav) now uses `--fujin-chrome-bg/text/border` tokens mapped to fully neutral `dark[7]/dark[0]/dark[6]` — no blue tint. Accent (`violet`) is intentionally scoped to interactive elements only. New tokens: `--fujin-chrome-*`, `--fujin-layout-content-width` (`clamp(560px, 78vw, 2400px)`). `ThemeMenu` component (Light/Dark toggle) added to Fujin and wired into `AppLayout.tsx` status bar. Light theme hardened to "Deep" style. `DataTable` generic constraint fixed (`T extends object`). Fujin commit `b645194`.
+- Confirmed: old Carbon/Jinja2 static files (`webapp/static/app.js`, `carbon-overrides.css`, `style.css`, `webapp/templates/index.html`) deleted and committed. SPA migration fully closed.
 
 ## Open frontend items (deferred to a later pass)
 3. Inline `onclick` JS string injection in history/verify buttons — replace with `data-*` + delegated listeners before public release.

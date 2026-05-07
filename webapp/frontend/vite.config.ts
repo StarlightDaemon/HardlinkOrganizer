@@ -5,9 +5,10 @@ import { resolve } from 'path';
 export default defineConfig({
   plugins: [react()],
   resolve: {
+    dedupe: ['react', 'react-dom', '@mantine/core', '@mantine/hooks'],
     alias: {
-      '@fujin': resolve(__dirname, '../../Fujin/components'),
-      '@tokens': resolve(__dirname, '../../Fujin/tokens.json'),
+      '@fujin': resolve(__dirname, '../../../Fujin/components'),
+      '@tokens': resolve(__dirname, '../../../Fujin/tokens.json'),
     },
   },
   server: {

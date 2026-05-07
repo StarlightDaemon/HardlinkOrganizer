@@ -1,5 +1,28 @@
 # Work Log
 
+## 2026-05-07 Fujin theme chrome token resolution + SPA migration cleanup
+
+- Confirmed: Fujin agent resolved the blue-tint theme issue (Fujin commit `b645194`). `slate` primary override removed entirely. New `--fujin-chrome-bg/text/border` tokens added — mapped to neutral `dark[7]/dark[0]/dark[6]` in dark mode and `gray[8]/gray[0]/gray[7]` in light mode. Chrome (header, statusbar, nav) is now fully neutral in both modes.
+- Confirmed: `--fujin-layout-content-width` token added (`clamp(560px, 78vw, 2400px)`) for fluid responsive layout.
+- Confirmed: `ThemeMenu` component added to Fujin — gear icon popover with Light/Dark toggle, wired to `useFujinTheme()`. Integrated into `AppLayout.tsx` status bar right slot.
+- Confirmed: Light theme hardened to "Deep" style — `gray[3]` base, white surface, stronger border values.
+- Confirmed: `DataTable` generic constraint corrected to `T extends object` (was `Record<string,unknown>`, broke typed row interfaces).
+- Confirmed: old Carbon/Jinja2 static files deleted and committed — `webapp/static/app.js`, `carbon-overrides.css`, `style.css`, and `webapp/templates/index.html` removed. SPA migration fully closed.
+
+## 2026-05-06 Mantine theming provider update
+
+- Confirmed: Updated `FujinThemeProvider` usage in `webapp/frontend/src/main.tsx`.
+- Confirmed: Removed standalone `MantineProvider` and redundant `styles.css` import as they are now encapsulated within `FujinThemeProvider`.
+- Confirmed: Wired the `violet` preset to the theme provider.
+- Confirmed: Staged and committed changes.
+
+## 2026-05-06 Fujin/Mantine Theme Slate Integration Review
+
+- Confirmed: Attempted to migrate Mantine's default blue primary color to the Fujin `slate` palette.
+- Confirmed: Overrode `primaryColor` and injected custom `slate` scale in `main.tsx`.
+- Issue: The user feels the `slate` scale still looks too "blue" and wants a neutral gray or true slate without the blue tint.
+- Action: Stopped work and left `fujin_theme_review.md` in `.raiden/local/prompts/` for the Fujin agent to evaluate the correct styling path forward.
+
 ## 2026-05-05 React SPA + Fujin UI rebuild session
 
 - Confirmed: `webapp/frontend/` scaffolded with Vite 5 + React 18 + TypeScript 5. `@fujin` alias → `/mnt/e/Fujin/components`; `@tokens` alias → `/mnt/e/Fujin/tokens.json`. Build outputs to `webapp/static/dist/`.
