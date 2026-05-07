@@ -30,21 +30,31 @@ function FormPanel({ initial, loading, error, submitLabel, onSubmit, onCancel }:
   const [pathValidation, setPathValidation] = useState<DestinationValidateResponse | null>(null);
   const [validating, setValidating] = useState(false);
 
-  async function handlePathBlur() {
-    if (!v.path) { setPathValidation(null); return; }
+  async function validatePath(path: string): Promise<DestinationValidateResponse | null> {
+    if (!path) { setPathValidation(null); return null; }
     setValidating(true);
     try {
-      const result = await api.validateDestination({ path: v.path });
+      const result = await api.validateDestination({ path });
       setPathValidation(result);
+      return result;
     } catch {
       setPathValidation(null);
+      return null;
     } finally {
       setValidating(false);
     }
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handlePathBlur() {
+    await validatePath(v.path);
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (v.path && pathValidation === null) {
+      const result = await validatePath(v.path);
+      if (result?.valid === false) return;
+    }
     onSubmit(v);
   }
 
@@ -206,6 +216,7 @@ export function DestRegistry() {
   const [editTarget, setEditTarget] = useState<DestinationEntry | null>(null);
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState('');
+  const [deletePending, setDeletePending] = useState<number | null>(null);
   const { show } = useToast();
 
   const load = useCallback(async () => {
@@ -366,11 +377,7 @@ export function DestRegistry() {
       />
 
       {formMode !== 'none' && (
-        <div style={{
-          background: 'var(--fujin-bg-surface)',
-          border:     '1px solid var(--fujin-border-subtle)',
-          padding:    tokens.spacing.scale.lg,
-        }}>
+        <div style={{ padding: tokens.spacing.scale.lg }}>
           <div style={{
             fontFamily:  tokens.typography.fontFamily.base,
             fontSize:    tokens.typography.fontSize.sm,
@@ -381,6 +388,7 @@ export function DestRegistry() {
             {formMode === 'add' ? 'Add Destination' : `Edit — ${editTarget?.label}`}
           </div>
           <FormPanel
+            key={editTarget?.id ?? 'add'}
             initial={formMode === 'edit' && editTarget ? {
               label:   editTarget.label,
               path:    editTarget.path,
@@ -407,9 +415,17 @@ export function DestRegistry() {
         rowActions={(row) => (
           <ActionMenu
             items={[
-              { label: 'Edit',                           onClick: () => openEdit(row) },
+              { label: 'Edit', onClick: () => openEdit(row) },
               { label: row.enabled ? 'Disable' : 'Enable', onClick: () => handleToggleEnabled(row) },
-              { label: 'Delete', danger: true,           onClick: () => handleDelete(row) },
+              ...(deletePending === row.id
+                ? [
+                    { label: 'Confirm delete', danger: true, onClick: () => { handleDelete(row); setDeletePending(null); } },
+                    { label: 'Cancel', onClick: () => setDeletePending(null) },
+                  ]
+                : [
+                    { label: 'Delete', danger: true, onClick: () => setDeletePending(row.id) },
+                  ]
+              ),
             ] as ActionMenuItem[]}
           />
         )}

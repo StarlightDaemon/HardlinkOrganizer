@@ -36,6 +36,8 @@
 - Confirmed: Fujin theme color issue resolved. `slate` primary override removed. Chrome (header/statusbar/nav) now uses `--fujin-chrome-bg/text/border` tokens mapped to fully neutral `dark[7]/dark[0]/dark[6]` — no blue tint. Accent (`violet`) is intentionally scoped to interactive elements only. New tokens: `--fujin-chrome-*`, `--fujin-layout-content-width` (`clamp(560px, 78vw, 2400px)`). `ThemeMenu` component (Light/Dark toggle) added to Fujin and wired into `AppLayout.tsx` status bar. Light theme hardened to "Deep" style. `DataTable` generic constraint fixed (`T extends object`). Fujin commit `b645194`.
 - Confirmed: old Carbon/Jinja2 static files (`webapp/static/app.js`, `carbon-overrides.css`, `style.css`, `webapp/templates/index.html`) deleted and committed. SPA migration fully closed.
 
+- Confirmed: DestRegistry UI end-to-end complete. Four targeted fixes applied to `webapp/frontend/src/components/DestRegistry.tsx`: (1) FormPanel stale state on edit-switch fixed via `key={editTarget?.id ?? 'add'}`; (2) double container border removed from form wrapper — only padding remains, `FormShell` owns the visual shell; (3) delete confirmation added via `deletePending` state — Delete ActionMenu item stages a confirm/cancel pair before executing; (4) path validation gated on submit — extracted `validatePath()` shared async function, `handleSubmit` triggers validation and blocks if result is invalid when user never blurred the path field. `tsc --noEmit` and `npm run build` both clean after all changes.
+
 ## Open frontend items (deferred to a later pass)
 3. Inline `onclick` JS string injection in history/verify buttons — replace with `data-*` + delegated listeners before public release.
 4. History sidebar shows `real_name` instead of `display_name`.

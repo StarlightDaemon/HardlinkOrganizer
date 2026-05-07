@@ -1,5 +1,14 @@
 # Work Log
 
+## 2026-05-07 DestRegistry UI fix pass
+
+- Confirmed: `webapp/frontend/src/components/DestRegistry.tsx` — four bugs fixed by a dedicated thinking agent.
+- Confirmed: FormPanel stale state on edit switch resolved — `key={editTarget?.id ?? 'add'}` forces remount on target change.
+- Confirmed: Double container border removed — outer form wrapper now carries only `padding`; `FormShell` provides the visual shell.
+- Confirmed: Delete confirmation added — `deletePending: number | null` state gates the ActionMenu delete action; requires a second explicit click on "Confirm delete".
+- Confirmed: Path validation gate on submit — `validatePath()` extracted as shared async function; `handleSubmit` fires validation and blocks on invalid result when user submits without blurring the path field.
+- Confirmed: `tsc --noEmit` and `npm run build` both clean post-fix (768 modules, 0 errors).
+
 ## 2026-05-07 Fujin theme chrome token resolution + SPA migration cleanup
 
 - Confirmed: Fujin agent resolved the blue-tint theme issue (Fujin commit `b645194`). `slate` primary override removed entirely. New `--fujin-chrome-bg/text/border` tokens added — mapped to neutral `dark[7]/dark[0]/dark[6]` in dark mode and `gray[8]/gray[0]/gray[7]` in light mode. Chrome (header, statusbar, nav) is now fully neutral in both modes.
