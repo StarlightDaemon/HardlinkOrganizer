@@ -38,11 +38,7 @@
 
 - Confirmed: DestRegistry UI end-to-end complete. Four targeted fixes applied to `webapp/frontend/src/components/DestRegistry.tsx`: (1) FormPanel stale state on edit-switch fixed via `key={editTarget?.id ?? 'add'}`; (2) double container border removed from form wrapper — only padding remains, `FormShell` owns the visual shell; (3) delete confirmation added via `deletePending` state — Delete ActionMenu item stages a confirm/cancel pair before executing; (4) path validation gated on submit — extracted `validatePath()` shared async function, `handleSubmit` triggers validation and blocks if result is invalid when user never blurred the path field. `tsc --noEmit` and `npm run build` both clean after all changes.
 
-## Open frontend items (deferred to a later pass)
-3. Inline `onclick` JS string injection in history/verify buttons — replace with `data-*` + delegated listeners before public release.
-4. History sidebar shows `real_name` instead of `display_name`.
-5. Step bar blanks out during verify step.
-6. Inline styles in `renderVerifyStep` belong in CSS.
+- Confirmed: all four deferred frontend polish items resolved. Items 1 (inline onclick injection) and 4 (renderVerifyStep inline styles) were already eliminated by the React SPA migration — both were Carbon/vanilla JS patterns with no equivalent in the new codebase. Item 2 (`real_name` vs `display_name` in sidebar): `display_name` column added to `link_history` table via `_SCHEMA` + `_init_schema()` migration guard; `record_link()` updated to accept and store it; `get_history` returns it; `HistoryEntry` Pydantic model and TypeScript interface updated; `HistorySidebar` now renders `display_name ?? real_name`. Item 3 (step bar blanks out): `WorkflowStepper` now kept mounted during verify via `display: isVerify ? 'none' : 'block'` wrapper — stepper internal step state is preserved, so back from VerifyPanel restores the correct workflow position. 132 tests pass; tsc and build clean.
 
 ## Constraints
 

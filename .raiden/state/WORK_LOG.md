@@ -1,5 +1,16 @@
 # Work Log
 
+## 2026-05-07 Frontend polish — display_name in history + stepper state preservation
+
+- Confirmed: `display_name` added to `link_history` table via `_SCHEMA` DDL and `_init_schema()` migration guard (`ALTER TABLE ... ADD COLUMN`, catches `OperationalError` for existing DBs).
+- Confirmed: `record_link()` in `engine/db.py` accepts and stores `display_name: str | None = None`.
+- Confirmed: `webapp/app.py` — `record_link` call passes `display_name=entry.get("display_name")`; `HistoryEntry` construction in `get_history` passes `display_name=r.get("display_name")`.
+- Confirmed: `webapp/models.py` `HistoryEntry` and `webapp/frontend/src/api/types.ts` `HistoryEntry` both include `display_name: str | None = None` / `string | null`.
+- Confirmed: `HistorySidebar.tsx` renders `entry.display_name ?? entry.real_name`.
+- Confirmed: `WorkflowStepper` kept mounted during verify step via `display: isVerify ? 'none' : 'block'` in `App.tsx` — stepper internal position preserved; back from VerifyPanel restores correct step.
+- Confirmed: Items 1 (onclick injection) and 4 (renderVerifyStep styles) confirmed dead — Carbon/vanilla JS patterns eliminated by SPA migration, no action needed.
+- Confirmed: 132 pytest tests pass (1 pre-existing unrelated failure); tsc and npm run build both clean.
+
 ## 2026-05-07 DestRegistry UI fix pass
 
 - Confirmed: `webapp/frontend/src/components/DestRegistry.tsx` — four bugs fixed by a dedicated thinking agent.

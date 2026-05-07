@@ -45,7 +45,7 @@ function HistoryItem({ entry }: { entry: HistoryEntry }) {
         color:       'var(--fujin-text-primary)',
         wordBreak:   'break-word',
       }}>
-        {entry.real_name}
+        {entry.display_name ?? entry.real_name}
       </div>
 
       <div style={{

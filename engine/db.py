@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS link_history (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     source_set    TEXT    NOT NULL,
     real_name     TEXT    NOT NULL,
+    display_name  TEXT,
     full_path     TEXT    NOT NULL,
     dest_set      TEXT    NOT NULL,
     dest_root     TEXT    NOT NULL,
@@ -138,6 +139,11 @@ class Database:
         with self._lock:
             self._conn().executescript(_SCHEMA)
             self._conn().commit()
+            try:
+                self._conn().execute("ALTER TABLE link_history ADD COLUMN display_name TEXT")
+                self._conn().commit()
+            except sqlite3.OperationalError:
+                pass  # column already exists
 
     def close(self) -> None:
         """Close the shared connection. Safe to call from any thread."""
@@ -246,18 +252,19 @@ class Database:
         dry_run: bool,
         linked_at: str,
         notes: str | None = None,
+        display_name: str | None = None,
     ) -> int:
         """Record a link operation and return its history id."""
         with self._lock:
             conn = self._conn()
             cur = conn.execute(
                 """INSERT INTO link_history
-                   (source_set, real_name, full_path, dest_set, dest_root,
+                   (source_set, real_name, display_name, full_path, dest_set, dest_root,
                     dest_subpath, dest_full, linked_count, skipped_count,
                     failed_count, dry_run, linked_at, notes)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
-                    source_set, real_name, full_path, dest_set, dest_root,
+                    source_set, real_name, display_name, full_path, dest_set, dest_root,
                     dest_subpath, dest_full, linked_count, skipped_count,
                     failed_count, int(dry_run), linked_at, notes,
                 ),

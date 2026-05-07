@@ -426,6 +426,7 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
         history_id = d.record_link(
             source_set=body.source_set,
             real_name=entry["real_name"],
+            display_name=entry.get("display_name"),
             full_path=entry["full_path"],
             dest_set=body.dest_set,
             dest_root=dest_root,
@@ -468,6 +469,7 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
                 id=r["id"],
                 source_set=r["source_set"],
                 real_name=r["real_name"],
+                display_name=r.get("display_name"),
                 full_path=r["full_path"],
                 dest_set=r["dest_set"],
                 dest_root=r["dest_root"],

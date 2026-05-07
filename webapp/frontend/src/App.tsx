@@ -13,41 +13,24 @@ import { ResultStep } from './components/steps/ResultStep';
 
 function WorkflowView() {
   const { step, sourceSet, entry, destSet, preview } = useAppState();
-
-  if (step === 'verify') {
-    return <VerifyPanel />;
-  }
+  const isVerify = step === 'verify';
 
   return (
-    <WorkflowStepper
-      allowStepClick
-      steps={[
-        {
-          label:    'Source',
-          content:  <SourceStep />,
-          validate: () => validateSourceStep(sourceSet),
-        },
-        {
-          label:    'Browse',
-          content:  <BrowseStep />,
-          validate: () => validateBrowseStep(entry),
-        },
-        {
-          label:    'Destination',
-          content:  <DestStep />,
-          validate: () => validateDestStep(destSet, preview),
-        },
-        {
-          label:    'Preview',
-          content:  <PreviewStep />,
-          validate: () => validatePreviewStep(preview),
-        },
-        {
-          label:   'Result',
-          content: <ResultStep />,
-        },
-      ]}
-    />
+    <>
+      <div style={{ display: isVerify ? 'none' : 'block' }}>
+        <WorkflowStepper
+          allowStepClick
+          steps={[
+            { label: 'Source',      content: <SourceStep />,   validate: () => validateSourceStep(sourceSet) },
+            { label: 'Browse',      content: <BrowseStep />,   validate: () => validateBrowseStep(entry) },
+            { label: 'Destination', content: <DestStep />,     validate: () => validateDestStep(destSet, preview) },
+            { label: 'Preview',     content: <PreviewStep />,  validate: () => validatePreviewStep(preview) },
+            { label: 'Result',      content: <ResultStep /> },
+          ]}
+        />
+      </div>
+      {isVerify && <VerifyPanel />}
+    </>
   );
 }
 

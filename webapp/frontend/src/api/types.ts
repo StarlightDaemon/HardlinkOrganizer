@@ -99,6 +99,7 @@ export interface HistoryEntry {
   dry_run: boolean;
   linked_at: string;
   notes: string | null;
+  display_name: string | null;
 }
 
 export interface HistoryResponse {

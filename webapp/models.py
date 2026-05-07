@@ -145,6 +145,7 @@ class HistoryEntry(BaseModel):
     dry_run: bool
     linked_at: str
     notes: str | None = None
+    display_name: str | None = None
 
 
 class HistoryResponse(BaseModel):
