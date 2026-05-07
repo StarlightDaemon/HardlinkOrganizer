@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { UnstyledButton } from '@mantine/core';
 import { SectionHeader, DataTable, StatusBadge, type DataColumn } from '@fujin';
 import tokens from '@tokens';

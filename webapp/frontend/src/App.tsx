@@ -1,4 +1,3 @@
-import React from 'react';
 import { WorkflowStepper } from '@fujin';
 import tokens from '@tokens';
 import { AppStateProvider, useAppState } from './state/AppState';
@@ -58,8 +57,9 @@ function AppShell() {
   return (
     <AppLayout sidebar={<HistorySidebar />}>
       <div style={{
-        maxWidth:  900,
+        maxWidth:  'var(--fujin-layout-content-width)',
         width:     '100%',
+        margin:    '0 auto',
         display:   'flex',
         flexDirection: 'column',
         gap:       tokens.spacing.scale.xl,

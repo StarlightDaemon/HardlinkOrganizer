@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import { TextInput, UnstyledButton, Loader } from '@mantine/core';
 import { StatusBadge } from '@fujin';
 import tokens from '@tokens';
@@ -8,11 +8,11 @@ import { useToast } from '@fujin';
 
 export function DestStep() {
   const {
-    sets, entry, destSet, destSubpath, scanning,
+    sets, entry, destSet, destSubpath,
     setDestSet, setDestSubpath, setPreview,
   } = useAppState();
   const { show } = useToast();
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
 
   async function handlePreview() {
     if (!sets || !entry || !destSet) return;

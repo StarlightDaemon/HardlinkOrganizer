@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { TextInput, UnstyledButton, Loader } from '@mantine/core';
 import { DataTable, SectionHeader, StatusBadge, type DataColumn } from '@fujin';
 import tokens from '@tokens';

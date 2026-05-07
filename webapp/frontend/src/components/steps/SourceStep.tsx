@@ -1,18 +1,9 @@
-import React from 'react';
 import { Loader, UnstyledButton } from '@mantine/core';
 import { StatusBadge } from '@fujin';
 import tokens from '@tokens';
 import { useAppState } from '../../state/AppState';
 import { api } from '../../api/client';
 import { useToast } from '@fujin';
-
-function formatBytes(n: number | null | undefined): string {
-  if (n == null) return '—';
-  if (n >= 1_073_741_824) return `${(n / 1_073_741_824).toFixed(1)} GB`;
-  if (n >= 1_048_576) return `${(n / 1_048_576).toFixed(1)} MB`;
-  if (n >= 1024) return `${(n / 1024).toFixed(1)} KB`;
-  return `${n} B`;
-}
 
 function formatTime(iso: string | null | undefined): string {
   if (!iso) return 'Never';

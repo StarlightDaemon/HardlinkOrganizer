@@ -17,9 +17,9 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@fujin": ["../../Fujin/components/index.ts"],
-      "@fujin/*": ["../../Fujin/components/*"],
-      "@tokens": ["../../Fujin/tokens.json"]
+      "@fujin": ["../../../Fujin/components/index.ts"],
+      "@fujin/*": ["../../../Fujin/components/*"],
+      "@tokens": ["../../../Fujin/tokens.json"]
     }
   },
   "include": ["src"]
