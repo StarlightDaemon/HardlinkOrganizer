@@ -312,15 +312,19 @@ class Database:
         """Batch check: return {full_path: linked} for a list of paths."""
         if not full_paths:
             return {}
+        linked_set: set[str] = set()
+        chunk_size = 900  # stay safely under SQLite's 999-variable limit
         with self._lock:
-            placeholders = ",".join("?" * len(full_paths))
-            rows = self._conn().execute(
-                f"""SELECT DISTINCT full_path FROM link_history
-                    WHERE full_path IN ({placeholders})
-                      AND dry_run = 0 AND linked_count > 0""",
-                full_paths,
-            ).fetchall()
-        linked_set = {r["full_path"] for r in rows}
+            for i in range(0, len(full_paths), chunk_size):
+                chunk = full_paths[i : i + chunk_size]
+                placeholders = ",".join("?" * len(chunk))
+                rows = self._conn().execute(
+                    f"""SELECT DISTINCT full_path FROM link_history
+                        WHERE full_path IN ({placeholders})
+                          AND dry_run = 0 AND linked_count > 0""",
+                    chunk,
+                ).fetchall()
+                linked_set.update(r["full_path"] for r in rows)
         return {p: (p in linked_set) for p in full_paths}
 
     # ------------------------------------------------------------------

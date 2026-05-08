@@ -530,6 +530,44 @@ class TestHardlinkFile(unittest.TestCase):
         # Existing file must NOT be overwritten
         self.assertEqual(dst.read_text(), "existing")
 
+    def test_hardlink_file_warns_on_collision(self):
+        import logging
+        src = self.root / "src" / "movie.mkv"
+        _write_file(src, "original")
+        dst = self.root / "dst" / "movie.mkv"
+        _write_file(dst, "different content")  # unrelated file
+
+        result = hlo.LinkResult()
+        with self.assertLogs("hardlink_organizer", level=logging.WARNING) as cm:
+            hlo.hardlink_file(src, dst, result)
+
+        self.assertIn(str(dst), result.skipped)
+        self.assertTrue(any("collision" in msg for msg in cm.output))
+
+    def test_hardlink_file_silently_skips_already_linked(self):
+        import logging
+        src = self.root / "src" / "movie.mkv"
+        _write_file(src, "original")
+        dst = self.root / "dst" / "movie.mkv"
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        os.link(src, dst)  # already a hardlink
+
+        result = hlo.LinkResult()
+        # No WARNING-level log should be emitted for already-linked files
+        import io
+        handler = logging.StreamHandler(io.StringIO())
+        handler.setLevel(logging.WARNING)
+        logger = logging.getLogger("hardlink_organizer")
+        logger.addHandler(handler)
+        try:
+            hlo.hardlink_file(src, dst, result)
+        finally:
+            logger.removeHandler(handler)
+
+        self.assertIn(str(dst), result.skipped)
+        output = handler.stream.getvalue()
+        self.assertNotIn("collision", output)
+
     def test_dry_run_does_not_create_file(self):
         src = self.root / "src" / "movie.mkv"
         _write_file(src, "content")

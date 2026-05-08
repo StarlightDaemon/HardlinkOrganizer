@@ -785,7 +785,13 @@ def hardlink_file(src: Path, dst: Path, result: LinkResult, dry_run: bool = Fals
     Skips if *dst* already exists. Never overwrites.
     """
     if dst.exists():
-        _logger.debug("SKIP (exists): %s", dst)
+        try:
+            if os.path.samestat(src.stat(), dst.stat()):
+                _logger.debug("SKIP (already linked): %s", dst)
+            else:
+                _logger.warning("SKIP (collision — unrelated file exists): %s", dst)
+        except OSError:
+            _logger.debug("SKIP (exists, stat failed): %s", dst)
         result.skipped.append(str(dst))
         return
 

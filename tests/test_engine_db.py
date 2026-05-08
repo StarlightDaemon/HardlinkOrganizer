@@ -237,6 +237,17 @@ class TestLinkHistory(unittest.TestCase):
         result = self.db.get_link_status([])
         self.assertEqual(result, {})
 
+    def test_get_link_status_over_999_paths(self):
+        # Insert one real linked path among 1100 paths to verify chunking works.
+        real_path = "/fake/show/ep0001.mkv"
+        self._record(full_path=real_path, linked_count=1, dry_run=False)
+        paths = [f"/fake/show/ep{i:04d}.mkv" for i in range(1100)]
+        paths[500] = real_path  # inject the real one mid-list
+
+        result = self.db.get_link_status(paths)
+        self.assertTrue(result[real_path])
+        self.assertEqual(sum(result.values()), 1)
+
     def test_dry_run_field_stored_correctly(self):
         self._record(dry_run=True)
         history = self.db.get_history()
