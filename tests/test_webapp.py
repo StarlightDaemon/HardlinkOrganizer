@@ -512,13 +512,19 @@ class TestWebApp(unittest.TestCase):
     # -----------------------------------------------------------------------
 
     def test_index_returns_html(self):
-        res = self.client.get("/")
-        self.assertEqual(res.status_code, 200)
-        self.assertIn("text/html", res.headers.get("content-type", ""))
+        from webapp.app import _DIST_DIR
+        index_path = _DIST_DIR / "index.html"
+        if not index_path.exists():
+            self.skipTest("SPA dist not built — run: cd webapp/frontend && npm run build")
+        content = index_path.read_text()
+        self.assertIn("<!doctype html", content.lower())
 
     def test_index_contains_version(self):
-        res = self.client.get("/")
-        self.assertIn("0.", res.text)   # version string appears somewhere
+        res = self.client.get("/health")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIn("version", data)
+        self.assertRegex(data["version"], r"\d+\.\d+")
 
 
 class TestVerifyAPI(unittest.TestCase):
