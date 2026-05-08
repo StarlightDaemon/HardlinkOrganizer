@@ -400,6 +400,22 @@ class TestLinkPlan(unittest.TestCase):
         self.assertFalse(ok)
         self.assertTrue(any("Destination root" in e for e in errors))
 
+    def test_dest_subpath_traversal_rejected(self):
+        src_dir = self.root / "src" / "show"
+        src_dir.mkdir(parents=True)
+        dst_root = self.root / "dst"
+        dst_root.mkdir()
+        plan = hlo.LinkPlan(
+            source_path=str(src_dir),
+            dest_root=str(dst_root),
+            dest_subpath="../../escaped",
+            entry_type="directory",
+            display_name="show",
+        )
+        ok, errors = plan.is_valid()
+        self.assertFalse(ok)
+        self.assertTrue(any("escapes" in e for e in errors))
+
 
 class TestMountLayoutAssessment(unittest.TestCase):
 

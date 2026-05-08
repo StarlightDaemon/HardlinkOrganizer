@@ -697,6 +697,16 @@ class LinkPlan:
                         f"(source device={src_dev}, dest device={dst_dev})"
                     )
 
+            # Ensure dest_full resolves to a path inside dest_root.
+            try:
+                resolved_full = Path(self.dest_full).resolve()
+                resolved_root = Path(self.dest_root).resolve()
+                resolved_full.relative_to(resolved_root)
+            except ValueError:
+                errors.append(
+                    f"Destination path escapes destination root: {self.dest_full}"
+                )
+
         return (len(errors) == 0, errors)
 
     def print_preview(self) -> None:
