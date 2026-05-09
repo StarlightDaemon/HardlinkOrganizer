@@ -1,4 +1,3 @@
-import React from 'react';
 import { UnstyledButton, Loader } from '@mantine/core';
 import { SectionHeader, StatusBadge } from '@fujin';
 import { useToast } from '@fujin';
