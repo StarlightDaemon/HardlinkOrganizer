@@ -14,14 +14,15 @@ packaging/
 └── portainer/       Portainer stack definition
 ```
 
-## Canonical Docker source
+## Canonical Docker image
 
-All platform packaging files reference the **same** Docker image defined in
-[`packaging/docker/`](docker/README.md). Build always from the repository root:
+All platform packaging files reference the same published image from GHCR:
 
 ```bash
-docker build -f packaging/docker/Dockerfile -t hardlink-organizer:0.3.0 .
+docker pull ghcr.io/starlightdaemon/hardlink-organizer:latest
 ```
+
+To build locally from source, see [`packaging/docker/README.md`](docker/README.md).
 
 ## Platform guides
 
@@ -38,7 +39,7 @@ docker build -f packaging/docker/Dockerfile -t hardlink-organizer:0.3.0 .
 Once released, the image is available from GitHub Container Registry:
 
 ```bash
-docker pull ghcr.io/<github-owner>/hardlink-organizer:latest
+docker pull ghcr.io/starlightdaemon/hardlink-organizer:latest
 ```
 
 The image is built and published automatically by

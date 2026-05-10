@@ -17,7 +17,7 @@
   <ExtraParams/>
   <PostArgs/>
   <TemplateURL/>
-  <Version>0.3.0</Version>
+  <Version>1.0.0-rc.1</Version>
 
   <Config Name="Web UI Port" Target="7700" Default="7700" Mode="tcp" Description="Container Port: 7700" Type="Port" Display="always" Required="true" Mask="false">7700</Config>
   <Config Name="Config Directory" Target="/config" Default="/mnt/user/appdata/hardlink-organizer/config" Mode="rw" Description="Container Path: /config. Place config.toml here." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/hardlink-organizer/config</Config>

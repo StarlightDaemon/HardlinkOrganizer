@@ -1,16 +1,10 @@
 # Hardlink Organizer — OpenMediaVault Docker Compose
-# Run from the Hardlink Organizer root.
 # Adjust shared folder paths to match your OMV disk layout.
-# Start: docker compose -f packaging/omv/docker-compose.yml up -d
-
-version: "3.8"
+# Start: docker compose -f docker-compose.yml up -d
 
 services:
   hardlink-organizer:
-    build:
-      context: ../..
-      dockerfile: packaging/docker/Dockerfile
-    image: hardlink-organizer:0.3.0    # or ghcr.io/... when published
+    image: ghcr.io/starlightdaemon/hardlink-organizer:v1.0.0-rc.1
     container_name: hardlink-organizer
     restart: unless-stopped
     ports:

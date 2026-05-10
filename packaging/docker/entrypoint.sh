@@ -6,9 +6,6 @@ PGID=${PGID:-1000}
 
 echo "Starting Hardlink Organizer with PUID=${PUID} PGID=${PGID}"
 
-groupmod -g "$PGID" hlo
-usermod  -u "$PUID" -g "$PGID" hlo
+chown -R "${PUID}:${PGID}" /config /data
 
-chown -R hlo:hlo /config /data
-
-exec gosu hlo "$@"
+exec gosu "${PUID}:${PGID}" "$@"
