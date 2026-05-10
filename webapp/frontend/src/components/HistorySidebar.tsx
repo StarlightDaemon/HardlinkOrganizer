@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { UnstyledButton, Loader } from '@mantine/core';
 import { SectionHeader, StatusBadge } from '@fujin';
 import { useToast } from '@fujin';
@@ -13,7 +14,7 @@ function formatTime(iso: string): string {
 function HistoryItem({ entry }: { entry: HistoryEntry }) {
   const { setStep, setVerifyRun } = useAppState();
   const { show } = useToast();
-  const [verifying, setVerifying] = React.useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   async function handleVerify() {
     setVerifying(true);
@@ -98,7 +99,7 @@ function HistoryItem({ entry }: { entry: HistoryEntry }) {
 
 export function HistorySidebar() {
   const { history, refreshHistory } = useAppState();
-  const [refreshing, setRefreshing] = React.useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   async function handleRefresh() {
     setRefreshing(true);
