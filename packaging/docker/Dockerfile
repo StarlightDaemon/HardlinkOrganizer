@@ -1,20 +1,29 @@
 # Hardlink Organizer — Docker image
-# Minimal Python 3.11 base; all dependencies pinned via requirements.txt.
 # Build from the Hardlink Organizer root:
-#   docker build -f packaging/docker/Dockerfile -t hardlink-organizer:0.3.0 .
-# Run:
-#   docker run -p 7700:7700 -v /path/to/config:/config -e PUID=1000 -e PGID=1000 hardlink-organizer:0.3.0
+#   docker build -f packaging/docker/Dockerfile -t hardlink-organizer:v1.0.0-rc.1 .
 
+# --- Stage 1: build the React frontend ---
+FROM node:20-slim AS frontend-builder
+
+WORKDIR /app/webapp/frontend
+
+COPY ./webapp/frontend/package*.json ./
+RUN npm ci
+
+COPY ./webapp/frontend/ ./
+RUN npm run build
+
+# --- Stage 2: production Python image ---
 FROM python:3.11-slim
 
 LABEL org.opencontainers.image.title="Hardlink Organizer"
 LABEL org.opencontainers.image.description="Safely plan and execute hardlinks across NAS storage pools with a preview-first web UI"
-LABEL org.opencontainers.image.version="0.3.0"
+LABEL org.opencontainers.image.version="1.0.0-rc.1"
 
-# Non-root user for safety
+# Non-root user for privilege-drop at runtime
 RUN addgroup --system hlo && adduser --system --ingroup hlo hlo
 
-# Install gosu for PUID/PGID privilege-drop entrypoint
+# gosu for PUID/PGID privilege-drop entrypoint
 RUN apt-get update && apt-get install -y --no-install-recommends gosu \
     && rm -rf /var/lib/apt/lists/*
 
@@ -30,10 +39,12 @@ COPY ./engine/ ./engine/
 COPY ./webapp/ ./webapp/
 COPY ./config.example.toml .
 
-# Data directory (db, logs) and config directory will be mounted from host
+# Drop in the built frontend from stage 1
+COPY --from=frontend-builder /app/webapp/static/dist ./webapp/static/dist
+
+# Writable mounts will come from the host
 RUN mkdir -p /config /data && chown -R hlo:hlo /config /data
 
-# Default environment
 ENV HARDLINK_CONFIG=/config/config.toml
 ENV PYTHONUNBUFFERED=1
 ENV PUID=1000
@@ -41,8 +52,6 @@ ENV PGID=1000
 
 EXPOSE 7700
 
-# entrypoint.sh runs as root, remaps hlo UID/GID to PUID/PGID, chowns the
-# writable mounts, then drops privilege via gosu before exec-ing the CMD.
 COPY packaging/docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

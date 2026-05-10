@@ -31,7 +31,7 @@ This repository is prepared to build and publish the Docker image with GitHub Ac
 
 - builds the image on pull requests for validation
 - builds and pushes branch-tagged images on pushes to `main`
-- builds and pushes versioned images on tags like `v0.3.0`
+- builds and pushes versioned images on tags like `v1.0.0-rc.1`
 - publishes `latest` only for version tags
 
 ### Prerequisites
@@ -44,8 +44,8 @@ This repository is prepared to build and publish the Docker image with GitHub Ac
 
 1. Merge Docker-related changes to `main`
 2. Verify the GitHub Actions build succeeds
-3. Create and push a version tag such as `v0.3.0`
-4. Pull the published image from GHCR on Unraid or continue using the local compose build
+3. Create and push a version tag such as `v1.0.0-rc.1`
+4. Pull the published image from GHCR on Unraid
 
 ## Community Apps publishing prep
 
@@ -155,12 +155,7 @@ port = 7700
 docker compose -f packaging/unraid/docker-compose.yml up -d
 ```
 
-This compose file now builds the image from the Hardlink Organizer root automatically.
-If you prefer a manual build step, run:
-
-```bash
-docker build -f packaging/docker/Dockerfile -t hardlink-organizer:0.3.0 .
-```
+This compose file pulls the image from GHCR automatically on first start.
 
 ### 4. Access the UI
 
@@ -198,11 +193,10 @@ docker exec -it hardlink-organizer \
 ## Upgrade procedure
 
 ```bash
-docker compose -f packaging/unraid/docker-compose.yml build
-docker compose -f packaging/unraid/docker-compose.yml up -d --force-recreate
+docker compose -f docker-compose.yml pull
+docker compose -f docker-compose.yml up -d --force-recreate
 ```
 
-If a registry image is published later from GitHub Actions, `docker pull ghcr.io/<github-owner>/hardlink-organizer:<tag>` can replace the local build step.
 Config and database are preserved via host mounts across upgrades.
 
 ---

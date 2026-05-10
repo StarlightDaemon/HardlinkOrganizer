@@ -1,15 +1,16 @@
 # Hardlink Organizer — Unraid Docker Compose
-# Run from the Hardlink Organizer root and adjust paths to match your Unraid setup.
-# Start: docker compose -f packaging/unraid/docker-compose.yml up -d
-
-version: "3.8"
+# Place this file anywhere on your Unraid host, then:
+#   docker compose -f docker-compose.yml up -d
+#
+# Before first start:
+#   1. Create /mnt/user/appdata/hardlink-organizer/data/
+#   2. Copy config.example.toml → /mnt/user/appdata/hardlink-organizer/config.toml
+#   3. Edit config.toml — set db_file/log_file to /data/... and source/dest paths
+#      to point inside your shared disk mount (see volume notes below).
 
 services:
   hardlink-organizer:
-    build:
-      context: ../..
-      dockerfile: packaging/docker/Dockerfile
-    image: hardlink-organizer:0.3.0    # or ghcr.io/... when published
+    image: ghcr.io/starlightdaemon/hardlink-organizer:v1.0.0-rc.1
     container_name: hardlink-organizer
     restart: unless-stopped
     ports:
@@ -17,23 +18,35 @@ services:
 
     volumes:
       # --- Config file ---
-      # Edit /mnt/user/appdata/hardlink-organizer/config.toml before first start.
       - /mnt/user/appdata/hardlink-organizer:/config
 
       # --- State (SQLite DB + logs) ---
       - /mnt/user/appdata/hardlink-organizer/data:/data
 
-      # --- Source sets (ingress / download roots) ---
-      # Add one entry per [source_sets] key in your config.toml
-      - /mnt/user/ingress/movies:/mnt/src/movies:ro
-      - /mnt/user/ingress/shows:/mnt/src/shows:ro
-      - /mnt/user/ingress/audiobooks:/mnt/src/audiobooks:ro
+      # --- Recommended: single shared disk-level parent mount ---
+      # Both source and destination paths must resolve to the same underlying
+      # device. The safest way to guarantee this on Unraid is to mount a single
+      # disk or pool root and keep both source_sets and dest_sets inside it.
+      #
+      # Example config.toml entries for this layout:
+      #   [source_sets]
+      #   movies = "/mnt/disk3/ingress/movies"
+      #   [dest_sets]
+      #   movies = "/mnt/disk3/media/movies"
+      - /mnt/disk3:/mnt/disk3
 
-      # --- Destination sets (library roots) ---
-      # MUST be on the same Unraid share/device as the source sets above.
-      - /mnt/user/media/movies:/mnt/dst/movies
-      - /mnt/user/media/shows:/mnt/dst/shows
-      - /mnt/user/media/audiobooks:/mnt/dst/audiobooks
+      # --- Alternative: separate source / destination mounts (higher risk) ---
+      # Even when source and destination appear to share the same device ID,
+      # separate bind mounts can still fail with EXDEV on Unraid. Prefer the
+      # shared parent mount above. Use this layout only if your paths cannot
+      # share a common parent.
+      #
+      # - /mnt/user/ingress/movies:/mnt/src/movies:ro
+      # - /mnt/user/ingress/shows:/mnt/src/shows:ro
+      # - /mnt/user/ingress/audiobooks:/mnt/src/audiobooks:ro
+      # - /mnt/user/media/movies:/mnt/dst/movies
+      # - /mnt/user/media/shows:/mnt/dst/shows
+      # - /mnt/user/media/audiobooks:/mnt/dst/audiobooks
 
     environment:
       - PYTHONUNBUFFERED=1

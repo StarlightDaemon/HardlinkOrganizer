@@ -19,7 +19,7 @@ Dockerfile can reach the application source:
 
 ```bash
 # From the Hardlink Organizer root
-docker build -f packaging/docker/Dockerfile -t hardlink-organizer:0.3.0 .
+docker build -f packaging/docker/Dockerfile -t hardlink-organizer:v1.0.0-rc.1 .
 ```
 
 ## Running (generic)
@@ -58,7 +58,7 @@ id -g   # → use as PGID
 Once published via GitHub Actions, the image is available from GHCR:
 
 ```bash
-docker pull ghcr.io/<github-owner>/hardlink-organizer:latest
+docker pull ghcr.io/starlightdaemon/hardlink-organizer:latest
 ```
 
 See `packaging/unraid/README.md` for the full GitHub Actions publishing workflow.
