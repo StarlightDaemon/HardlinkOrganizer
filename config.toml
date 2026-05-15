@@ -1,0 +1,53 @@
+# Hardlink Organizer — Example Configuration
+# Copy this file to config.toml and edit paths to match your Unraid setup.
+# All path values must point to directories that already exist on the target host.
+
+# ---------------------------------------------------------------------------
+# Output paths for inventory files and persistent log
+# ---------------------------------------------------------------------------
+[paths]
+index_json = "/tmp/hardlink-organizer/index.json"
+index_tsv  = "/tmp/hardlink-organizer/index.tsv"
+log_file   = "/boot/logs/hardlink-organizer.log"
+
+# SQLite database for scan history and link operation records (added in 0.2.0)
+db_file    = "/tmp/hardlink-organizer/state.db"
+
+# ---------------------------------------------------------------------------
+# Tool behaviour defaults
+# ---------------------------------------------------------------------------
+[settings]
+# Whether to include hidden top-level entries (names starting with ".")
+include_hidden = false
+
+# How to handle destination collisions: "skip" is the only supported policy in v1
+collision_policy = "skip"
+
+# Default command when called with no subcommand (informational; not enforced by argparse)
+default_command = "interactive"
+
+# ---------------------------------------------------------------------------
+# Named source sets — ingress or download roots to scan
+# Each key becomes the source_set name used in CLI commands.
+# ---------------------------------------------------------------------------
+[source_sets]
+movies       = "/mnt/user/ingress/movies"
+shows        = "/mnt/user/ingress/shows"
+audiobooks   = "/mnt/user/ingress/audiobooks"
+
+# ---------------------------------------------------------------------------
+# Named destination sets — library roots to hardlink files into
+# Each key becomes the dest_set name used in CLI commands.
+# ---------------------------------------------------------------------------
+[dest_sets]
+movies       = "/mnt/user/media/movies"
+shows        = "/mnt/user/media/shows"
+audiobooks   = "/mnt/user/media/audiobooks"
+
+# ---------------------------------------------------------------------------
+# Web application settings (used by webapp/run.py, ignored by CLI)
+# ---------------------------------------------------------------------------
+[webapp]
+host  = "0.0.0.0"   # bind address; use 127.0.0.1 for localhost-only
+port  = 7700         # default port
+debug = false        # set true during development only

@@ -18,3 +18,10 @@ dist/
 build/
 .env
 .env.*
+
+# Generated scan output
+hardlink-index.json
+hardlink-index.tsv
+
+# Dev/debug utilities
+webapp/frontend/check_console.cjs

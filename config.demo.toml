@@ -1,0 +1,20 @@
+[paths]
+db_file = "/tmp/hardlink-organizer/demo.db"
+log_file = "/tmp/hardlink-organizer/demo.log"
+
+[settings]
+include_hidden = false
+collision_policy = "skip"
+
+[source_sets]
+movies = "demo_data/ingress/movies"
+shows = "demo_data/ingress/shows"
+
+[dest_sets]
+movies = "demo_data/library/movies"
+shows = "demo_data/library/shows"
+
+[webapp]
+host = "0.0.0.0"
+port = 8000
+debug = true
