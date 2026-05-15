@@ -10,3 +10,12 @@ This file is a RAIDEN-managed law artifact inside an installed Writ.
 4. Treat local edits to managed-core files as exceptions that require explicit
    update conflict handling rather than silent overwrite.
 5. Review RAIDEN updates before applying to understand scope of changes.
+
+## Commit Attribution Policy
+
+Commits in a RAIDEN Instance must carry only the operator's git identity.
+
+- Do not add `Co-Authored-By`, `Co-authored-by`, or any agent attribution
+  trailer lines to commit messages.
+- The `commit-msg` hook installed by RAIDEN enforces this at the git level.
+  Do not remove or bypass it.
