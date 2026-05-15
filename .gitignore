@@ -25,3 +25,8 @@ hardlink-index.tsv
 
 # Dev/debug utilities
 webapp/frontend/check_console.cjs
+
+# RAIDEN audit outputs — operational findings, not framework content
+audit-reports/
+.raiden/state/AUDIT_LOG.md
+.raiden/state/last-audit.md

@@ -1,5 +1,5 @@
 {
-  "installed_edict_version": "0.2.0",
+  "installed_edict_version": "0.4.0",
   "installed_at": "2026-05-03T08:03:22.164566+00:00",
   "managed_files": [
     {
@@ -13,6 +13,10 @@
     {
       "path": "OWNERSHIP_BOUNDARY.md",
       "hash": "e203b5afde0afdc22889803dce2f51c570d7bdb2089581c4d7f5e3fe85e06de0"
+    },
+    {
+      "path": "WORKSPACE_AUDIT_PROTOCOL.md",
+      "hash": "1fa98a0ab068349d71556b142d433fe52462de0cca237d773e4e3dc2ad5bdbb0"
     }
   ]
 }
