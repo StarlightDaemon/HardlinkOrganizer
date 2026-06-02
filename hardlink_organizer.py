@@ -784,14 +784,26 @@ def hardlink_file(src: Path, dst: Path, result: LinkResult, dry_run: bool = Fals
     Create a hardlink at *dst* pointing to *src*.
     Skips if *dst* already exists. Never overwrites.
     """
-    if dst.exists():
-        try:
-            if os.path.samestat(src.stat(), dst.stat()):
-                _logger.debug("SKIP (already linked): %s", dst)
-            else:
-                _logger.warning("SKIP (collision — unrelated file exists): %s", dst)
-        except OSError:
-            _logger.debug("SKIP (exists, stat failed): %s", dst)
+    # Use lstat so we see a symlink at dst as a symlink, not as its target.
+    try:
+        dst_lstat = os.lstat(dst)
+    except FileNotFoundError:
+        dst_lstat = None
+    except OSError:
+        dst_lstat = None
+
+    if dst_lstat is not None:
+        import stat as _stat
+        if _stat.S_ISLNK(dst_lstat.st_mode):
+            _logger.warning("SKIP (symlink at destination): %s", dst)
+        else:
+            try:
+                if os.path.samestat(src.stat(), os.stat(dst)):
+                    _logger.debug("SKIP (already linked): %s", dst)
+                else:
+                    _logger.warning("SKIP (collision — unrelated file exists): %s", dst)
+            except OSError:
+                _logger.debug("SKIP (exists, stat failed): %s", dst)
         result.skipped.append(str(dst))
         return
 
@@ -839,7 +851,10 @@ def hardlink_tree(
     for child in sorted(children, key=lambda p: (p.is_file(), p.name.lower())):
         rel = child.relative_to(src_dir)
         target = dst_dir / rel
-        if child.is_dir():
+        if child.is_symlink():
+            _logger.debug("SKIP (symlink): %s", child)
+            result.skipped.append(str(child))
+        elif child.is_dir():
             hardlink_tree(child, target, result, dry_run=dry_run)
         elif child.is_file():
             hardlink_file(child, target, result, dry_run=dry_run)
