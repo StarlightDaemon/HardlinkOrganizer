@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -478,6 +479,14 @@ class TestWebApp(unittest.TestCase):
         self.assertTrue(data["success"])
         self.assertGreater(data["linked"], 0)
         self.assertIsNotNone(data["history_id"])
+        dst_path = data["linked_files"][0]
+        self.assertTrue(os.path.exists(dst_path), f"Destination file missing: {dst_path}")
+        self.assertEqual(
+            os.stat(full_path).st_ino,
+            os.stat(dst_path).st_ino,
+            "Source and destination do not share an inode — not a real hardlink",
+        )
+        self.assertGreaterEqual(os.stat(dst_path).st_nlink, 2)
 
     def test_execute_records_history(self):
         full_path, subpath = self._get_entry_path_and_subpath()
@@ -868,6 +877,17 @@ class TestDestinationAPI(unittest.TestCase):
         data = res.json()
         self.assertEqual(data["tag"], "media")
         self.assertEqual(data["notes"], "primary media share")
+
+    def test_create_destination_unsafe_root_returns_400(self):
+        res = self.client.post("/api/destinations", json={"label": "Boot", "path": "/boot"})
+        self.assertEqual(res.status_code, 400)
+
+    def test_create_destination_nonexistent_safe_path_succeeds(self):
+        res = self.client.post("/api/destinations", json={
+            "label": "Future",
+            "path": "/nonexistent/safe/path",
+        })
+        self.assertEqual(res.status_code, 201)
 
     # -----------------------------------------------------------------------
     # Patch

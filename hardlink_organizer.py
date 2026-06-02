@@ -28,7 +28,7 @@ import time
 from pathlib import Path
 from typing import TypedDict
 
-__version__ = "0.3.0"
+__version__ = "1.0.0-rc.1"
 
 # ---------------------------------------------------------------------------
 # Conditional import: tomllib is stdlib in Python 3.11+; fall back to tomli.
@@ -518,7 +518,7 @@ def _find_mount_point(path: str, mount_points: list[str]) -> str | None:
     return None
 
 
-def _classify_mount_layout_path(path: str) -> str:
+def classify_mount_layout(path: str) -> str:
     """Classify a path into a coarse platform-aware layout kind."""
     normalized = os.path.normpath(path)
     if normalized == "/mnt/user" or normalized.startswith("/mnt/user/"):
@@ -573,8 +573,8 @@ def assess_mount_layout(
     mount_points = _load_mount_points(mountinfo_text)
     source_mount_point = _find_mount_point(source_path, mount_points)
     dest_mount_point = _find_mount_point(dest_root, mount_points)
-    source_kind = _classify_mount_layout_path(source_path)
-    dest_kind = _classify_mount_layout_path(dest_root)
+    source_kind = classify_mount_layout(source_path)
+    dest_kind = classify_mount_layout(dest_root)
 
     warnings: list[MountLayoutWarning] = []
 

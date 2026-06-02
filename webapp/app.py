@@ -18,6 +18,7 @@ if str(_TOOL_DIR) not in sys.path:
     sys.path.insert(0, str(_TOOL_DIR))
 
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 import csv
@@ -35,7 +36,7 @@ from engine import (
     ScanError,
     ConfigError,
 )
-from hardlink_organizer import _classify_mount_layout_path
+from engine import classify_mount_layout
 from engine.db import Database
 from engine.verification import run_verification_for_link_history
 from webapp.models import (
@@ -106,7 +107,7 @@ def _validate_dest_path(path: str) -> DestinationValidateResponse:
             message=f"Path {normalized!r} is not writable by the current process.",
         ))
 
-    path_kind = _classify_mount_layout_path(normalized)
+    path_kind = classify_mount_layout(normalized)
     if path_kind == "user_share":
         warnings.append(DestinationValidateWarning(
             code="unraid_user_share",
@@ -165,6 +166,21 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
     app.state.cfg = cfg
     app.state.db = db
     app.state.config_path = config_path
+
+    # -----------------------------------------------------------------------
+    # Normalize all error responses to {"errors": ["..."]} for consistency.
+    # -----------------------------------------------------------------------
+
+    @app.exception_handler(HTTPException)
+    async def http_exception_handler(request: Request, exc: HTTPException):
+        detail = exc.detail
+        errors = detail if isinstance(detail, list) else [str(detail)]
+        return JSONResponse(status_code=exc.status_code, content={"errors": errors})
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(request: Request, exc: RequestValidationError):
+        errors = [f"{' -> '.join(str(l) for l in e['loc'])}: {e['msg']}" for e in exc.errors()]
+        return JSONResponse(status_code=422, content={"errors": errors})
 
     # -----------------------------------------------------------------------
     # Health
@@ -642,6 +658,12 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
 
     @app.post("/api/destinations", response_model=DestinationEntry, status_code=201)
     async def create_destination(request: Request, body: DestinationCreate):
+        validation = _validate_dest_path(body.path)
+        if validation.checks.is_unsafe_root:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Path {body.path!r} is a system root and cannot be used as a destination.",
+            )
         d: Database = request.app.state.db
         now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         try:
