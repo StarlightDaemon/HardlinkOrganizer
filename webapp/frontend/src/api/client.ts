@@ -1,6 +1,7 @@
 import type {
   SetsWithStatusResponse,
   InventoryResponse,
+  InventoryDetailResponse,
   PreviewRequest,
   PreviewResponse,
   ExecuteRequest,
@@ -45,6 +46,12 @@ export const api = {
 
   getInventory: (sourceSet: string) =>
     request<InventoryResponse>('GET', `/api/inventory?source_set=${encodeURIComponent(sourceSet)}`),
+
+  getInventoryDetail: (sourceSet: string, fullPath: string) =>
+    request<InventoryDetailResponse>(
+      'GET',
+      `/api/inventory/detail?source_set=${encodeURIComponent(sourceSet)}&full_path=${encodeURIComponent(fullPath)}`
+    ),
 
   preview: (body: PreviewRequest) =>
     request<PreviewResponse>('POST', '/api/preview', body),

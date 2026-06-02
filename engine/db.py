@@ -156,6 +156,11 @@ class Database:
                 self._conn().commit()
             except sqlite3.OperationalError:
                 pass  # column already exists
+            try:
+                self._conn().execute("ALTER TABLE inventory ADD COLUMN inode INTEGER")
+                self._conn().commit()
+            except sqlite3.OperationalError:
+                pass  # column already exists
 
     def close(self) -> None:
         """Close the shared connection. Safe to call from any thread."""
@@ -183,8 +188,8 @@ class Database:
             conn.executemany(
                 """INSERT INTO inventory
                    (scan_id, source_set, entry_type, display_name, real_name,
-                    full_path, size_bytes, device_id, scan_time)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    full_path, size_bytes, device_id, scan_time, inode)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 [
                     (
                         scan_id,
@@ -197,6 +202,7 @@ class Database:
                         # Windows st_dev can be large unsigned; clamp to SQLite INT64
                         int(e.get("device_id", 0)) & 0x7FFFFFFFFFFFFFFF,
                         e.get("scan_time", scan_time),
+                        e.get("inode"),
                     )
                     for e in entries
                 ],
@@ -318,6 +324,17 @@ class Database:
             ).fetchone()
         return row is not None
 
+    def get_history_for_path(self, full_path: str) -> list[dict]:
+        """Return all non-dry-run link_history records for full_path, newest first."""
+        with self._lock:
+            rows = self._conn().execute(
+                """SELECT * FROM link_history
+                   WHERE full_path = ? AND dry_run = 0
+                   ORDER BY id DESC""",
+                (full_path,),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
     def get_link_status(self, full_paths: list[str]) -> dict[str, bool]:
         """Batch check: return {full_path: linked} for a list of paths."""
         if not full_paths:
@@ -336,6 +353,33 @@ class Database:
                 ).fetchall()
                 linked_set.update(r["full_path"] for r in rows)
         return {p: (p in linked_set) for p in full_paths}
+
+    def get_inode_peers(
+        self,
+        source_set: str,
+        inode: int,
+        device_id: int,
+        exclude_path: str,
+    ) -> list[dict]:
+        """Return inventory rows from latest scan of source_set that share
+        (inode, device_id) but are not exclude_path."""
+        with self._lock:
+            conn = self._conn()
+            scan_row = conn.execute(
+                "SELECT id FROM scans WHERE source_set = ? ORDER BY id DESC LIMIT 1",
+                (source_set,),
+            ).fetchone()
+            if not scan_row:
+                return []
+            scan_id = scan_row["id"]
+            rows = conn.execute(
+                """SELECT id, full_path, display_name, real_name
+                   FROM inventory
+                   WHERE scan_id = ? AND inode = ? AND device_id = ?
+                     AND full_path != ?""",
+                (scan_id, inode, device_id, exclude_path),
+            ).fetchall()
+        return [dict(r) for r in rows]
 
     # ------------------------------------------------------------------
     # Verification runs

@@ -156,6 +156,26 @@ class HistoryResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Inventory detail
+# ---------------------------------------------------------------------------
+
+class InodePeer(BaseModel):
+    id: int
+    full_path: str
+    display_name: str
+    real_name: str
+
+
+class InventoryDetailResponse(BaseModel):
+    full_path: str
+    inode: int | None = None
+    nlink: int | None = None
+    device_id: int | None = None
+    hlo_links: list[HistoryEntry] = Field(default_factory=list)
+    inode_peers: list[InodePeer] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
 # Health
 # ---------------------------------------------------------------------------
 

@@ -206,3 +206,19 @@ export interface HealthResponse {
   config_loaded: boolean;
   db_connected: boolean;
 }
+
+export interface InodePeer {
+  id: number;
+  full_path: string;
+  display_name: string;
+  real_name: string;
+}
+
+export interface InventoryDetailResponse {
+  full_path: string;
+  inode: number | null;
+  nlink: number | null;
+  device_id: number | null;
+  hlo_links: HistoryEntry[];
+  inode_peers: InodePeer[];
+}

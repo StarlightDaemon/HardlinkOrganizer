@@ -65,6 +65,8 @@ from webapp.models import (
     DestinationValidateChecks,
     DestinationValidateWarning,
     DestinationValidateResponse,
+    InodePeer,
+    InventoryDetailResponse,
 )
 
 _STATIC_DIR = Path(__file__).parent / "static"
@@ -325,6 +327,97 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
             entries=entries,
             scan_time=scan_time,
             from_db=from_db,
+        )
+
+    # -----------------------------------------------------------------------
+    # Inventory detail
+    # -----------------------------------------------------------------------
+
+    @app.get("/api/inventory/detail", response_model=InventoryDetailResponse)
+    async def get_inventory_detail(request: Request, source_set: str, full_path: str):
+        c: Config = request.app.state.cfg
+        d: Database = request.app.state.db
+
+        if source_set not in c["source_sets"]:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Source set {source_set!r} not found in config.",
+            )
+
+        inode: int | None = None
+        nlink: int | None = None
+        device_id_val: int | None = None
+
+        try:
+            src = Path(full_path)
+            if src.is_dir():
+                stat_target = None
+                with os.scandir(full_path) as it:
+                    for entry in it:
+                        if entry.is_file(follow_symlinks=False):
+                            stat_target = entry.path
+                            break
+                if stat_target is None:
+                    with os.scandir(full_path) as it:
+                        for subdir in it:
+                            if not subdir.is_dir(follow_symlinks=False):
+                                continue
+                            with os.scandir(subdir.path) as sub_it:
+                                for entry in sub_it:
+                                    if entry.is_file(follow_symlinks=False):
+                                        stat_target = entry.path
+                                        break
+                            if stat_target:
+                                break
+                if stat_target:
+                    st = os.stat(stat_target)
+                    inode = st.st_ino
+                    nlink = st.st_nlink
+                    device_id_val = st.st_dev
+            else:
+                st = src.stat()
+                inode = st.st_ino
+                nlink = st.st_nlink
+                device_id_val = st.st_dev
+        except OSError:
+            pass
+
+        hlo_links_raw = d.get_history_for_path(full_path)
+        hlo_links = [
+            HistoryEntry(
+                id=r["id"],
+                source_set=r["source_set"],
+                real_name=r["real_name"],
+                display_name=r.get("display_name"),
+                full_path=r["full_path"],
+                dest_set=r["dest_set"],
+                dest_root=r["dest_root"],
+                dest_subpath=r["dest_subpath"],
+                dest_full=r["dest_full"],
+                linked_count=r["linked_count"],
+                skipped_count=r["skipped_count"],
+                failed_count=r["failed_count"],
+                dry_run=bool(r["dry_run"]),
+                linked_at=r["linked_at"],
+                notes=r.get("notes"),
+            )
+            for r in hlo_links_raw
+        ]
+
+        if inode is not None and device_id_val is not None:
+            clamped_dev = int(device_id_val) & 0x7FFFFFFFFFFFFFFF
+            peers_raw = d.get_inode_peers(source_set, inode, clamped_dev, full_path)
+            inode_peers = [InodePeer(**p) for p in peers_raw]
+        else:
+            inode_peers = []
+
+        return InventoryDetailResponse(
+            full_path=full_path,
+            inode=inode,
+            nlink=nlink,
+            device_id=device_id_val,
+            hlo_links=hlo_links,
+            inode_peers=inode_peers,
         )
 
     # -----------------------------------------------------------------------

@@ -5,7 +5,7 @@ import tokens from '@tokens';
 import { useAppState } from '../../state/AppState';
 import { api } from '../../api/client';
 import { useToast } from '@fujin';
-import type { InventoryEntry } from '../../api/types';
+import type { InventoryEntry, InventoryDetailResponse } from '../../api/types';
 
 function formatBytes(n: number): string {
   if (n >= 1_073_741_824) return `${(n / 1_073_741_824).toFixed(1)} GB`;
@@ -21,6 +21,28 @@ export function BrowseStep() {
   } = useAppState();
   const { show } = useToast();
   const [hideLinked, setHideLinked] = useState(false);
+  const [detailEntry, setDetailEntry] = useState<InventoryEntry | null>(null);
+  const [detailData, setDetailData] = useState<InventoryDetailResponse | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+
+  async function handleDetailClick(row: InventoryEntry) {
+    if (detailEntry?.id === row.id) {
+      setDetailEntry(null);
+      setDetailData(null);
+      return;
+    }
+    setDetailEntry(row);
+    setDetailData(null);
+    setLoadingDetail(true);
+    try {
+      const result = await api.getInventoryDetail(sourceSet!, row.full_path);
+      setDetailData(result);
+    } catch (err) {
+      show({ status: 'danger', message: `Failed to load detail: ${(err as Error).message}` });
+    } finally {
+      setLoadingDetail(false);
+    }
+  }
 
   useEffect(() => {
     if (!sourceSet || inventory.length > 0) return;
@@ -97,7 +119,17 @@ export function BrowseStep() {
         row.linked
           ? <StatusBadge status='success' label='Linked (HLO)' />
           : row.already_linked
-            ? <StatusBadge status='warning' label='Linked (disk)' />
+            ? (
+              <UnstyledButton
+                onClick={() => handleDetailClick(row)}
+                style={{ cursor: 'pointer', display: 'inline-flex' }}
+              >
+                <StatusBadge
+                  status={detailEntry?.id === row.id ? 'info' : 'warning'}
+                  label='Linked (disk)'
+                />
+              </UnstyledButton>
+            )
             : <StatusBadge status='neutral' label='Not linked' />
       ),
     },
@@ -181,6 +213,112 @@ export function BrowseStep() {
           </UnstyledButton>
         )}
       />
+
+      {detailEntry !== null && (
+        <div style={{
+          border:      '1px solid var(--fujin-border-default)',
+          background:  'var(--fujin-bg-surface)',
+          padding:     `${tokens.spacing.scale.md}px`,
+          display:     'flex',
+          flexDirection: 'column',
+          gap:         `${tokens.spacing.scale.sm}px`,
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{
+              fontFamily: tokens.typography.fontFamily.base,
+              fontSize:   tokens.typography.fontSize.md,
+              fontWeight: tokens.typography.fontWeight.semibold,
+              color:      'var(--fujin-text-primary)',
+            }}>
+              {detailEntry.display_name} — Link Detail
+            </span>
+            <UnstyledButton
+              onClick={() => { setDetailEntry(null); setDetailData(null); }}
+              style={{
+                fontFamily: tokens.typography.fontFamily.base,
+                fontSize:   tokens.typography.fontSize.sm,
+                color:      'var(--fujin-text-muted)',
+                cursor:     'pointer',
+              }}
+            >
+              ✕ Close
+            </UnstyledButton>
+          </div>
+
+          {loadingDetail ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: `${tokens.spacing.scale.xs}px` }}>
+              <Loader size={14} color="var(--fujin-text-muted)" />
+              <span style={{ fontFamily: tokens.typography.fontFamily.base, fontSize: tokens.typography.fontSize.sm, color: 'var(--fujin-text-muted)' }}>
+                Loading…
+              </span>
+            </div>
+          ) : detailData && (
+            <>
+              <div style={{
+                fontFamily: tokens.typography.fontFamily.mono,
+                fontSize:   tokens.typography.fontSize.xs,
+                color:      'var(--fujin-text-muted)',
+              }}>
+                Inode: {detailData.inode ?? 'N/A'} | Hard links: {detailData.nlink ?? 'N/A'} | Device: {detailData.device_id ?? 'N/A'}
+              </div>
+
+              <div>
+                <div style={{
+                  fontFamily: tokens.typography.fontFamily.base,
+                  fontSize:   tokens.typography.fontSize.sm,
+                  fontWeight: tokens.typography.fontWeight.medium,
+                  color:      'var(--fujin-text-primary)',
+                  marginBottom: `${tokens.spacing.scale.xs}px`,
+                }}>
+                  HLO Link History
+                </div>
+                {detailData.hlo_links.length === 0 ? (
+                  <span style={{ fontFamily: tokens.typography.fontFamily.base, fontSize: tokens.typography.fontSize.sm, color: 'var(--fujin-text-muted)' }}>
+                    Not managed by HLO — linked by an external process.
+                  </span>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: `${tokens.spacing.scale.xs}px` }}>
+                    {detailData.hlo_links.map(link => (
+                      <div key={link.id} style={{ fontFamily: tokens.typography.fontFamily.mono, fontSize: tokens.typography.fontSize.xs, color: 'var(--fujin-text-secondary)' }}>
+                        {link.dest_full}  ({link.linked_at})
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div style={{
+                  fontFamily: tokens.typography.fontFamily.base,
+                  fontSize:   tokens.typography.fontSize.sm,
+                  fontWeight: tokens.typography.fontWeight.medium,
+                  color:      'var(--fujin-text-primary)',
+                  marginBottom: `${tokens.spacing.scale.xs}px`,
+                }}>
+                  Hardlink Peers
+                </div>
+                {detailData.inode_peers.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: `${tokens.spacing.scale.xs}px` }}>
+                    {detailData.inode_peers.map(peer => (
+                      <div key={peer.id} style={{ fontFamily: tokens.typography.fontFamily.mono, fontSize: tokens.typography.fontSize.xs, color: 'var(--fujin-text-secondary)' }}>
+                        {peer.display_name}  ({peer.full_path})
+                      </div>
+                    ))}
+                  </div>
+                ) : detailEntry.entry_type === 'dir' ? (
+                  <span style={{ fontFamily: tokens.typography.fontFamily.base, fontSize: tokens.typography.fontSize.sm, color: 'var(--fujin-text-muted)' }}>
+                    Peer grouping not available for directory entries.
+                  </span>
+                ) : (
+                  <span style={{ fontFamily: tokens.typography.fontFamily.base, fontSize: tokens.typography.fontSize.sm, color: 'var(--fujin-text-muted)' }}>
+                    No peers found in this source set.
+                  </span>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
