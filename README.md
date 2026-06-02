@@ -17,8 +17,8 @@ fully polished public release.
 
 | Area | Current State |
 | --- | --- |
-| Version | `0.3.0` |
-| Status | `verification foundation` |
+| Version | `1.0.0-rc.1` |
+| Status | `pre-release / release candidate` |
 | Primary target | `Docker — Unraid, TrueNAS, OMV, and generic Linux` |
 | Interface | hosted web UI with CLI fallback |
 | Safety stance | preview-first, source-safe, same-device validation |
@@ -39,6 +39,10 @@ fully polished public release.
 3. Preview the proposed destination path and validation results.
 4. Link only after the plan looks correct.
 5. Review history and verification output afterward.
+
+> **Security note:** Hardlink Organizer has no authentication. It is designed
+> for trusted local or LAN use only. Do not expose port 7700 to the public
+> internet or untrusted networks.
 
 ## Quick Start
 
