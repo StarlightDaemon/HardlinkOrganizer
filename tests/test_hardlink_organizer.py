@@ -112,7 +112,7 @@ class TestGenerateDisplayName(unittest.TestCase):
 class TestVersioning(unittest.TestCase):
 
     def test_version_constant_present(self):
-        self.assertEqual(hlo.__version__, "1.0.0")
+        self.assertEqual(hlo.__version__, "1.0.1")
 
 
 # ---------------------------------------------------------------------------
