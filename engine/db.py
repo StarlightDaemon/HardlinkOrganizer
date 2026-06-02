@@ -97,6 +97,18 @@ CREATE TABLE IF NOT EXISTS destinations (
     created_at TEXT    NOT NULL,
     updated_at TEXT    NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_scans_source_set
+    ON scans (source_set);
+
+CREATE INDEX IF NOT EXISTS idx_inventory_scan_id
+    ON inventory (scan_id);
+
+CREATE INDEX IF NOT EXISTS idx_link_history_source_set
+    ON link_history (source_set);
+
+CREATE INDEX IF NOT EXISTS idx_verification_results_run_id
+    ON verification_results (run_id);
 """
 
 
@@ -209,10 +221,8 @@ class Database:
                 (scan_id,),
             ).fetchall()
         result = []
-        for idx, r in enumerate(rows, start=1):
-            d = dict(r)
-            d["id"] = idx
-            result.append(d)
+        for r in rows:
+            result.append(dict(r))
         return result
 
     def get_last_scan_time(self, source_set: str) -> str | None:

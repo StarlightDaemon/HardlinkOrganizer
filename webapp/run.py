@@ -9,6 +9,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import logging
 import os
 import sys
 from pathlib import Path
@@ -21,6 +22,8 @@ if str(_TOOL_DIR) not in sys.path:
 from engine import __version__, load_config, ConfigError  # noqa: E402
 from engine.db import Database  # noqa: E402
 from webapp.app import create_app  # noqa: E402
+
+_logger = logging.getLogger("hardlink_organizer")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -67,14 +70,14 @@ def main(argv: list[str] | None = None) -> int:
 
     app = create_app(cfg, db, args.config)
 
-    print(f"\n  ╔══════════════════════════════════════════╗")
     _ver = __version__.ljust(9)
-    print(f"  ║   Hardlink Organizer v{_ver}        ║")
-    print(f"  ╚══════════════════════════════════════════╝")
-    print(f"\n  → UI:      http://{args.host}:{args.port}")
-    print(f"  → API:     http://{args.host}:{args.port}/api/docs")
-    print(f"  → Config:  {args.config}")
-    print(f"  → DB:      {db_path}\n")
+    _logger.info("\n  ╔══════════════════════════════════════════╗")
+    _logger.info(f"  ║   Hardlink Organizer v{_ver}        ║")
+    _logger.info("  ╚══════════════════════════════════════════╝")
+    _logger.info(f"\n  → UI:      http://{args.host}:{args.port}")
+    _logger.info(f"  → API:     http://{args.host}:{args.port}/api/docs")
+    _logger.info(f"  → Config:  {args.config}")
+    _logger.info(f"  → DB:      {db_path}")
 
     try:
         import uvicorn
