@@ -9,7 +9,7 @@ services:
     build:
       context: ../..
       dockerfile: packaging/docker/Dockerfile
-    image: hardlink-organizer:0.3.0    # or ghcr.io/<github-owner>/hardlink-organizer:<tag>
+    image: hardlink-organizer:v1.0.0    # or ghcr.io/<github-owner>/hardlink-organizer:<tag>
     container_name: hardlink-organizer
     restart: unless-stopped
     ports:

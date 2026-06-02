@@ -20,7 +20,7 @@ export function DestStep() {
     try {
       const result = await api.preview({
         source_set:   entry.source_set,
-        entry_id:     entry.id,
+        full_path:    entry.full_path,
         dest_set:     destSet,
         dest_subpath: destSubpath || null,
       });
