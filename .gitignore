@@ -19,6 +19,9 @@ build/
 .env
 .env.*
 
+# Local config (copy of config.example.toml with real paths — never commit)
+config.toml
+
 # Generated scan output
 hardlink-index.json
 hardlink-index.tsv
