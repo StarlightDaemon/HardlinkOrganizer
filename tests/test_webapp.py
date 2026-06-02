@@ -522,6 +522,53 @@ class TestWebApp(unittest.TestCase):
         data = res.json()
         self.assertGreater(data["linked"], 0)
 
+    def test_execute_any_linked_true_when_files_linked(self):
+        """L-4: any_linked is True when at least one file was linked."""
+        full_path, subpath = self._get_entry_path_and_subpath()
+        res = self.client.post("/api/execute", json={
+            "source_set": "movies",
+            "full_path": full_path,
+            "dest_set": "movies",
+            "dest_subpath": subpath,
+            "dry_run": False,
+        })
+        data = res.json()
+        self.assertTrue(data["success"])
+        self.assertTrue(data["any_linked"])
+
+    def test_execute_any_linked_false_when_all_skipped(self):
+        """L-4: any_linked is False on a second run when all files already exist at destination."""
+        full_path, subpath = self._get_entry_path_and_subpath()
+        payload = {
+            "source_set": "movies",
+            "full_path": full_path,
+            "dest_set": "movies",
+            "dest_subpath": subpath,
+            "dry_run": False,
+        }
+        # First run links the files
+        self.client.post("/api/execute", json=payload)
+        # Second run finds all files already present — all skipped
+        res = self.client.post("/api/execute", json=payload)
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data["success"])
+        self.assertEqual(data["linked"], 0)
+        self.assertFalse(data["any_linked"])
+
+    # -----------------------------------------------------------------------
+    # Health — db_connected (L-2)
+    # -----------------------------------------------------------------------
+
+    def test_health_db_connected(self):
+        """L-2: /health returns db_connected bool, not db_path."""
+        res = self.client.get("/health")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertNotIn("db_path", data)
+        self.assertIn("db_connected", data)
+        self.assertTrue(data["db_connected"])
+
     # -----------------------------------------------------------------------
     # History
     # -----------------------------------------------------------------------

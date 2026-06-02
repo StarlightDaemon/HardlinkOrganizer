@@ -173,11 +173,16 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
     @app.get("/health", response_model=HealthResponse)
     async def health(request: Request):
         d: Database = request.app.state.db
+        try:
+            d._conn().execute("SELECT 1")
+            db_ok = True
+        except Exception:
+            db_ok = False
         return HealthResponse(
             status="ok",
             version=__version__,
             config_loaded=True,
-            db_path=str(d._path),
+            db_connected=db_ok,
         )
 
     # -----------------------------------------------------------------------
@@ -446,6 +451,7 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
             linked=len(result.linked),
             skipped=len(result.skipped),
             failed=len(result.failed),
+            any_linked=len(result.linked) > 0,
             linked_files=result.linked,
             skipped_files=result.skipped,
             failed_files=result.failed,

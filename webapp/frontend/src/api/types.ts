@@ -77,6 +77,7 @@ export interface ExecuteResponse {
   linked: number;
   skipped: number;
   failed: number;
+  any_linked: boolean;
   linked_files: string[];
   skipped_files: string[];
   failed_files: string[];
@@ -202,5 +203,5 @@ export interface HealthResponse {
   status: string;
   version: string;
   config_loaded: boolean;
-  db_path: string | null;
+  db_connected: boolean;
 }

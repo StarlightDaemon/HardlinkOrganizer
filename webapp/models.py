@@ -119,6 +119,7 @@ class ExecuteResponse(BaseModel):
     linked: int
     skipped: int
     failed: int
+    any_linked: bool
     linked_files: list[str]
     skipped_files: list[str]
     failed_files: list[str]
@@ -161,7 +162,7 @@ class HealthResponse(BaseModel):
     status: str
     version: str
     config_loaded: bool
-    db_path: str | None
+    db_connected: bool
 
 
 # ---------------------------------------------------------------------------
