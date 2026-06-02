@@ -72,7 +72,7 @@ class InventoryResponse(BaseModel):
 
 class PreviewRequest(BaseModel):
     source_set: str
-    entry_id: int
+    full_path: str
     dest_set: str
     dest_subpath: str | None = None
 
@@ -107,9 +107,9 @@ class PreviewResponse(BaseModel):
 
 class ExecuteRequest(BaseModel):
     source_set: str
-    entry_id: int
+    full_path: str
     dest_set: str
-    dest_subpath: str
+    dest_subpath: str | None = None
     dry_run: bool = False
 
 

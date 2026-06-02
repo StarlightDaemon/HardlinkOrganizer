@@ -392,7 +392,8 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
         entry = matched[0]
         dest_root = c["dest_sets"][body.dest_set]
 
-        plan = build_link_plan(entry, dest_root, body.dest_subpath)
+        dest_subpath = body.dest_subpath or suggest_destination_name(entry["display_name"])
+        plan = build_link_plan(entry, dest_root, dest_subpath)
         ok, errors = plan.is_valid()
 
         if not ok:
@@ -670,7 +671,7 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
     async def update_destination(request: Request, dest_id: int, body: DestinationUpdate):
         d: Database = request.app.state.db
         now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-        patch: dict = {k: v for k, v in body.model_dump().items() if v is not None}
+        patch: dict = body.model_dump(exclude_unset=True)
         patch["updated_at"] = now
         updated = d.update_destination(dest_id, **patch)
         if not updated:
