@@ -42,24 +42,28 @@ Hardlink Organizer scans configured source directories and lets you hardlink sel
 
 ### Docker (recommended)
 
-Pull the image and run with a minimal config:
+1. Copy and edit the example config:
+   ```bash
+   cp config.example.toml config.toml
+   # Edit config.toml — set source_sets and dest_sets to your actual media paths
+   ```
 
-```bash
-# Copy and edit the example config
-cp config.example.toml /path/to/config/config.toml
+2. Use the compose file for your platform under `packaging/` — it handles volume
+   layout, PUID/PGID, and restart policy correctly. For a generic Linux host:
+   ```bash
+   # Edit packaging/docker/docker-compose.yml to match your volume paths, then:
+   docker compose -f packaging/docker/docker-compose.yml up -d
+   ```
 
-# Run
-docker run -d \
-  --name hardlink-organizer \
-  -p 7700:7700 \
-  -v /path/to/config:/config \
-  -e PUID=1000 -e PGID=1000 \
-  ghcr.io/starlightdaemon/hardlink-organizer:v1.0.0
-```
+3. Open `http://localhost:7700`.
 
-Open `http://localhost:7700`.
+> **Volume mounts:** Source and destination paths configured in `config.toml`
+> must also be mounted into the container. See the compose file for your platform
+> under `packaging/` — each one has annotated volume examples.
 
-For compose-based setups, see the platform-specific files under `packaging/`.
+> **Same-device requirement:** Source and destination sets must reside on the
+> same physical device. Hardlinks cannot cross device boundaries. Mount a shared
+> parent path rather than separate source and destination volumes where possible.
 
 ### Local Python
 
@@ -115,4 +119,5 @@ python3 -m pytest ./tests/
 - Unraid setup: `packaging/unraid/`
 - TrueNAS SCALE setup: `packaging/truenas/`
 - OpenMediaVault setup: `packaging/omv/`
+- Portainer stack: `packaging/portainer/`
 - Releases: [github.com/StarlightDaemon/HardlinkOrganizer/releases](https://github.com/StarlightDaemon/HardlinkOrganizer/releases)
