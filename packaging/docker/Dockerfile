@@ -18,7 +18,7 @@ FROM python:3.11-slim
 
 LABEL org.opencontainers.image.title="Hardlink Organizer"
 LABEL org.opencontainers.image.description="Safely plan and execute hardlinks across NAS storage pools with a preview-first web UI"
-LABEL org.opencontainers.image.version="1.0.0"
+LABEL org.opencontainers.image.version="1.0.1"
 
 # Non-root user for privilege-drop at runtime
 RUN addgroup --system hlo && adduser --system --ingroup hlo hlo
