@@ -577,6 +577,40 @@ class TestHardlinkFile(unittest.TestCase):
         self.assertFalse(dst.exists())
         self.assertEqual(len(result.linked), 1)  # counted as would-be link
 
+    def test_symlink_at_dst_is_skipped_not_treated_as_hardlink(self):
+        # A symlink at dst whose target shares the src inode must not be
+        # misidentified as an existing hardlink (samestat via stat() would
+        # return True, but no real hardlink exists at dst).
+        src = self.root / "src" / "movie.mkv"
+        _write_file(src, "content")
+        dst = self.root / "dst" / "movie.mkv"
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.symlink_to(src)  # symlink whose target IS the src inode
+
+        result = hlo.LinkResult()
+        hlo.hardlink_file(src, dst, result)
+
+        self.assertIn(str(dst), result.skipped)
+        self.assertEqual(len(result.linked), 0)
+        # dst must still be a symlink — not replaced with a real hardlink
+        self.assertTrue(dst.is_symlink())
+
+    def test_dangling_symlink_at_dst_is_skipped_not_crashed(self):
+        # A dangling symlink at dst (target deleted) must not cause an
+        # obscure EEXIST failure — it should be skipped with a warning.
+        src = self.root / "src" / "movie.mkv"
+        _write_file(src, "content")
+        dst = self.root / "dst" / "movie.mkv"
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.symlink_to(self.root / "nonexistent_target")  # dangling
+
+        result = hlo.LinkResult()
+        hlo.hardlink_file(src, dst, result)
+
+        self.assertIn(str(dst), result.skipped)
+        self.assertEqual(len(result.linked), 0)
+        self.assertEqual(len(result.failed), 0)
+
 
 class TestHardlinkTree(unittest.TestCase):
 
@@ -652,6 +686,59 @@ class TestHardlinkTree(unittest.TestCase):
         src_ino = os.stat(src / "show.nfo").st_ino
         dst_ino = os.stat(dst / "show.nfo").st_ino
         self.assertEqual(src_ino, dst_ino)
+
+    def test_symlink_to_file_in_source_is_skipped(self):
+        # A symlink-to-file in the source tree must be skipped, not hardlinked.
+        # os.link on a symlink path creates a hardlink to the symlink inode,
+        # not to the file data — so the operation would be silently wrong.
+        src = self._build_source_tree()
+        link = src / "fake_link.mkv"
+        link.symlink_to(src / "show.nfo")
+
+        dst = self.root / "dest" / "Show S01"
+        result = hlo.LinkResult()
+        hlo.hardlink_tree(src, dst, result)
+
+        # The symlink itself must appear in skipped, not linked
+        self.assertIn(str(link), result.skipped)
+        # The real files are still all linked
+        self.assertEqual(len(result.linked), 4)
+        # No symlink created at destination
+        self.assertFalse((dst / "fake_link.mkv").is_symlink())
+
+    def test_symlink_to_dir_in_source_is_skipped(self):
+        # A symlink-to-directory must be skipped, not recursed into.
+        # Recursing via is_dir() following symlinks can cause infinite loops
+        # on circular symlinks (M-3) and creates hardlinks under a path that
+        # doesn't really exist in the source tree.
+        src = self._build_source_tree()
+        extra_dir = self.root / "extra_dir"
+        extra_dir.mkdir()
+        _write_file(extra_dir / "bonus.mkv", "bonus")
+        dir_link = src / "linked_dir"
+        dir_link.symlink_to(extra_dir)
+
+        dst = self.root / "dest" / "Show S01"
+        result = hlo.LinkResult()
+        hlo.hardlink_tree(src, dst, result)
+
+        self.assertIn(str(dir_link), result.skipped)
+        # bonus.mkv must NOT appear at destination
+        self.assertFalse((dst / "linked_dir" / "bonus.mkv").exists())
+        # Real files are still all linked
+        self.assertEqual(len(result.linked), 4)
+
+    def test_symlink_in_source_skipped_in_dry_run(self):
+        src = self._build_source_tree()
+        link = src / "fake_link.mkv"
+        link.symlink_to(src / "show.nfo")
+
+        dst = self.root / "dest_dry" / "Show S01"
+        result = hlo.LinkResult()
+        hlo.hardlink_tree(src, dst, result, dry_run=True)
+
+        self.assertIn(str(link), result.skipped)
+        self.assertFalse(dst.exists())
 
 
 # ---------------------------------------------------------------------------
