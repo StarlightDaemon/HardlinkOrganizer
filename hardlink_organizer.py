@@ -235,23 +235,15 @@ def _stat_entry(path: Path) -> tuple[int, int]:
         return 0, 0
 
 
-def check_already_linked(source_path: str, dest_root: str) -> bool:
-    """Return True if source_path is already hardlinked into dest_root (inode match)."""
+def check_already_linked(source_path: str) -> bool:
+    """Return True if source_path has nlink > 1, indicating it is hardlinked elsewhere."""
     try:
         src = Path(source_path)
-        dest_candidate = Path(dest_root) / src.name
         if src.is_dir():
-            if not dest_candidate.is_dir():
-                return False
             with os.scandir(source_path) as it:
                 for entry in it:
                     if entry.is_file(follow_symlinks=False):
-                        dest_file = dest_candidate / entry.name
-                        if not dest_file.exists():
-                            return False
-                        ss = os.stat(entry.path)
-                        ds = os.stat(dest_file)
-                        return ss.st_ino == ds.st_ino and ss.st_dev == ds.st_dev
+                        return os.stat(entry.path).st_nlink > 1
             # No regular file at top level — try one subdirectory level.
             with os.scandir(source_path) as it:
                 for subdir in it:
@@ -260,19 +252,10 @@ def check_already_linked(source_path: str, dest_root: str) -> bool:
                     with os.scandir(subdir.path) as sub_it:
                         for entry in sub_it:
                             if entry.is_file(follow_symlinks=False):
-                                dest_file = dest_candidate / subdir.name / entry.name
-                                if not dest_file.exists():
-                                    return False
-                                ss = os.stat(entry.path)
-                                ds = os.stat(dest_file)
-                                return ss.st_ino == ds.st_ino and ss.st_dev == ds.st_dev
+                                return os.stat(entry.path).st_nlink > 1
             return False
         else:
-            if not dest_candidate.exists():
-                return False
-            ss = os.stat(source_path)
-            ds = os.stat(dest_candidate)
-            return ss.st_ino == ds.st_ino and ss.st_dev == ds.st_dev
+            return os.stat(source_path).st_nlink > 1
     except OSError:
         return False
 
