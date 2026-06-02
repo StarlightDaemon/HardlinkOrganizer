@@ -6,7 +6,7 @@ version: "3.8"
 
 services:
   hardlink-organizer:
-    image: hardlink-organizer:0.3.0    # or ghcr.io/<github-owner>/hardlink-organizer:<tag>
+    image: starlightdaemon/hardlink-organizer:latest
     container_name: hardlink-organizer
     restart: unless-stopped
     ports:
@@ -16,9 +16,6 @@ services:
       # --- Config file ---
       # Edit config.toml before first start (copy from config.example.toml).
       - /path/to/appdata/hardlink-organizer:/config
-
-      # --- State (SQLite DB + logs) ---
-      - /path/to/appdata/hardlink-organizer/data:/data
 
       # --- Source sets ---
       # Adjust paths to match your source directories.

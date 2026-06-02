@@ -31,7 +31,7 @@ Hardlink Organizer is a hosted web UI plus CLI fallback for scanning ingress or 
 ### Project links
 
 - GitHub project: `https://github.com/StarlightDaemon/HardlinkOrganizer`
-- Docker image: `ghcr.io/starlightdaemon/hardlink-organizer`
+- Docker image: `starlightdaemon/hardlink-organizer` (Docker Hub)
 
 ### Support expectations
 

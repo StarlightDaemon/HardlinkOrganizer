@@ -55,10 +55,12 @@ id -g   # → use as PGID
 
 ## Published image
 
-Once published via GitHub Actions, the image is available from GHCR:
+GitHub Actions publishes to Docker Hub and GHCR on every version tag:
 
 ```bash
+# Docker Hub (primary)
+docker pull starlightdaemon/hardlink-organizer:latest
+
+# GHCR mirror
 docker pull ghcr.io/starlightdaemon/hardlink-organizer:latest
 ```
-
-See `packaging/unraid/README.md` for the full GitHub Actions publishing workflow.
