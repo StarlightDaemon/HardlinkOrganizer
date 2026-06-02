@@ -226,13 +226,14 @@ def suggest_destination_name(display_name: str) -> str:
 # Scanning
 # ---------------------------------------------------------------------------
 
-def _stat_entry(path: Path) -> tuple[int, int]:
-    """Return (size_bytes, device_id) for a path. Returns (0, 0) on error."""
+def _stat_entry(path: Path) -> tuple[int, int, int | None]:
+    """Return (size_bytes, device_id, inode) for a path. Returns (0, 0, None) on error."""
     try:
         st = path.stat()
-        return st.st_size, st.st_dev
+        inode = None if path.is_dir() else st.st_ino
+        return st.st_size, st.st_dev, inode
     except OSError:
-        return 0, 0
+        return 0, 0, None
 
 
 def check_already_linked(source_path: str) -> bool:
@@ -303,7 +304,7 @@ def scan_source_set(set_name: str, root: str, include_hidden: bool = False) -> l
     ordered = dirs + files
 
     for idx, child in enumerate(ordered, start=1):
-        size_bytes, device_id = _stat_entry(child)
+        size_bytes, device_id, inode = _stat_entry(child)
         entry: InventoryEntry = {
             "id": idx,
             "source_set": set_name,
@@ -314,6 +315,7 @@ def scan_source_set(set_name: str, root: str, include_hidden: bool = False) -> l
             "scan_time": scan_time,
             "size_bytes": size_bytes,
             "device_id": device_id,
+            "inode": inode,
         }
         entries.append(entry)
 

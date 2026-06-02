@@ -355,6 +355,41 @@ class TestWebApp(unittest.TestCase):
             self.assertLess(max(dir_indices), min(file_indices))
 
     # -----------------------------------------------------------------------
+    # Inventory detail
+    # -----------------------------------------------------------------------
+
+    def _scan_and_get_file_path(self) -> str:
+        self.client.post("/api/scan", json={"source_set": "movies"})
+        inv = self.client.get("/api/inventory?source_set=movies").json()
+        file_entries = [e for e in inv["entries"] if e["entry_type"] == "file"]
+        return file_entries[0]["full_path"]
+
+    def test_inventory_detail_happy_path(self):
+        full_path = self._scan_and_get_file_path()
+        res = self.client.get(
+            f"/api/inventory/detail?source_set=movies&full_path={full_path}"
+        )
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["full_path"], full_path)
+        self.assertIn("inode", data)
+        self.assertIn("nlink", data)
+        self.assertIn("device_id", data)
+        self.assertIn("hlo_links", data)
+        self.assertIn("inode_peers", data)
+        self.assertIsInstance(data["hlo_links"], list)
+        self.assertIsInstance(data["inode_peers"], list)
+        # Newly created test file should be stat-able
+        self.assertIsNotNone(data["inode"])
+        self.assertIsNotNone(data["nlink"])
+
+    def test_inventory_detail_bad_source_set_returns_404(self):
+        res = self.client.get(
+            "/api/inventory/detail?source_set=nonexistent&full_path=/tmp/foo"
+        )
+        self.assertEqual(res.status_code, 404)
+
+    # -----------------------------------------------------------------------
     # Preview
     # -----------------------------------------------------------------------
 
