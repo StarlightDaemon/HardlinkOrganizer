@@ -94,7 +94,7 @@ export function PreviewStep() {
     try {
       const result = await api.execute({
         source_set:   entry.source_set,
-        entry_id:     entry.id,
+        full_path:    entry.full_path,
         dest_set:     preview.dest_set,
         dest_subpath: preview.dest_subpath,
         dry_run:      dryRun,
@@ -102,11 +102,19 @@ export function PreviewStep() {
       setResult(result);
       await refreshHistory();
       if (result.success) {
-        show({
-          status: 'success',
-          title: dryRun ? 'Dry run complete' : 'Links created',
-          message: `${result.linked} file(s) linked.`,
-        });
+        if (!dryRun && !result.any_linked) {
+          show({
+            status: 'warning',
+            title: 'Nothing to link',
+            message: 'All files were skipped — destination may already be complete.',
+          });
+        } else {
+          show({
+            status: 'success',
+            title: dryRun ? 'Dry run complete' : 'Links created',
+            message: `${result.linked} file(s) linked.`,
+          });
+        }
       } else {
         show({ status: 'danger', title: 'Execution failed', message: result.errors[0] ?? 'Unknown error.' });
       }
