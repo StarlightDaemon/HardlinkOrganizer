@@ -334,6 +334,15 @@ class TestWebApp(unittest.TestCase):
             self.assertIn("linked", entry)
             self.assertIsInstance(entry["linked"], bool)
 
+    def test_inventory_entries_have_already_linked_field(self):
+        self.client.post("/api/scan", json={"source_set": "movies"})
+        res = self.client.get("/api/inventory?source_set=movies")
+        data = res.json()
+        for entry in data["entries"]:
+            self.assertIn("already_linked", entry)
+            self.assertIsInstance(entry["already_linked"], bool)
+            self.assertFalse(entry["already_linked"])
+
     def test_inventory_dirs_come_before_files(self):
         self.client.post("/api/scan", json={"source_set": "movies"})
         res = self.client.get("/api/inventory?source_set=movies")

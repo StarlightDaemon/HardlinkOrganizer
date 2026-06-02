@@ -7,10 +7,13 @@ config and database instances.
 """
 from __future__ import annotations
 
+import logging
 import os
 import sys
 import time
 from pathlib import Path
+
+_logger = logging.getLogger("hardlink_organizer.webapp")
 
 # Ensure tool root is on path (engine package lives there).
 _TOOL_DIR = Path(__file__).resolve().parent.parent
@@ -31,6 +34,7 @@ from engine import (
     scan_all_sets,
     list_entries,
     build_link_plan,
+    check_already_linked,
     execute_link_plan,
     suggest_destination_name,
     ScanError,
@@ -301,6 +305,12 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
         # Annotate with link history
         paths = [e["full_path"] for e in raw_entries]
         link_status = d.get_link_status(paths)
+        dest_root = c["dest_sets"].get(source_set)
+        if dest_root is None:
+            _logger.warning(
+                "No dest_set key matches source_set %r — already_linked will be False for all entries.",
+                source_set,
+            )
 
         entries = [
             InventoryEntryModel(
@@ -314,6 +324,7 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
                 size_bytes=e.get("size_bytes", 0),
                 device_id=e.get("device_id", 0),
                 linked=link_status.get(e["full_path"], False),
+                already_linked=check_already_linked(e["full_path"], dest_root) if dest_root else False,
             )
             for e in raw_entries
         ]

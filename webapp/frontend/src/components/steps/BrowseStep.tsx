@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { TextInput, UnstyledButton, Loader } from '@mantine/core';
 import { DataTable, SectionHeader, StatusBadge, type DataColumn } from '@fujin';
 import tokens from '@tokens';
@@ -20,6 +20,7 @@ export function BrowseStep() {
     searchQuery, setInventory, setEntry, setSearchQuery, setScanning,
   } = useAppState();
   const { show } = useToast();
+  const [hideLinked, setHideLinked] = useState(false);
 
   useEffect(() => {
     if (!sourceSet || inventory.length > 0) return;
@@ -44,9 +45,10 @@ export function BrowseStep() {
   }
 
   const filtered = inventory.filter(e =>
-    searchQuery === '' ||
+    (searchQuery === '' ||
     e.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    e.real_name.toLowerCase().includes(searchQuery.toLowerCase())
+    e.real_name.toLowerCase().includes(searchQuery.toLowerCase())) &&
+    !(hideLinked && (e.linked || e.already_linked))
   );
 
   const columns: DataColumn<InventoryEntry>[] = [
@@ -90,12 +92,13 @@ export function BrowseStep() {
     },
     {
       key: 'linked',
-      label: 'Linked',
+      label: 'Status',
       render: (row) => (
-        <StatusBadge
-          status={row.linked ? 'success' : 'neutral'}
-          label={row.linked ? 'Linked' : 'Not linked'}
-        />
+        row.linked
+          ? <StatusBadge status='success' label='Linked (HLO)' />
+          : row.already_linked
+            ? <StatusBadge status='warning' label='Linked (disk)' />
+            : <StatusBadge status='neutral' label='Not linked' />
       ),
     },
   ];
@@ -106,21 +109,34 @@ export function BrowseStep() {
         title={`Inventory — ${sourceSet ?? ''}`}
         description={`${inventory.length} entries`}
         action={
-          <UnstyledButton
-            onClick={handleRescan}
-            disabled={scanning}
-            style={{
-              fontFamily: tokens.typography.fontFamily.base,
-              fontSize:   tokens.typography.fontSize.sm,
-              color:      scanning ? 'var(--fujin-text-muted)' : 'var(--fujin-text-primary)',
-              cursor:     scanning ? 'not-allowed' : 'pointer',
-              display:    'flex',
-              alignItems: 'center',
-              gap:        tokens.spacing.scale.xs,
-            }}
-          >
-            {scanning ? <><Loader size={12} color="var(--fujin-text-muted)" /> Scanning…</> : 'Re-scan'}
-          </UnstyledButton>
+          <div style={{ display: 'flex', alignItems: 'center', gap: tokens.spacing.scale.sm }}>
+            <UnstyledButton
+              onClick={() => setHideLinked(v => !v)}
+              style={{
+                fontFamily: tokens.typography.fontFamily.base,
+                fontSize:   tokens.typography.fontSize.sm,
+                color:      hideLinked ? 'var(--fujin-status-success)' : 'var(--fujin-text-primary)',
+                cursor:     'pointer',
+              }}
+            >
+              {hideLinked ? 'Show linked' : 'Hide linked'}
+            </UnstyledButton>
+            <UnstyledButton
+              onClick={handleRescan}
+              disabled={scanning}
+              style={{
+                fontFamily: tokens.typography.fontFamily.base,
+                fontSize:   tokens.typography.fontSize.sm,
+                color:      scanning ? 'var(--fujin-text-muted)' : 'var(--fujin-text-primary)',
+                cursor:     scanning ? 'not-allowed' : 'pointer',
+                display:    'flex',
+                alignItems: 'center',
+                gap:        tokens.spacing.scale.xs,
+              }}
+            >
+              {scanning ? <><Loader size={12} color="var(--fujin-text-muted)" /> Scanning…</> : 'Re-scan'}
+            </UnstyledButton>
+          </div>
         }
       />
 
