@@ -10,7 +10,7 @@
 
 services:
   hardlink-organizer:
-    image: ghcr.io/starlightdaemon/hardlink-organizer:v1.0.0
+    image: starlightdaemon/hardlink-organizer:v1.0.0
     container_name: hardlink-organizer
     restart: unless-stopped
     ports:

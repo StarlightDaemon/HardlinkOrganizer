@@ -16,9 +16,13 @@ packaging/
 
 ## Canonical Docker image
 
-All platform packaging files reference the same published image from GHCR:
+The image is published to Docker Hub (primary) and GHCR (mirror):
 
 ```bash
+# Docker Hub (default — no registry prefix needed)
+docker pull starlightdaemon/hardlink-organizer:latest
+
+# GHCR mirror
 docker pull ghcr.io/starlightdaemon/hardlink-organizer:latest
 ```
 
@@ -36,14 +40,8 @@ To build locally from source, see [`packaging/docker/README.md`](docker/README.m
 
 ## Published image
 
-Once released, the image is available from GitHub Container Registry:
-
-```bash
-docker pull ghcr.io/starlightdaemon/hardlink-organizer:latest
-```
-
-The image is built and published automatically by
-`.github/workflows/hardlink-organizer-image.yml` on version tags.
+Built and published automatically by `.github/workflows/hardlink-organizer-image.yml`
+on every version tag. Pushed simultaneously to Docker Hub and GHCR.
 
 ## Key considerations for all platforms
 
