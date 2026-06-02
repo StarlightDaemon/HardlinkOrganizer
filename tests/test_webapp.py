@@ -492,6 +492,36 @@ class TestWebApp(unittest.TestCase):
         self.assertGreater(hist["total"], 0)
         self.assertEqual(hist["history"][0]["source_set"], "movies")
 
+    def test_execute_null_dest_subpath_uses_generated_name(self):
+        """H-2: null dest_subpath falls back to suggest_destination_name, not silently to empty."""
+        full_path, _ = self._get_entry_path_and_subpath()
+        res = self.client.post("/api/execute", json={
+            "source_set": "movies",
+            "full_path": full_path,
+            "dest_set": "movies",
+            "dest_subpath": None,
+            "dry_run": True,
+        })
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data["dry_run"])
+        # The generated dest_subpath should be non-empty (route applied the fallback)
+        self.assertGreater(data["linked"], 0)
+
+    def test_execute_empty_string_dest_subpath_uses_generated_name(self):
+        """H-2: empty string dest_subpath falls back to suggest_destination_name."""
+        full_path, _ = self._get_entry_path_and_subpath()
+        res = self.client.post("/api/execute", json={
+            "source_set": "movies",
+            "full_path": full_path,
+            "dest_set": "movies",
+            "dest_subpath": "",
+            "dry_run": True,
+        })
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertGreater(data["linked"], 0)
+
     # -----------------------------------------------------------------------
     # History
     # -----------------------------------------------------------------------
@@ -813,6 +843,27 @@ class TestDestinationAPI(unittest.TestCase):
     def test_patch_destination_not_found_returns_404(self):
         res = self.client.patch("/api/destinations/999999", json={"label": "X"})
         self.assertEqual(res.status_code, 404)
+
+    def test_patch_destination_clears_tag_with_null(self):
+        """M-2: sending tag=null in PATCH clears the field; was previously silently ignored."""
+        res = self.client.post("/api/destinations", json={
+            "label": "T", "path": self.dst_root, "tag": "old-tag",
+        })
+        dest_id = res.json()["id"]
+        res2 = self.client.patch(f"/api/destinations/{dest_id}", json={"tag": None})
+        self.assertEqual(res2.status_code, 200)
+        self.assertIsNone(res2.json()["tag"])
+
+    def test_patch_destination_empty_body_is_noop(self):
+        """M-2: PATCH with {} leaves all fields unchanged."""
+        res = self.client.post("/api/destinations", json={
+            "label": "Stable", "path": self.dst_root, "tag": "keep",
+        })
+        dest_id = res.json()["id"]
+        res2 = self.client.patch(f"/api/destinations/{dest_id}", json={})
+        self.assertEqual(res2.status_code, 200)
+        self.assertEqual(res2.json()["label"], "Stable")
+        self.assertEqual(res2.json()["tag"], "keep")
 
     # -----------------------------------------------------------------------
     # Delete

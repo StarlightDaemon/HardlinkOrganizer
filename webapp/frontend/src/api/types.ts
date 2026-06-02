@@ -34,7 +34,7 @@ export interface InventoryResponse {
 
 export interface PreviewRequest {
   source_set: string;
-  entry_id: number;
+  full_path: string;
   dest_set: string;
   dest_subpath: string | null;
 }
@@ -65,9 +65,9 @@ export interface PreviewResponse {
 
 export interface ExecuteRequest {
   source_set: string;
-  entry_id: number;
+  full_path: string;
   dest_set: string;
-  dest_subpath: string;
+  dest_subpath: string | null;
   dry_run: boolean;
 }
 
