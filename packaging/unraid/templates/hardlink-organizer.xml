@@ -2,7 +2,7 @@
 <Container version="2">
   <Category>Tools:Utilities</Category>
   <Date>2026-06-02</Date>
-  <Name>Hardlink Organizer</Name>
+  <Name>hardlink-organizer</Name>
   <Repository>starlightdaemon/hardlink-organizer:latest</Repository>
   <Registry>https://registry.hub.docker.com</Registry>
   <Project>https://github.com/StarlightDaemon/HardlinkOrganizer</Project>
@@ -19,10 +19,10 @@
   <Version>1.0.0</Version>
 
   <Config Name="Web UI Port" Target="7700" Default="7700" Mode="tcp" Description="Container Port: 7700" Type="Port" Display="always" Required="true" Mask="false">7700</Config>
-  <Config Name="Config Directory" Target="/config" Default="/mnt/user/appdata/hardlink-organizer" Mode="rw" Description="Container Path: /config. Place config.toml here. DB and logs are also stored here by default." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/hardlink-organizer</Config>
-  <Config Name="Data Directory" Target="/data" Default="/mnt/user/appdata/hardlink-organizer/data" Mode="rw" Description="Container Path: /data. Optional separate mount for DB and logs if you prefer to split config from state." Type="Path" Display="advanced" Required="false" Mask="false"></Config>
-  <Config Name="Source 1" Target="/mnt/src/source1" Default="" Mode="ro" Description="Source mount — read-only ingress or download folder. Add a matching [source_sets] entry in config.toml." Type="Path" Display="advanced" Required="false" Mask="false"></Config>
-  <Config Name="Destination 1" Target="/mnt/dst/dest1" Default="" Mode="rw" Description="Destination mount — library folder to hardlink into. Must be on the same physical device as its matching source." Type="Path" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="Config Directory" Target="/config" Default="/mnt/user/appdata/hardlink-organizer" Mode="rw" Description="Place config.toml here. DB and logs are stored here by default." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/hardlink-organizer</Config>
+  <Config Name="Media Disk 1" Target="/mnt/disk1" Default="/mnt/disk1" Mode="rw" Description="Root mount for your first media disk. Set host path to the disk root that contains your source and destination folders (e.g. /mnt/disk1). Both must live under the same disk root for hardlinks to work. Leave blank if unused." Type="Path" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="Media Disk 2" Target="/mnt/disk2" Default="/mnt/disk2" Mode="rw" Description="Root mount for your second media disk. Same rules as Media Disk 1 — host path must match the disk root used in config.toml. Leave blank if unused." Type="Path" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="Media Disk 3" Target="/mnt/disk3" Default="/mnt/disk3" Mode="rw" Description="Root mount for your third media disk. Leave blank if unused." Type="Path" Display="always" Required="false" Mask="false"></Config>
   <Config Name="PUID" Target="PUID" Default="1000" Description="User ID to run the container process as. Run 'id -u' on your Unraid host to find your UID." Type="Variable" Display="advanced" Required="false" Mask="false">1000</Config>
   <Config Name="PGID" Target="PGID" Default="1000" Description="Group ID to run the container process as. Run 'id -g' on your Unraid host to find your GID." Type="Variable" Display="advanced" Required="false" Mask="false">1000</Config>
 </Container>
