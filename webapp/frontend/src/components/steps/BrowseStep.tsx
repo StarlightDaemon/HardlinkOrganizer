@@ -21,7 +21,8 @@ export function BrowseStep() {
     detailEntry, setDetailEntry, setDetailData, setLoadingDetail,
   } = useAppState();
   const { show } = useToast();
-  const [hideLinked, setHideLinked] = useState(false);
+  const [hideHloLinked, setHideHloLinked] = useState(false);
+  const [hideDiskLinked, setHideDiskLinked] = useState(false);
 
   async function handleDetailClick(row: InventoryEntry) {
     if (detailEntry?.id === row.id) {
@@ -68,7 +69,8 @@ export function BrowseStep() {
     (searchQuery === '' ||
     e.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     e.real_name.toLowerCase().includes(searchQuery.toLowerCase())) &&
-    !(hideLinked && (e.linked || e.already_linked))
+    !(hideHloLinked && e.linked) &&
+    !(hideDiskLinked && e.already_linked && !e.linked)
   );
 
   const columns: DataColumn<InventoryEntry>[] = [
@@ -141,15 +143,26 @@ export function BrowseStep() {
         action={
           <div style={{ display: 'flex', alignItems: 'center', gap: tokens.spacing.scale.sm }}>
             <UnstyledButton
-              onClick={() => setHideLinked(v => !v)}
+              onClick={() => setHideHloLinked(v => !v)}
               style={{
                 fontFamily: tokens.typography.fontFamily.base,
                 fontSize:   tokens.typography.fontSize.sm,
-                color:      hideLinked ? 'var(--fujin-status-success)' : 'var(--fujin-text-primary)',
+                color:      hideHloLinked ? 'var(--fujin-status-success)' : 'var(--fujin-text-primary)',
                 cursor:     'pointer',
               }}
             >
-              {hideLinked ? 'Show linked' : 'Hide linked'}
+              {hideHloLinked ? 'Show HLO linked' : 'Hide HLO linked'}
+            </UnstyledButton>
+            <UnstyledButton
+              onClick={() => setHideDiskLinked(v => !v)}
+              style={{
+                fontFamily: tokens.typography.fontFamily.base,
+                fontSize:   tokens.typography.fontSize.sm,
+                color:      hideDiskLinked ? 'var(--fujin-status-warning)' : 'var(--fujin-text-primary)',
+                cursor:     'pointer',
+              }}
+            >
+              {hideDiskLinked ? 'Show disk linked' : 'Hide disk linked'}
             </UnstyledButton>
             <UnstyledButton
               onClick={handleRescan}
