@@ -116,9 +116,135 @@ different container mounts or through `/mnt/user`.
 
 ---
 
-## First-run setup
+## Installing via the Unraid Docker UI
 
-### 1. Copy the example config
+This is the primary self-serve path if you are not using the Community Apps plugin
+or a Compose Manager workflow.
+
+### Step 1 — Pre-flight (SSH into Unraid)
+
+Create the appdata directories and fetch the config template **before** the
+container first starts. The container will exit immediately on startup if
+`config.toml` is missing.
+
+```bash
+mkdir -p /mnt/user/appdata/hardlink-organizer/data
+wget -O /mnt/user/appdata/hardlink-organizer/config.toml \
+  https://raw.githubusercontent.com/StarlightDaemon/HardlinkOrganizer/main/config.example.toml
+```
+
+### Step 2 — Edit config.toml
+
+Open the config and update all paths so they point inside your container-side
+mounts (see [Required host mounts](#required-host-mounts)). Prefer paths that sit
+inside one shared `/mnt/diskX/...` or pool-level parent mount:
+
+```bash
+nano /mnt/user/appdata/hardlink-organizer/config.toml
+```
+
+```toml
+[paths]
+db_file    = "/data/state.db"
+log_file   = "/data/hardlink-organizer.log"
+index_json = "/data/index.json"
+index_tsv  = "/data/index.tsv"
+
+[source_sets]
+movies = "/mnt/disk3/ingress/movies"
+shows  = "/mnt/disk3/ingress/shows"
+
+[dest_sets]
+movies = "/mnt/disk3/media/movies"
+shows  = "/mnt/disk3/media/shows"
+
+[webapp]
+host = "0.0.0.0"
+port = 7700
+```
+
+### Step 3 — Add Container
+
+In the Unraid UI: **Docker** tab → **Add Container**
+
+**Basic settings:**
+
+| Field | Value |
+|-------|-------|
+| Name | `hardlink-organizer` |
+| Repository | `starlightdaemon/hardlink-organizer:latest` |
+| Network Type | `Bridge` |
+| WebUI | `http://[IP]:[PORT:7700]/` |
+| Icon URL | `https://raw.githubusercontent.com/StarlightDaemon/HardlinkOrganizer/main/packaging/unraid/assets/hardlink-organizer.svg` |
+
+**Port** — click **Add another Path, Port, Variable, Label or Device** → Port:
+
+| Name | Container Port | Host Port | Connection Type |
+|------|---------------|-----------|-----------------|
+| Web UI | `7700` | `7700` | TCP |
+
+Change the host port only if `7700` is already in use on your server.
+
+**Paths** — click **Add another Path, Port, Variable, Label or Device** → Path,
+once per row:
+
+| Name | Container Path | Host Path | Access Mode |
+|------|---------------|-----------|-------------|
+| Config | `/config` | `/mnt/user/appdata/hardlink-organizer` | Read/Write |
+| Data | `/data` | `/mnt/user/appdata/hardlink-organizer/data` | Read/Write |
+| Disk mount | `/mnt/disk3` | `/mnt/disk3` | Read/Write |
+
+Replace `/mnt/disk3` with the actual disk or pool root that contains both your
+source and destination paths. If your paths span multiple disks, add one row per
+disk and keep your `config.toml` source/dest paths aligned to the container-side
+mount points.
+
+**Variables** — click **Add another Path, Port, Variable, Label or Device** →
+Variable:
+
+| Name | Key | Value |
+|------|-----|-------|
+| User ID | `PUID` | `1000` |
+| Group ID | `PGID` | `1000` |
+
+Run `id -u` and `id -g` on your Unraid host to find your actual UID/GID.
+
+### Step 4 — Apply and verify
+
+Click **Apply**. Unraid will pull the image and start the container.
+
+Confirm it started cleanly:
+
+```bash
+docker logs hardlink-organizer
+```
+
+You should see `Starting Hardlink Organizer` followed by uvicorn startup lines. If
+the container exits immediately, the most common cause is a missing or malformed
+`config.toml` — re-check steps 1 and 2.
+
+### Step 5 — Open the UI
+
+`http://<unraid-ip>:7700`
+
+---
+
+## Installing via Docker Compose
+
+Use this path if you have the Compose Manager Unraid plugin, or are deploying via
+SSH with a compose file.
+
+### 1. Get the config template
+
+Fetch it on the Unraid host:
+
+```bash
+mkdir -p /mnt/user/appdata/hardlink-organizer/data
+wget -O /mnt/user/appdata/hardlink-organizer/config.toml \
+  https://raw.githubusercontent.com/StarlightDaemon/HardlinkOrganizer/main/config.example.toml
+```
+
+Or, if you have the repository cloned locally:
 
 ```bash
 cp ./config.example.toml /mnt/user/appdata/hardlink-organizer/config.toml
@@ -137,12 +263,12 @@ index_json = "/data/index.json"
 index_tsv  = "/data/index.tsv"
 
 [source_sets]
-movies = "/mnt/src/movies"
-shows  = "/mnt/src/shows"
+movies = "/mnt/disk3/ingress/movies"
+shows  = "/mnt/disk3/ingress/shows"
 
 [dest_sets]
-movies = "/mnt/dst/movies"
-shows  = "/mnt/dst/shows"
+movies = "/mnt/disk3/media/movies"
+shows  = "/mnt/disk3/media/shows"
 
 [webapp]
 host = "0.0.0.0"
@@ -155,7 +281,7 @@ port = 7700
 docker compose -f packaging/unraid/docker-compose.yml up -d
 ```
 
-This compose file pulls the image from GHCR automatically on first start.
+This pulls the image from Docker Hub on first start.
 
 ### 4. Access the UI
 
