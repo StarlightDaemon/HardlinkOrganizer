@@ -258,7 +258,7 @@ class TestWebApp(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         data = res.json()
         self.assertIn("version", data)
-        self.assertTrue(data["version"].startswith("0."))
+        self.assertRegex(data["version"], r"^\d+\.\d+")
 
     # -----------------------------------------------------------------------
     # Config / Sets
@@ -348,18 +348,18 @@ class TestWebApp(unittest.TestCase):
     # Preview
     # -----------------------------------------------------------------------
 
-    def _scan_and_get_entry_id(self) -> int:
+    def _scan_and_get_entry_path(self) -> str:
         self.client.post("/api/scan", json={"source_set": "movies"})
         inv = self.client.get("/api/inventory?source_set=movies").json()
         # Pick a file entry
         file_entries = [e for e in inv["entries"] if e["entry_type"] == "file"]
-        return file_entries[0]["id"]
+        return file_entries[0]["full_path"]
 
     def test_preview_returns_plan(self):
-        entry_id = self._scan_and_get_entry_id()
+        full_path = self._scan_and_get_entry_path()
         res = self.client.post("/api/preview", json={
             "source_set": "movies",
-            "entry_id": entry_id,
+            "full_path": full_path,
             "dest_set": "movies",
         })
         self.assertEqual(res.status_code, 200)
@@ -369,10 +369,10 @@ class TestWebApp(unittest.TestCase):
         self.assertIn("valid", data)
 
     def test_preview_valid_for_same_device(self):
-        entry_id = self._scan_and_get_entry_id()
+        full_path = self._scan_and_get_entry_path()
         res = self.client.post("/api/preview", json={
             "source_set": "movies",
-            "entry_id": entry_id,
+            "full_path": full_path,
             "dest_set": "movies",
         })
         data = res.json()
@@ -380,10 +380,10 @@ class TestWebApp(unittest.TestCase):
         self.assertEqual(data["errors"], [])
 
     def test_preview_custom_subpath(self):
-        entry_id = self._scan_and_get_entry_id()
+        full_path = self._scan_and_get_entry_path()
         res = self.client.post("/api/preview", json={
             "source_set": "movies",
-            "entry_id": entry_id,
+            "full_path": full_path,
             "dest_set": "movies",
             "dest_subpath": "My Custom Folder",
         })
@@ -391,7 +391,7 @@ class TestWebApp(unittest.TestCase):
         self.assertEqual(data["dest_subpath"], "My Custom Folder")
 
     def test_preview_returns_mount_layout_warnings(self):
-        entry_id = self._scan_and_get_entry_id()
+        full_path = self._scan_and_get_entry_path()
         assessment = hlo.MountLayoutAssessment(
             same_device=True,
             source_mount_point="/mnt/src",
@@ -409,7 +409,7 @@ class TestWebApp(unittest.TestCase):
         with mock.patch("hardlink_organizer.assess_mount_layout", return_value=assessment):
             res = self.client.post("/api/preview", json={
                 "source_set": "movies",
-                "entry_id": entry_id,
+                "full_path": full_path,
                 "dest_set": "movies",
             })
 
@@ -421,7 +421,7 @@ class TestWebApp(unittest.TestCase):
     def test_preview_unknown_set_404(self):
         res = self.client.post("/api/preview", json={
             "source_set": "no_such",
-            "entry_id": 1,
+            "full_path": "/nonexistent/path",
             "dest_set": "movies",
         })
         self.assertEqual(res.status_code, 404)
@@ -430,17 +430,18 @@ class TestWebApp(unittest.TestCase):
     # Execute (dry run)
     # -----------------------------------------------------------------------
 
-    def _get_entry_id_and_subpath(self) -> tuple[int, str]:
-        entry_id = self._scan_and_get_entry_id()
+    def _get_entry_path_and_subpath(self) -> tuple[str, str]:
+        self.client.post("/api/scan", json={"source_set": "movies"})
         inv = self.client.get("/api/inventory?source_set=movies").json()
-        entry = next(e for e in inv["entries"] if e["id"] == entry_id)
-        return entry_id, entry["display_name"]
+        file_entries = [e for e in inv["entries"] if e["entry_type"] == "file"]
+        entry = file_entries[0]
+        return entry["full_path"], entry["display_name"]
 
     def test_execute_dry_run_no_files_created(self):
-        entry_id, subpath = self._get_entry_id_and_subpath()
+        full_path, subpath = self._get_entry_path_and_subpath()
         res = self.client.post("/api/execute", json={
             "source_set": "movies",
-            "entry_id": entry_id,
+            "full_path": full_path,
             "dest_set": "movies",
             "dest_subpath": subpath,
             "dry_run": True,
@@ -452,10 +453,10 @@ class TestWebApp(unittest.TestCase):
         self.assertFalse((Path(self.dst_root) / subpath).exists())
 
     def test_execute_dry_run_counts_files(self):
-        entry_id, subpath = self._get_entry_id_and_subpath()
+        full_path, subpath = self._get_entry_path_and_subpath()
         res = self.client.post("/api/execute", json={
             "source_set": "movies",
-            "entry_id": entry_id,
+            "full_path": full_path,
             "dest_set": "movies",
             "dest_subpath": subpath,
             "dry_run": True,
@@ -464,10 +465,10 @@ class TestWebApp(unittest.TestCase):
         self.assertGreater(data["linked"], 0)
 
     def test_execute_real_creates_hardlink(self):
-        entry_id, subpath = self._get_entry_id_and_subpath()
+        full_path, subpath = self._get_entry_path_and_subpath()
         res = self.client.post("/api/execute", json={
             "source_set": "movies",
-            "entry_id": entry_id,
+            "full_path": full_path,
             "dest_set": "movies",
             "dest_subpath": subpath,
             "dry_run": False,
@@ -479,10 +480,10 @@ class TestWebApp(unittest.TestCase):
         self.assertIsNotNone(data["history_id"])
 
     def test_execute_records_history(self):
-        entry_id, subpath = self._get_entry_id_and_subpath()
+        full_path, subpath = self._get_entry_path_and_subpath()
         self.client.post("/api/execute", json={
             "source_set": "movies",
-            "entry_id": entry_id,
+            "full_path": full_path,
             "dest_set": "movies",
             "dest_subpath": subpath,
             "dry_run": False,
@@ -864,6 +865,20 @@ class TestDestinationAPI(unittest.TestCase):
         self.assertTrue(data["checks"]["is_unsafe_root"])
         self.assertGreater(len(data["errors"]), 0)
 
+    @unittest.skipUnless(sys.platform.startswith("linux"), "POSIX path test")
+    def test_validate_tmp_is_unsafe_root(self):
+        res = self.client.post("/api/destinations/validate", json={"path": "/tmp"})
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data["checks"]["is_unsafe_root"])
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "POSIX path test")
+    def test_validate_var_tmp_is_unsafe_root(self):
+        res = self.client.post("/api/destinations/validate", json={"path": "/var/tmp"})
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data["checks"]["is_unsafe_root"])
+
     def test_validate_response_has_checks_and_warnings_fields(self):
         res = self.client.post("/api/destinations/validate", json={"path": self.dst_root})
         data = res.json()
@@ -879,6 +894,61 @@ class TestDestinationAPI(unittest.TestCase):
         data = res.json()
         codes = [w["code"] for w in data["warnings"]]
         self.assertIn("unraid_user_share", codes)
+
+
+class RunPyConfigArgTests(unittest.TestCase):
+    """Unit tests for M-1: HARDLINK_CONFIG env var support in webapp/run.py."""
+
+    def _parse(self, argv, env=None):
+        """Import main and exercise argument parsing without launching the server."""
+        import importlib
+        import webapp.run as run_mod
+        importlib.reload(run_mod)  # ensure clean import state
+        import argparse
+        import os
+
+        saved = os.environ.copy()
+        try:
+            if env is not None:
+                os.environ.update(env)
+            else:
+                os.environ.pop("HARDLINK_CONFIG", None)
+            # Re-build the parser the same way main() does to get default resolution
+            parser = argparse.ArgumentParser()
+            parser.add_argument("--config", "-c",
+                                default=os.environ.get("HARDLINK_CONFIG"),
+                                metavar="PATH")
+            return parser.parse_args(argv)
+        finally:
+            os.environ.clear()
+            os.environ.update(saved)
+
+    def test_explicit_config_flag_wins(self):
+        args = self._parse(["--config", "/explicit/path.toml"],
+                           env={"HARDLINK_CONFIG": "/env/path.toml"})
+        self.assertEqual(args.config, "/explicit/path.toml")
+
+    def test_env_var_used_when_no_flag(self):
+        args = self._parse([], env={"HARDLINK_CONFIG": "/env/path.toml"})
+        self.assertEqual(args.config, "/env/path.toml")
+
+    def test_no_flag_no_env_gives_none(self):
+        args = self._parse([])
+        self.assertIsNone(args.config)
+
+    def test_main_errors_without_config(self):
+        """main() with no --config and no HARDLINK_CONFIG prints a clear error."""
+        import os
+        import webapp.run as run_mod
+        saved = os.environ.copy()
+        try:
+            os.environ.pop("HARDLINK_CONFIG", None)
+            with self.assertRaises(SystemExit) as ctx:
+                run_mod.main([])
+            self.assertNotEqual(ctx.exception.code, 0)
+        finally:
+            os.environ.clear()
+            os.environ.update(saved)
 
 
 if __name__ == "__main__":

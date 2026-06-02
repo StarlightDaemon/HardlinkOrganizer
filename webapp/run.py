@@ -9,6 +9,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -29,9 +30,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--config", "-c",
-        required=True,
+        default=os.environ.get("HARDLINK_CONFIG"),
         metavar="PATH",
-        help="Path to the TOML configuration file.",
+        help="Path to the TOML configuration file (default: $HARDLINK_CONFIG).",
     )
     parser.add_argument(
         "--host",
@@ -52,6 +53,8 @@ def main(argv: list[str] | None = None) -> int:
         help="Enable auto-reload (development only).",
     )
     args = parser.parse_args(argv)
+    if not args.config:
+        parser.error("--config PATH is required (or set HARDLINK_CONFIG env var)")
 
     try:
         cfg = load_config(args.config)
@@ -59,7 +62,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
 
-    db_path = cfg["paths"].get("db_file", "/tmp/hardlink-organizer/state.db")
+    db_path = cfg["paths"].get("db_file", "/config/hardlink-organizer.db")
     db = Database(db_path)
 
     app = create_app(cfg, db, args.config)
