@@ -13,7 +13,7 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children, sidebar }: AppLayoutProps) {
-  const { view, setView, healthOk } = useAppState();
+  const { view, setView, healthOk, version } = useAppState();
 
   return (
     <div style={{
@@ -126,14 +126,16 @@ export function AppLayout({ children, sidebar }: AppLayoutProps) {
           }}>
             {healthOk ? 'connected' : 'disconnected'}
           </span>
-          <span style={{
-            fontFamily: tokens.typography.fontFamily.base,
-            fontSize:   tokens.typography.fontSize.xs,
-            color:      'var(--fujin-chrome-text)',
-            opacity:    0.4,
-          }}>
-            v0.3.0
-          </span>
+          {version && (
+            <span style={{
+              fontFamily: tokens.typography.fontFamily.base,
+              fontSize:   tokens.typography.fontSize.xs,
+              color:      'var(--fujin-chrome-text)',
+              opacity:    0.4,
+            }}>
+              v{version}
+            </span>
+          )}
         </div>
 
         {/* Right: theme menu */}

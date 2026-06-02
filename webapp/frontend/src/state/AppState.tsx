@@ -36,6 +36,7 @@ interface AppState {
   executing: boolean;
   searchQuery: string;
   healthOk: boolean;
+  version: string;
 }
 
 interface AppActions {
@@ -78,6 +79,7 @@ const INITIAL_STATE: AppState = {
   executing: false,
   searchQuery: '',
   healthOk: false,
+  version: '',
 };
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
@@ -98,7 +100,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   }, [patch]);
 
   useEffect(() => {
-    api.health().then(h => patch({ healthOk: h.status === 'ok' })).catch(() => {});
+    api.health().then(h => patch({ healthOk: h.status === 'ok', version: h.version ?? '' })).catch(() => {});
     refreshSets().catch(() => {});
     refreshHistory().catch(() => {});
   }, [refreshSets, refreshHistory, patch]);
