@@ -56,7 +56,8 @@ class InventoryEntry(BaseModel):
     scan_time: str
     size_bytes: int
     device_id: int
-    linked: bool = False     # populated from link history
+    linked: bool = False       # populated from link history
+    already_linked: bool = False   # filesystem inode check — true regardless of who created the link
 
 
 class InventoryResponse(BaseModel):

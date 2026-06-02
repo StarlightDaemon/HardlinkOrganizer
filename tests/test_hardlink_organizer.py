@@ -768,6 +768,104 @@ class TestListEntries(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
+# check_already_linked tests
+# ---------------------------------------------------------------------------
+
+class TestCheckAlreadyLinked(unittest.TestCase):
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.src_root = Path(self.tmp.name) / "src"
+        self.dst_root = Path(self.tmp.name) / "dst"
+        self.src_root.mkdir()
+        self.dst_root.mkdir()
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_file_same_inode_returns_true(self):
+        src_file = self.src_root / "movie.mkv"
+        _write_file(src_file)
+        dst_file = self.dst_root / "movie.mkv"
+        os.link(src_file, dst_file)
+        self.assertTrue(hlo.check_already_linked(str(src_file), str(self.dst_root)))
+
+    def test_file_different_inode_returns_false(self):
+        src_file = self.src_root / "movie.mkv"
+        _write_file(src_file)
+        dst_file = self.dst_root / "movie.mkv"
+        _write_file(dst_file, content="other")
+        self.assertFalse(hlo.check_already_linked(str(src_file), str(self.dst_root)))
+
+    def test_file_dest_does_not_exist_returns_false(self):
+        src_file = self.src_root / "movie.mkv"
+        _write_file(src_file)
+        self.assertFalse(hlo.check_already_linked(str(src_file), str(self.dst_root)))
+
+    def test_dir_first_file_matches_inode_returns_true(self):
+        src_dir = self.src_root / "ShowA"
+        src_dir.mkdir()
+        src_file = src_dir / "episode.mkv"
+        _write_file(src_file)
+        dst_dir = self.dst_root / "ShowA"
+        dst_dir.mkdir()
+        dst_file = dst_dir / "episode.mkv"
+        os.link(src_file, dst_file)
+        self.assertTrue(hlo.check_already_linked(str(src_dir), str(self.dst_root)))
+
+    def test_dir_dest_does_not_exist_returns_false(self):
+        src_dir = self.src_root / "ShowB"
+        src_dir.mkdir()
+        _write_file(src_dir / "episode.mkv")
+        self.assertFalse(hlo.check_already_linked(str(src_dir), str(self.dst_root)))
+
+    def test_oserror_returns_false(self):
+        self.assertFalse(hlo.check_already_linked("/nonexistent/path/file.mkv", str(self.dst_root)))
+
+    def test_dir_nested_file_matches_inode_returns_true(self):
+        src_dir = self.src_root / "ShowA"
+        season = src_dir / "Season 01"
+        season.mkdir(parents=True)
+        src_file = season / "ep.mkv"
+        _write_file(src_file)
+        dst_season = self.dst_root / "ShowA" / "Season 01"
+        dst_season.mkdir(parents=True)
+        dst_file = dst_season / "ep.mkv"
+        os.link(src_file, dst_file)
+        self.assertTrue(hlo.check_already_linked(str(src_dir), str(self.dst_root)))
+
+    def test_dir_nested_dest_subdir_missing_returns_false(self):
+        src_dir = self.src_root / "ShowA"
+        season = src_dir / "Season 01"
+        season.mkdir(parents=True)
+        _write_file(season / "ep.mkv")
+        (self.dst_root / "ShowA").mkdir()
+        self.assertFalse(hlo.check_already_linked(str(src_dir), str(self.dst_root)))
+
+    def test_dir_nested_no_files_at_any_level_returns_false(self):
+        src_dir = self.src_root / "ShowA"
+        (src_dir / "Season 01").mkdir(parents=True)
+        (self.dst_root / "ShowA" / "Season 01").mkdir(parents=True)
+        self.assertFalse(hlo.check_already_linked(str(src_dir), str(self.dst_root)))
+
+    def test_dir_multiple_files_first_linked_returns_true(self):
+        # Documents the "first file wins" heuristic: result is based on whichever
+        # file os.scandir yields first, not a full audit of all files.
+        src_dir = self.src_root / "ShowA"
+        src_dir.mkdir()
+        src_a = src_dir / "a.mkv"
+        src_b = src_dir / "b.mkv"
+        _write_file(src_a)
+        _write_file(src_b, content="different")
+        dst_dir = self.dst_root / "ShowA"
+        dst_dir.mkdir()
+        # Link both files so the test is deterministic regardless of scandir order.
+        os.link(src_a, dst_dir / "a.mkv")
+        os.link(src_b, dst_dir / "b.mkv")
+        self.assertTrue(hlo.check_already_linked(str(src_dir), str(self.dst_root)))
+
+
+# ---------------------------------------------------------------------------
 # Main – allow running this file directly
 # ---------------------------------------------------------------------------
 

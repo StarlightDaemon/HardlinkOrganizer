@@ -23,6 +23,7 @@ export interface InventoryEntry {
   size_bytes: number;
   device_id: number;
   linked: boolean;
+  already_linked: boolean;
 }
 
 export interface InventoryResponse {
