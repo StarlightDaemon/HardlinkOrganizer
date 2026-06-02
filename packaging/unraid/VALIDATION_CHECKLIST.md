@@ -1,6 +1,6 @@
-# Hardlink Organizer — Validation Checklist (v1.0.0-rc.1)
+# Hardlink Organizer — Validation Checklist (v1.0.0)
 
-This checklist provides a structured procedure for an operator to validate Hardlink Organizer (v1.0.0-rc.1) on a real Unraid host.
+This checklist provides a structured procedure for an operator to validate Hardlink Organizer (v1.0.0) on a real Unraid host.
 
 ## Introduction
 The goal of this validation pass is to ensure the core hardlink engine, web UI, and Docker packaging work harmoniously on an actual Unraid system where path resolution (shfs) and device IDs behave differently than on a standard Linux desktop or WSL environment.

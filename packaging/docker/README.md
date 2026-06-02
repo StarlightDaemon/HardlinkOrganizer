@@ -19,7 +19,7 @@ Dockerfile can reach the application source:
 
 ```bash
 # From the Hardlink Organizer root
-docker build -f packaging/docker/Dockerfile -t hardlink-organizer:v1.0.0-rc.1 .
+docker build -f packaging/docker/Dockerfile -t hardlink-organizer:v1.0.0 .
 ```
 
 ## Running (generic)

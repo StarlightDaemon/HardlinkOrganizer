@@ -17,7 +17,7 @@ fully polished public release.
 
 | Area | Current State |
 | --- | --- |
-| Version | `1.0.0-rc.1` |
+| Version | `1.0.0` |
 | Status | `pre-release / release candidate` |
 | Primary target | `Docker — Unraid, TrueNAS, OMV, and generic Linux` |
 | Interface | hosted web UI with CLI fallback |
