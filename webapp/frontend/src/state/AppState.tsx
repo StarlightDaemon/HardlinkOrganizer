@@ -10,6 +10,7 @@ import { api } from '../api/client';
 import type {
   SetsWithStatusResponse,
   InventoryEntry,
+  InventoryDetailResponse,
   PreviewResponse,
   ExecuteResponse,
   HistoryEntry,
@@ -32,6 +33,9 @@ interface AppState {
   result: ExecuteResponse | null;
   history: HistoryEntry[];
   verifyRun: VerificationRunResponse | null;
+  detailEntry: InventoryEntry | null;
+  detailData: InventoryDetailResponse | null;
+  loadingDetail: boolean;
   scanning: boolean;
   executing: boolean;
   searchQuery: string;
@@ -50,6 +54,9 @@ interface AppActions {
   setPreview: (p: PreviewResponse | null) => void;
   setResult: (r: ExecuteResponse | null) => void;
   setVerifyRun: (r: VerificationRunResponse | null) => void;
+  setDetailEntry: (e: InventoryEntry | null) => void;
+  setDetailData: (d: InventoryDetailResponse | null) => void;
+  setLoadingDetail: (b: boolean) => void;
   setScanning: (b: boolean) => void;
   setExecuting: (b: boolean) => void;
   setSearchQuery: (q: string) => void;
@@ -75,6 +82,9 @@ const INITIAL_STATE: AppState = {
   result: null,
   history: [],
   verifyRun: null,
+  detailEntry: null,
+  detailData: null,
+  loadingDetail: false,
   scanning: false,
   executing: false,
   searchQuery: '',
@@ -109,7 +119,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     ...state,
     setView: (v) => patch({ view: v }),
     setStep: (s) => patch({ step: s }),
-    setSourceSet: (name) => patch({ sourceSet: name, inventory: [], entry: null, preview: null, result: null }),
+    setSourceSet: (name) => patch({ sourceSet: name, inventory: [], entry: null, preview: null, result: null, detailEntry: null, detailData: null }),
     setInventory: (entries) => patch({ inventory: entries }),
     setEntry: (e) => patch({ entry: e, preview: null }),
     setDestSet: (name) => patch({ destSet: name, preview: null }),
@@ -117,6 +127,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setPreview: (p) => patch({ preview: p }),
     setResult: (r) => patch({ result: r }),
     setVerifyRun: (r) => patch({ verifyRun: r }),
+    setDetailEntry: (e) => patch({ detailEntry: e }),
+    setDetailData: (d) => patch({ detailData: d }),
+    setLoadingDetail: (b) => patch({ loadingDetail: b }),
     setScanning: (b) => patch({ scanning: b }),
     setExecuting: (b) => patch({ executing: b }),
     setSearchQuery: (q) => patch({ searchQuery: q }),

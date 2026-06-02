@@ -98,7 +98,11 @@ function HistoryItem({ entry }: { entry: HistoryEntry }) {
 }
 
 export function HistorySidebar() {
-  const { history, refreshHistory } = useAppState();
+  const {
+    history, refreshHistory,
+    detailEntry, detailData, loadingDetail,
+    setDetailEntry, setDetailData,
+  } = useAppState();
   const [refreshing, setRefreshing] = useState(false);
 
   async function handleRefresh() {
@@ -108,6 +112,123 @@ export function HistorySidebar() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+
+      {/* Link detail panel — shown when user clicks a "Linked (disk)" badge in Browse */}
+      {detailEntry !== null && (
+        <div style={{
+          borderBottom: '1px solid var(--fujin-border-default)',
+          padding:      `${tokens.spacing.scale.md}px`,
+          display:      'flex',
+          flexDirection: 'column',
+          gap:          `${tokens.spacing.scale.sm}px`,
+          flexShrink:   0,
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <span style={{
+              fontFamily: tokens.typography.fontFamily.base,
+              fontSize:   tokens.typography.fontSize.sm,
+              fontWeight: tokens.typography.fontWeight.semibold,
+              color:      'var(--fujin-text-primary)',
+              wordBreak:  'break-word',
+              flex:       1,
+              marginRight: tokens.spacing.scale.xs,
+            }}>
+              {detailEntry.display_name}
+            </span>
+            <UnstyledButton
+              onClick={() => { setDetailEntry(null); setDetailData(null); }}
+              style={{
+                fontFamily: tokens.typography.fontFamily.base,
+                fontSize:   tokens.typography.fontSize.xs,
+                color:      'var(--fujin-text-muted)',
+                cursor:     'pointer',
+                flexShrink: 0,
+              }}
+            >
+              ✕
+            </UnstyledButton>
+          </div>
+
+          {loadingDetail ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: `${tokens.spacing.scale.xs}px` }}>
+              <Loader size={12} color="var(--fujin-text-muted)" />
+              <span style={{ fontFamily: tokens.typography.fontFamily.base, fontSize: tokens.typography.fontSize.xs, color: 'var(--fujin-text-muted)' }}>
+                Loading…
+              </span>
+            </div>
+          ) : detailData && (
+            <>
+              <div style={{
+                fontFamily: tokens.typography.fontFamily.mono,
+                fontSize:   tokens.typography.fontSize.xs,
+                color:      'var(--fujin-text-muted)',
+                wordBreak:  'break-all',
+              }}>
+                Inode: {detailData.inode ?? 'N/A'}<br />
+                Hard links: {detailData.nlink ?? 'N/A'}<br />
+                Device: {detailData.device_id ?? 'N/A'}
+              </div>
+
+              <div>
+                <div style={{
+                  fontFamily:   tokens.typography.fontFamily.base,
+                  fontSize:     tokens.typography.fontSize.xs,
+                  fontWeight:   tokens.typography.fontWeight.medium,
+                  color:        'var(--fujin-text-primary)',
+                  marginBottom: `${tokens.spacing.scale.xs}px`,
+                }}>
+                  HLO Link History
+                </div>
+                {detailData.hlo_links.length === 0 ? (
+                  <span style={{ fontFamily: tokens.typography.fontFamily.base, fontSize: tokens.typography.fontSize.xs, color: 'var(--fujin-text-muted)' }}>
+                    Not managed by HLO — linked externally.
+                  </span>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: `${tokens.spacing.scale.xs}px` }}>
+                    {detailData.hlo_links.map(link => (
+                      <div key={link.id} style={{ fontFamily: tokens.typography.fontFamily.mono, fontSize: tokens.typography.fontSize.xs, color: 'var(--fujin-text-secondary)', wordBreak: 'break-all' }}>
+                        {link.dest_full}<br />
+                        <span style={{ color: 'var(--fujin-text-muted)' }}>{link.linked_at}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div style={{
+                  fontFamily:   tokens.typography.fontFamily.base,
+                  fontSize:     tokens.typography.fontSize.xs,
+                  fontWeight:   tokens.typography.fontWeight.medium,
+                  color:        'var(--fujin-text-primary)',
+                  marginBottom: `${tokens.spacing.scale.xs}px`,
+                }}>
+                  Hardlink Peers
+                </div>
+                {detailData.inode_peers.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: `${tokens.spacing.scale.xs}px` }}>
+                    {detailData.inode_peers.map(peer => (
+                      <div key={peer.id} style={{ fontFamily: tokens.typography.fontFamily.mono, fontSize: tokens.typography.fontSize.xs, color: 'var(--fujin-text-secondary)', wordBreak: 'break-all' }}>
+                        {peer.display_name}
+                      </div>
+                    ))}
+                  </div>
+                ) : detailEntry.entry_type === 'dir' ? (
+                  <span style={{ fontFamily: tokens.typography.fontFamily.base, fontSize: tokens.typography.fontSize.xs, color: 'var(--fujin-text-muted)' }}>
+                    Not available for directories.
+                  </span>
+                ) : (
+                  <span style={{ fontFamily: tokens.typography.fontFamily.base, fontSize: tokens.typography.fontSize.xs, color: 'var(--fujin-text-muted)' }}>
+                    No peers in this source set.
+                  </span>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Recent operations history */}
       <div style={{ padding: `${tokens.spacing.scale.md}px ${tokens.spacing.scale.md}px 0` }}>
         <SectionHeader
           title="Recent Operations"
