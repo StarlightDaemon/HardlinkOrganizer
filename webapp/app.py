@@ -73,7 +73,7 @@ _UNSAFE_DEST_ROOTS = frozenset({
     "/",
     "/bin", "/boot", "/config", "/data", "/dev",
     "/etc", "/lib", "/lib64", "/proc", "/root",
-    "/run", "/sbin", "/sys", "/usr", "/var",
+    "/run", "/sbin", "/sys", "/tmp", "/usr", "/var", "/var/tmp",
 })
 
 
@@ -321,7 +321,7 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
         # Resolve the entry from DB inventory (fall back to live scan)
         db_entries = d.get_latest_inventory(body.source_set)
         if db_entries:
-            matched = [e for e in db_entries if e["id"] == body.entry_id]
+            matched = [e for e in db_entries if e["full_path"] == body.full_path]
         else:
             include_hidden = c["settings"].get("include_hidden", False)
             live = scan_source_set(
@@ -329,10 +329,10 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
                 c["source_sets"][body.source_set],
                 include_hidden=include_hidden,
             )
-            matched = [e for e in live if e["id"] == body.entry_id]
+            matched = [e for e in live if e["full_path"] == body.full_path]
 
         if not matched:
-            raise HTTPException(404, f"Entry {body.entry_id} not found in {body.source_set!r}.")
+            raise HTTPException(404, f"Entry {body.full_path!r} not found in {body.source_set!r}.")
 
         entry = matched[0]
         dest_root = c["dest_sets"][body.dest_set]
@@ -376,7 +376,7 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
         # Resolve entry
         db_entries = d.get_latest_inventory(body.source_set)
         if db_entries:
-            matched = [e for e in db_entries if e["id"] == body.entry_id]
+            matched = [e for e in db_entries if e["full_path"] == body.full_path]
         else:
             include_hidden = c["settings"].get("include_hidden", False)
             live = scan_source_set(
@@ -384,10 +384,10 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
                 c["source_sets"][body.source_set],
                 include_hidden=include_hidden,
             )
-            matched = [e for e in live if e["id"] == body.entry_id]
+            matched = [e for e in live if e["full_path"] == body.full_path]
 
         if not matched:
-            raise HTTPException(404, f"Entry {body.entry_id} not found.")
+            raise HTTPException(404, f"Entry {body.full_path!r} not found.")
 
         entry = matched[0]
         dest_root = c["dest_sets"][body.dest_set]
