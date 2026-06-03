@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS inventory (
     full_path    TEXT    NOT NULL,
     size_bytes   INTEGER NOT NULL DEFAULT 0,
     device_id    INTEGER NOT NULL DEFAULT 0,
+    inode        INTEGER,
     scan_time    TEXT    NOT NULL
 );
 
@@ -109,6 +110,12 @@ CREATE INDEX IF NOT EXISTS idx_link_history_source_set
 
 CREATE INDEX IF NOT EXISTS idx_verification_results_run_id
     ON verification_results (run_id);
+
+CREATE INDEX IF NOT EXISTS idx_inventory_inode
+    ON inventory (inode, device_id);
+
+CREATE INDEX IF NOT EXISTS idx_link_history_full_path
+    ON link_history (full_path);
 """
 
 
