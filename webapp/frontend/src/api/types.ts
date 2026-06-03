@@ -208,10 +208,11 @@ export interface HealthResponse {
 }
 
 export interface InodePeer {
-  id: number;
+  id: number | null;
   full_path: string;
   display_name: string;
   real_name: string;
+  set_label: string | null;
 }
 
 export interface InventoryDetailResponse {

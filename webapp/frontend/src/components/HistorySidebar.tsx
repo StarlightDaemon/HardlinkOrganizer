@@ -207,19 +207,22 @@ export function HistorySidebar() {
                 </div>
                 {detailData.inode_peers.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: `${tokens.spacing.scale.xs}px` }}>
-                    {detailData.inode_peers.map(peer => (
-                      <div key={peer.id} style={{ fontFamily: tokens.typography.fontFamily.mono, fontSize: tokens.typography.fontSize.xs, color: 'var(--fujin-text-secondary)', wordBreak: 'break-all' }}>
-                        {peer.display_name}
+                    {detailData.inode_peers.map((peer, idx) => (
+                      <div key={peer.id ?? `dest-${idx}`} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ fontFamily: tokens.typography.fontFamily.mono, fontSize: tokens.typography.fontSize.xs, color: 'var(--fujin-text-secondary)', wordBreak: 'break-all' }}>
+                          {peer.display_name}
+                        </span>
+                        {peer.set_label && (
+                          <span style={{ fontFamily: tokens.typography.fontFamily.base, fontSize: tokens.typography.fontSize.xs, color: 'var(--fujin-text-muted)' }}>
+                            {peer.set_label}
+                          </span>
+                        )}
                       </div>
                     ))}
                   </div>
-                ) : detailEntry.entry_type === 'dir' ? (
-                  <span style={{ fontFamily: tokens.typography.fontFamily.base, fontSize: tokens.typography.fontSize.xs, color: 'var(--fujin-text-muted)' }}>
-                    Not available for directories.
-                  </span>
                 ) : (
                   <span style={{ fontFamily: tokens.typography.fontFamily.base, fontSize: tokens.typography.fontSize.xs, color: 'var(--fujin-text-muted)' }}>
-                    No peers in this source set.
+                    No peers found.
                   </span>
                 )}
               </div>

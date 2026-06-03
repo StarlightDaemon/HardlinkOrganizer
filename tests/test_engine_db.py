@@ -481,6 +481,83 @@ class TestDestinationDB(unittest.TestCase):
         self.assertEqual(rows[1]["id"], id2)
 
 
+class TestInodePeers(unittest.TestCase):
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.db = Database(str(Path(self.tmp.name) / "test.db"))
+        self.now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+    def tearDown(self):
+        self.db.close()
+        self.tmp.cleanup()
+
+    def _entry(self, source_set: str, path: str, inode: int | None, device_id: int = 42) -> dict:
+        return {
+            "id": 1,
+            "source_set": source_set,
+            "entry_type": "file",
+            "display_name": Path(path).stem,
+            "real_name": Path(path).name,
+            "full_path": path,
+            "size_bytes": 1000,
+            "device_id": device_id,
+            "scan_time": self.now,
+            "inode": inode,
+        }
+
+    def test_finds_peer_in_same_source_set(self):
+        entries = [
+            self._entry("ingress", "/ingress/a.mkv", inode=100),
+            self._entry("ingress", "/ingress/b.mkv", inode=100),
+        ]
+        self.db.record_scan("ingress", self.now, entries)
+        peers = self.db.get_inode_peers(100, 42, "/ingress/a.mkv")
+        self.assertEqual(len(peers), 1)
+        self.assertEqual(peers[0]["full_path"], "/ingress/b.mkv")
+
+    def test_finds_peer_across_source_sets(self):
+        # Two different source sets share an inode — cross-set detection
+        self.db.record_scan("ingress", self.now, [
+            self._entry("ingress", "/ingress/movie.mkv", inode=999),
+        ])
+        self.db.record_scan("staging", self.now, [
+            self._entry("staging", "/staging/movie.mkv", inode=999),
+        ])
+        peers = self.db.get_inode_peers(999, 42, "/ingress/movie.mkv")
+        self.assertEqual(len(peers), 1)
+        self.assertEqual(peers[0]["full_path"], "/staging/movie.mkv")
+        self.assertEqual(peers[0]["source_set"], "staging")
+
+    def test_excludes_self_path(self):
+        entries = [self._entry("ingress", "/ingress/only.mkv", inode=77)]
+        self.db.record_scan("ingress", self.now, entries)
+        peers = self.db.get_inode_peers(77, 42, "/ingress/only.mkv")
+        self.assertEqual(peers, [])
+
+    def test_ignores_different_device(self):
+        self.db.record_scan("ingress", self.now, [
+            self._entry("ingress", "/ingress/a.mkv", inode=50, device_id=42),
+        ])
+        self.db.record_scan("other", self.now, [
+            self._entry("other", "/other/a.mkv", inode=50, device_id=99),
+        ])
+        peers = self.db.get_inode_peers(50, 42, "/ingress/a.mkv")
+        self.assertEqual(peers, [])
+
+    def test_uses_latest_scan_per_set(self):
+        # Old scan has the peer; new scan of same set removes it — must use latest
+        old_entries = [
+            self._entry("ingress", "/ingress/a.mkv", inode=200),
+            self._entry("ingress", "/ingress/b.mkv", inode=200),
+        ]
+        self.db.record_scan("ingress", self.now, old_entries)
+        new_entries = [self._entry("ingress", "/ingress/a.mkv", inode=200)]
+        self.db.record_scan("ingress", self.now, new_entries)
+        peers = self.db.get_inode_peers(200, 42, "/ingress/a.mkv")
+        self.assertEqual(peers, [])  # b.mkv dropped in latest scan
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
 

@@ -34,6 +34,7 @@ from engine import (
     check_already_linked,
     execute_link_plan,
     suggest_destination_name,
+    generate_display_name,
     ScanError,
     ConfigError,
 )
@@ -146,6 +147,79 @@ def _validate_dest_path(path: str) -> DestinationValidateResponse:
         warnings=warnings,
         errors=errors,
     )
+
+
+def _find_dest_inode_peers(
+    cfg: Config,
+    inode: int,
+    device_id: int,
+    exclude_path: str,
+) -> list["InodePeer"]:
+    """Scan configured dest roots on the same device for files sharing (inode, device_id).
+
+    Walks two levels deep (dest_root → entry → files), matching how source sets
+    are structured. Returns one InodePeer per top-level dest entry that contains
+    a matching file — deduplicates so a multi-file directory only yields one peer.
+    """
+    from webapp.models import InodePeer  # local import to avoid circular at module level
+
+    peers: list[InodePeer] = []
+    seen_paths: set[str] = set()
+
+    for dest_name, dest_root in cfg["dest_sets"].items():
+        try:
+            root_dev = Path(dest_root).stat().st_dev
+        except OSError:
+            continue
+        if root_dev != device_id:
+            continue
+
+        try:
+            with os.scandir(dest_root) as top_it:
+                for top_entry in top_it:
+                    top_path = top_entry.path
+                    if top_path in seen_paths or top_path == exclude_path:
+                        continue
+                    try:
+                        if top_entry.is_file(follow_symlinks=False):
+                            st = os.stat(top_path)
+                            if st.st_ino == inode and st.st_dev == device_id:
+                                seen_paths.add(top_path)
+                                peers.append(InodePeer(
+                                    id=None,
+                                    full_path=top_path,
+                                    display_name=generate_display_name(top_entry.name),
+                                    real_name=top_entry.name,
+                                    set_label=f"dest: {dest_name}",
+                                ))
+                        elif top_entry.is_dir(follow_symlinks=False):
+                            try:
+                                with os.scandir(top_path) as sub_it:
+                                    for sub_entry in sub_it:
+                                        if not sub_entry.is_file(follow_symlinks=False):
+                                            continue
+                                        try:
+                                            st = os.stat(sub_entry.path)
+                                            if st.st_ino == inode and st.st_dev == device_id:
+                                                seen_paths.add(top_path)
+                                                peers.append(InodePeer(
+                                                    id=None,
+                                                    full_path=top_path,
+                                                    display_name=generate_display_name(top_entry.name),
+                                                    real_name=top_entry.name,
+                                                    set_label=f"dest: {dest_name}",
+                                                ))
+                                                break
+                                        except OSError:
+                                            pass
+                            except OSError:
+                                pass
+                    except OSError:
+                        pass
+        except OSError:
+            continue
+
+    return peers
 
 
 def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
@@ -348,25 +422,31 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
         nlink: int | None = None
         device_id_val: int | None = None
 
+        def _find_hardlinked_file(scan_path: str) -> str | None:
+            """Return path of first file with nlink > 1, or any file if none are hardlinked."""
+            fallback = None
+            try:
+                with os.scandir(scan_path) as it:
+                    for entry in it:
+                        if entry.is_file(follow_symlinks=False):
+                            if fallback is None:
+                                fallback = entry.path
+                            if os.stat(entry.path).st_nlink > 1:
+                                return entry.path
+            except OSError:
+                pass
+            return fallback
+
         try:
             src = Path(full_path)
             if src.is_dir():
-                stat_target = None
-                with os.scandir(full_path) as it:
-                    for entry in it:
-                        if entry.is_file(follow_symlinks=False):
-                            stat_target = entry.path
-                            break
+                stat_target = _find_hardlinked_file(full_path)
                 if stat_target is None:
                     with os.scandir(full_path) as it:
                         for subdir in it:
                             if not subdir.is_dir(follow_symlinks=False):
                                 continue
-                            with os.scandir(subdir.path) as sub_it:
-                                for entry in sub_it:
-                                    if entry.is_file(follow_symlinks=False):
-                                        stat_target = entry.path
-                                        break
+                            stat_target = _find_hardlinked_file(subdir.path)
                             if stat_target:
                                 break
                 if stat_target:
@@ -406,8 +486,23 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
 
         if inode is not None and device_id_val is not None:
             clamped_dev = int(device_id_val) & 0x7FFFFFFFFFFFFFFF
-            peers_raw = d.get_inode_peers(source_set, inode, clamped_dev, full_path)
-            inode_peers = [InodePeer(**p) for p in peers_raw]
+
+            # Source-set peers from DB (cross-set)
+            db_peers = d.get_inode_peers(inode, clamped_dev, full_path)
+            inode_peers = [
+                InodePeer(
+                    id=p["id"],
+                    full_path=p["full_path"],
+                    display_name=p["display_name"],
+                    real_name=p["real_name"],
+                    set_label=f"source: {p['source_set']}",
+                )
+                for p in db_peers
+            ]
+
+            # Dest-set peers via live scan (catches pre-existing links not in HLO history)
+            dest_peers = _find_dest_inode_peers(c, inode, device_id_val, full_path)
+            inode_peers.extend(dest_peers)
         else:
             inode_peers = []
 

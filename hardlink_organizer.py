@@ -237,15 +237,16 @@ def _stat_entry(path: Path) -> tuple[int, int, int | None]:
 
 
 def check_already_linked(source_path: str) -> bool:
-    """Return True if source_path has nlink > 1, indicating it is hardlinked elsewhere."""
+    """Return True if any regular file under source_path has nlink > 1."""
     try:
         src = Path(source_path)
         if src.is_dir():
             with os.scandir(source_path) as it:
                 for entry in it:
                     if entry.is_file(follow_symlinks=False):
-                        return os.stat(entry.path).st_nlink > 1
-            # No regular file at top level — try one subdirectory level.
+                        if os.stat(entry.path).st_nlink > 1:
+                            return True
+            # No hardlinked file at top level — try one subdirectory level.
             with os.scandir(source_path) as it:
                 for subdir in it:
                     if not subdir.is_dir(follow_symlinks=False):
@@ -253,7 +254,8 @@ def check_already_linked(source_path: str) -> bool:
                     with os.scandir(subdir.path) as sub_it:
                         for entry in sub_it:
                             if entry.is_file(follow_symlinks=False):
-                                return os.stat(entry.path).st_nlink > 1
+                                if os.stat(entry.path).st_nlink > 1:
+                                    return True
             return False
         else:
             return os.stat(source_path).st_nlink > 1
