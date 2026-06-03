@@ -109,10 +109,43 @@ class TestGenerateDisplayName(unittest.TestCase):
         self.assertNotIn(".", result)
 
 
+class TestExtractCleanTitle(unittest.TestCase):
+
+    def test_year_cuts_after_paren(self):
+        name = "Mortal Kombat (1995) UpScaled 2160p H265 10 bit DV HDR10+ ita AC3 2.0 eng AC3 5.1 sub ita eng NUita NUeng-Licdom"
+        self.assertEqual(hlo._extract_clean_title(name), "Mortal Kombat (1995)")
+
+    def test_year_cuts_after_paren_tron(self):
+        self.assertEqual(hlo._extract_clean_title("Tron Legacy (2010) 2160p HDR BluRay AV1"), "Tron Legacy (2010)")
+
+    def test_year_only_no_truncation(self):
+        self.assertEqual(hlo._extract_clean_title("Arrival (2016)"), "Arrival (2016)")
+
+    def test_no_year_quality_tag_cut(self):
+        self.assertEqual(hlo._extract_clean_title("Some Movie Without Year 2160p BluRay"), "Some Movie Without Year")
+
+    def test_no_year_no_quality_tag(self):
+        self.assertEqual(hlo._extract_clean_title("Clean Title"), "Clean Title")
+
+
+class TestSuggestDestinationName(unittest.TestCase):
+
+    def test_file_entry_produces_subfolder_path(self):
+        name = "Mortal Kombat (1995) UpScaled 2160p H265 10 bit DV HDR10+"
+        result = hlo.suggest_destination_name(name, entry_type="file", source_path="/src/Mortal Kombat.mkv")
+        self.assertEqual(result, "Mortal Kombat (1995)/Mortal Kombat (1995).mkv")
+
+    def test_dir_entry_unchanged(self):
+        self.assertEqual(hlo.suggest_destination_name("Show Name", entry_type="dir"), "Show Name")
+
+    def test_no_entry_type_arg_backward_compat(self):
+        self.assertEqual(hlo.suggest_destination_name("Show Name"), "Show Name")
+
+
 class TestVersioning(unittest.TestCase):
 
     def test_version_constant_present(self):
-        self.assertEqual(hlo.__version__, "1.0.5")
+        self.assertEqual(hlo.__version__, "1.0.6")
 
 
 # ---------------------------------------------------------------------------

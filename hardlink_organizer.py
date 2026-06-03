@@ -28,7 +28,7 @@ import time
 from pathlib import Path
 from typing import TypedDict
 
-__version__ = "1.0.5"
+__version__ = "1.0.6"
 
 # ---------------------------------------------------------------------------
 # Conditional import: tomllib is stdlib in Python 3.11+; fall back to tomli.
@@ -217,9 +217,35 @@ def generate_display_name(real_name: str) -> str:
     return name
 
 
-def suggest_destination_name(display_name: str) -> str:
-    """Return a clean suggested destination folder name from a display name."""
+def suggest_destination_name(
+    display_name: str,
+    entry_type: str = "dir",
+    source_path: str = "",
+) -> str:
+    """Return the suggested dest_subpath for a link plan."""
+    if entry_type == "file":
+        clean = _extract_clean_title(display_name)
+        ext = Path(source_path).suffix if source_path else ""
+        return f"{clean}/{clean}{ext}"
     return display_name
+
+
+_QUALITY_TAGS_RE = re.compile(
+    r'\b(2160p|1080p|720p|480p|BluRay|BDRip|BRRip|WEB[-.]?DL|WEBRip|REMUX|'
+    r'HDR|HDR10|DV|UHD|x264|x265|H\.?264|H\.?265|AV1|HEVC|UpScaled)\b',
+    re.IGNORECASE,
+)
+
+
+def _extract_clean_title(display_name: str) -> str:
+    """Return just the title and year from a display name, stripping quality/encoding tags."""
+    m = re.search(r'\(\d{4}\)', display_name)
+    if m:
+        return display_name[:m.end()].strip()
+    m2 = _QUALITY_TAGS_RE.search(display_name)
+    if m2:
+        return display_name[:m2.start()].strip()
+    return display_name.strip()
 
 
 # ---------------------------------------------------------------------------
