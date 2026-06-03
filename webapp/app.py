@@ -21,6 +21,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
 import csv
 import io
 
@@ -418,6 +419,19 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
                 detail=f"Source set {source_set!r} not found in config.",
             )
 
+        source_set_root = Path(c["source_sets"][source_set]).resolve()
+        try:
+            if not Path(full_path).resolve().is_relative_to(source_set_root):
+                raise HTTPException(
+                    status_code=400,
+                    detail="full_path is outside the requested source set root.",
+                )
+        except (OSError, ValueError):
+            raise HTTPException(
+                status_code=400,
+                detail="full_path is outside the requested source set root.",
+            )
+
         inode: int | None = None
         nlink: int | None = None
         device_id_val: int | None = None
@@ -501,7 +515,9 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
             ]
 
             # Dest-set peers via live scan (catches pre-existing links not in HLO history)
-            dest_peers = _find_dest_inode_peers(c, inode, device_id_val, full_path)
+            dest_peers = await run_in_threadpool(
+                _find_dest_inode_peers, c, inode, device_id_val, full_path
+            )
             inode_peers.extend(dest_peers)
         else:
             inode_peers = []

@@ -56,6 +56,7 @@ class InventoryEntry(TypedDict):
     scan_time: str
     size_bytes: int
     device_id: int
+    inode: int | None
 
 
 class Config(TypedDict):

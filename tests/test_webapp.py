@@ -1113,5 +1113,199 @@ class RunPyConfigArgTests(unittest.TestCase):
             os.environ.update(saved)
 
 
+class TestInventoryDetailPeerScan(unittest.TestCase):
+    """Behavioral tests for _find_dest_inode_peers via GET /api/inventory/detail.
+
+    Each test creates its own temp directory tree with real hardlinks so that
+    the live filesystem scan in _find_dest_inode_peers exercises actual inode
+    matching logic — deduplication, cross-device filtering, empty dest root.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        try:
+            from engine.db import Database
+            from webapp.app import create_app
+            cls._skip = False
+            cls._Database = Database
+            cls._create_app = staticmethod(create_app)
+        except ImportError as exc:
+            cls._skip = True
+            cls._skip_reason = str(exc)
+
+    def setUp(self):
+        if self._skip:
+            self.skipTest(f"Skipping peer-scan tests — missing dependency: {self._skip_reason}")
+        self.tmp = tempfile.TemporaryDirectory()
+
+    def tearDown(self):
+        if hasattr(self, "tmp"):
+            self.tmp.cleanup()
+
+    def _make_client(self, src_root: str, dst_root: str) -> _RouteHarnessClient:
+        """Build an app+client pair backed by a fresh in-memory DB."""
+        root = Path(self.tmp.name)
+        cfg = {
+            "paths": {
+                "index_json": str(root / "index.json"),
+                "index_tsv":  str(root / "index.tsv"),
+                "log_file":   None,
+                "db_file":    str(root / "test.db"),
+            },
+            "settings": {"include_hidden": False, "collision_policy": "skip"},
+            "source_sets": {"movies": src_root},
+            "dest_sets":   {"movies": dst_root},
+        }
+        db = self._Database(str(root / "test.db"))
+        self._db = db  # keep a reference so tearDown can close it
+        app = self._create_app(cfg, db, "test-config.toml")
+        return _RouteHarnessClient(app)
+
+    def tearDown(self):
+        if hasattr(self, "_db") and self._db:
+            self._db.close()
+        if hasattr(self, "tmp"):
+            self.tmp.cleanup()
+
+    # -----------------------------------------------------------------------
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "hardlinks require Linux")
+    def test_dest_peer_found_when_hardlinked(self):
+        """A dest file that shares an inode with the source appears in inode_peers."""
+        root = Path(self.tmp.name)
+        src_root = str(root / "src")
+        dst_root = str(root / "dst")
+        Path(src_root).mkdir()
+        Path(dst_root).mkdir()
+
+        # Source file
+        src_file = Path(src_root) / "Movie.A.mkv"
+        _write_file(src_file, "content-a")
+
+        # Dest hierarchy: dst_root / "Movie A" / "Movie A.mkv"  (hardlinked)
+        dest_dir = Path(dst_root) / "Movie A"
+        dest_dir.mkdir()
+        dest_file = dest_dir / "Movie A.mkv"
+        os.link(str(src_file), str(dest_file))
+
+        client = self._make_client(src_root, dst_root)
+        res = client.get(
+            f"/api/inventory/detail?source_set=movies&full_path={src_file}"
+        )
+
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        peers = data["inode_peers"]
+        self.assertEqual(len(peers), 1, f"Expected 1 peer, got: {peers}")
+        # The peer reports the top-level dest directory, not the individual file
+        self.assertEqual(peers[0]["full_path"], str(dest_dir))
+        self.assertTrue(
+            peers[0]["set_label"].startswith("dest:"),
+            f"set_label should start with 'dest:' but got: {peers[0]['set_label']!r}",
+        )
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "hardlinks require Linux")
+    def test_no_peers_when_dest_root_empty(self):
+        """An empty dest root yields no inode_peers."""
+        root = Path(self.tmp.name)
+        src_root = str(root / "src")
+        dst_root = str(root / "dst")
+        Path(src_root).mkdir()
+        Path(dst_root).mkdir()
+
+        src_file = Path(src_root) / "Movie.A.mkv"
+        _write_file(src_file, "content-a")
+        # No hardlink, dest root is empty
+
+        client = self._make_client(src_root, dst_root)
+        res = client.get(
+            f"/api/inventory/detail?source_set=movies&full_path={src_file}"
+        )
+
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["inode_peers"], [])
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "hardlinks require Linux")
+    def test_dest_peer_deduplication(self):
+        """Multiple hardlinked files in the same dest dir produce exactly one peer entry."""
+        root = Path(self.tmp.name)
+        src_root = str(root / "src")
+        dst_root = str(root / "dst")
+        Path(src_root).mkdir()
+        Path(dst_root).mkdir()
+
+        src_file = Path(src_root) / "Movie.B.mkv"
+        _write_file(src_file, "content-b")
+
+        dest_dir = Path(dst_root) / "Movie B"
+        dest_dir.mkdir()
+
+        # Two hardlinks into the same dest dir — both share the source inode
+        os.link(str(src_file), str(dest_dir / "Movie B.mkv"))
+        # Create a second file with different content, then hardlink a copy
+        second_src = Path(src_root) / "_tmp_second.nfo"
+        import shutil
+        shutil.copyfile(str(src_file), str(second_src))
+        os.link(str(src_file), str(dest_dir / "Movie B.nfo"))
+
+        client = self._make_client(src_root, dst_root)
+        res = client.get(
+            f"/api/inventory/detail?source_set=movies&full_path={src_file}"
+        )
+
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        peers = data["inode_peers"]
+        # Deduplication must collapse both matching files into a single top-level entry
+        dest_peers = [p for p in peers if p["set_label"].startswith("dest:")]
+        self.assertEqual(
+            len(dest_peers), 1,
+            f"Expected 1 deduplicated dest peer, got {len(dest_peers)}: {dest_peers}",
+        )
+        self.assertEqual(dest_peers[0]["full_path"], str(dest_dir))
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "hardlinks require Linux")
+    def test_no_peers_when_file_not_hardlinked(self):
+        """A dest file that is a copy (different inode) is not reported as a peer."""
+        root = Path(self.tmp.name)
+        src_root = str(root / "src")
+        dst_root = str(root / "dst")
+        Path(src_root).mkdir()
+        Path(dst_root).mkdir()
+
+        src_file = Path(src_root) / "Movie.C.mkv"
+        _write_file(src_file, "content-c")
+
+        dest_dir = Path(dst_root) / "Movie C"
+        dest_dir.mkdir()
+        # Write a different-content file — different inode, NOT a hardlink
+        _write_file(dest_dir / "Movie C.mkv", "different-content")
+
+        client = self._make_client(src_root, dst_root)
+        res = client.get(
+            f"/api/inventory/detail?source_set=movies&full_path={src_file}"
+        )
+
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        dest_peers = [p for p in data["inode_peers"] if p["set_label"].startswith("dest:")]
+        self.assertEqual(dest_peers, [])
+
+    def test_full_path_outside_source_set_returns_400(self):
+        """Paths that escape the source set root are rejected with 400 (bounds check)."""
+        root = Path(self.tmp.name)
+        src_root = str(root / "src")
+        dst_root = str(root / "dst")
+        Path(src_root).mkdir()
+        Path(dst_root).mkdir()
+
+        client = self._make_client(src_root, dst_root)
+        res = client.get(
+            "/api/inventory/detail?source_set=movies&full_path=/etc/passwd"
+        )
+        self.assertEqual(res.status_code, 400)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
