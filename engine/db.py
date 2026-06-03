@@ -356,28 +356,25 @@ class Database:
 
     def get_inode_peers(
         self,
-        source_set: str,
         inode: int,
         device_id: int,
         exclude_path: str,
     ) -> list[dict]:
-        """Return inventory rows from latest scan of source_set that share
+        """Return inventory rows across all source sets' latest scans that share
         (inode, device_id) but are not exclude_path."""
         with self._lock:
             conn = self._conn()
-            scan_row = conn.execute(
-                "SELECT id FROM scans WHERE source_set = ? ORDER BY id DESC LIMIT 1",
-                (source_set,),
-            ).fetchone()
-            if not scan_row:
-                return []
-            scan_id = scan_row["id"]
             rows = conn.execute(
-                """SELECT id, full_path, display_name, real_name
-                   FROM inventory
-                   WHERE scan_id = ? AND inode = ? AND device_id = ?
-                     AND full_path != ?""",
-                (scan_id, inode, device_id, exclude_path),
+                """SELECT i.id, i.full_path, i.display_name, i.real_name, i.source_set
+                   FROM inventory i
+                   INNER JOIN (
+                       SELECT source_set, MAX(id) AS latest_scan_id
+                       FROM scans
+                       GROUP BY source_set
+                   ) ls ON i.scan_id = ls.latest_scan_id
+                   WHERE i.inode = ? AND i.device_id = ?
+                     AND i.full_path != ?""",
+                (inode, device_id, exclude_path),
             ).fetchall()
         return [dict(r) for r in rows]
 

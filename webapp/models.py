@@ -160,10 +160,11 @@ class HistoryResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 class InodePeer(BaseModel):
-    id: int
+    id: int | None = None
     full_path: str
     display_name: str
     real_name: str
+    set_label: str | None = None
 
 
 class InventoryDetailResponse(BaseModel):

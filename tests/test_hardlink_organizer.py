@@ -839,9 +839,7 @@ class TestCheckAlreadyLinked(unittest.TestCase):
         (src_dir / "Season 01").mkdir(parents=True)
         self.assertFalse(hlo.check_already_linked(str(src_dir)))
 
-    def test_dir_multiple_files_first_linked_returns_true(self):
-        # Documents the "first file wins" heuristic: result is based on whichever
-        # file os.scandir yields first, not a full audit of all files.
+    def test_dir_multiple_files_any_linked_returns_true(self):
         src_dir = self.src_root / "ShowA"
         src_dir.mkdir()
         src_a = src_dir / "a.mkv"
@@ -850,9 +848,23 @@ class TestCheckAlreadyLinked(unittest.TestCase):
         _write_file(src_b, content="different")
         dst_dir = self.dst_root / "ShowA"
         dst_dir.mkdir()
-        # Link both files so the test is deterministic regardless of scandir order.
         os.link(src_a, dst_dir / "a.mkv")
         os.link(src_b, dst_dir / "b.mkv")
+        self.assertTrue(hlo.check_already_linked(str(src_dir)))
+
+    def test_dir_sidecar_nlink1_but_main_file_hardlinked_returns_true(self):
+        # Regression: directories with sidecar files (NFO, TXT, etc.) that have
+        # nlink=1 must not mask a hardlinked main file regardless of scandir order.
+        src_dir = self.src_root / "Movie"
+        src_dir.mkdir()
+        sidecar = src_dir / "release.nfo"
+        main = src_dir / "movie.mkv"
+        _write_file(sidecar, content="nfo")
+        _write_file(main)
+        dst_dir = self.dst_root / "Movie"
+        dst_dir.mkdir()
+        os.link(main, dst_dir / "movie.mkv")
+        # sidecar has nlink=1; main has nlink=2 — must return True
         self.assertTrue(hlo.check_already_linked(str(src_dir)))
 
 
