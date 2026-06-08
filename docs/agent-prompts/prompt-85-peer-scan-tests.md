@@ -156,7 +156,7 @@ The `dest_sets` entry causes `_find_dest_inode_peers` to scan `dst_root`.
 ## Verification
 
 ```bash
-cd /mnt/e/HardlinkOrganizer && python -m unittest discover -s ./tests -v 2>&1 | tail -30
+cd /Users/dante/Citadel/HardlinkOrganizer && python -m unittest discover -s ./tests -v 2>&1 | tail -30
 ```
 
 All existing tests must still pass. The five new tests must all pass (or be

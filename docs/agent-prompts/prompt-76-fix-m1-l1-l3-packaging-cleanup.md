@@ -25,7 +25,7 @@ Previous completed loops: C-1, C-2, R-1–R-3, H-1, H-2, M-2. All 185+ tests pas
 
 ## Repository root
 
-`/mnt/e/HardlinkOrganizer`
+`/Users/dante/Citadel/HardlinkOrganizer`
 
 ---
 

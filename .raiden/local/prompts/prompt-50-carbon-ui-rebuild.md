@@ -30,7 +30,7 @@ Do not patch the existing CSS. Delete it and rebuild from Carbon tokens.
 
 ## 1. Repository
 
-`/mnt/e/HardlinkOrganizer`
+`/Users/dante/Citadel/HardlinkOrganizer`
 
 This is a Python/FastAPI (Jinja2) NAS tool called **Hardlink Organizer**.
 It is a preview-first hardlink workflow: Scan → Browse → Destination → Preview → Execute → Verify.
@@ -465,7 +465,7 @@ Before you finish, self-audit against these criteria:
 To start the app for visual review after implementing:
 
 ```bash
-# From /mnt/e/HardlinkOrganizer
+# From /Users/dante/Citadel/HardlinkOrganizer
 mkdir -p /tmp/hlo-demo/{db,src/movies,src/shows,dst/movies,dst/shows}
 touch /tmp/hlo-demo/src/movies/The.Dark.Knight.2008.mkv \
       /tmp/hlo-demo/src/movies/Oppenheimer.2023.mkv \

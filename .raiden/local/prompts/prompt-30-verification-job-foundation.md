@@ -17,7 +17,7 @@ verification using existing link history as the entry point.
 
 ## Repository root
 
-`/mnt/e/HardlinkOrganizer`
+`/Users/dante/Citadel/HardlinkOrganizer`
 
 ## Read first
 

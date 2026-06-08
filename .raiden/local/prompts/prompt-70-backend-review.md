@@ -17,7 +17,7 @@ suggest style changes or refactors unless they are load-bearing for correctness.
 
 ## Repository root
 
-`/mnt/e/HardlinkOrganizer`
+`/Users/dante/Citadel/HardlinkOrganizer`
 
 ---
 

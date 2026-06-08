@@ -25,7 +25,7 @@ The operator is aware of this bug and has read the report. Your job is to:
 
 ## Repository root
 
-`/mnt/e/HardlinkOrganizer`
+`/Users/dante/Citadel/HardlinkOrganizer`
 
 ---
 

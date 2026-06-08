@@ -45,7 +45,7 @@
 
 ## 2026-05-05 React SPA + Fujin UI rebuild session
 
-- Confirmed: `webapp/frontend/` scaffolded with Vite 5 + React 18 + TypeScript 5. `@fujin` alias → `/mnt/e/Fujin/components`; `@tokens` alias → `/mnt/e/Fujin/tokens.json`. Build outputs to `webapp/static/dist/`.
+- Confirmed: `webapp/frontend/` scaffolded with Vite 5 + React 18 + TypeScript 5. `@fujin` alias → `/Users/dante/Citadel/Fujin/components`; `@tokens` alias → `/Users/dante/Citadel/Fujin/tokens.json`. Build outputs to `webapp/static/dist/`.
 - Confirmed: `webapp/app.py` — Jinja2 template route and imports removed; `StaticFiles(directory=dist, html=True)` mounted at `/` after all API routes.
 - Confirmed: `src/api/types.ts` — TypeScript interfaces mirroring all Pydantic models in `webapp/models.py` exactly.
 - Confirmed: `src/api/client.ts` — typed fetch wrappers for every API endpoint (health, config/sets, scan, inventory, preview, execute, history, verify, destinations CRUD + validate).
@@ -73,7 +73,7 @@
 
 ## 2026-05-03 RAIDEN Instance install and governance migration
 
-- Confirmed: RAIDEN Instance installed from central RAIDEN repo (`/mnt/e/Raiden`) using `raiden_guide.py install` with sample_package (Edict v0.2.0).
+- Confirmed: RAIDEN Instance installed from central RAIDEN repo (`/Users/dante/Citadel/Raiden`) using `raiden_guide.py install` with sample_package (Edict v0.2.0).
 - Confirmed: full `init → plan → apply → doctor` cycle passed cleanly; no conflicts or anomalies.
 - Confirmed: `AGENTS.md` merged — legacy content preserved and updated to point at `.raiden/state/` control plane.
 - Confirmed: `agent-ledger/` content migrated to `.raiden/state/` (CURRENT_STATE, GOALS, OPEN_LOOPS, DECISIONS, WORK_LOG).
@@ -91,7 +91,7 @@
 ## 2026-04-16 workspace extraction planning entry
 
 - Confirmed: created `notes/PROJECT_WORKSPACE_EXTRACTION_PLAN.md`.
-- Confirmed: selected `/mnt/e/HardlinkOrganizer` as preferred new top-level workspace path.
+- Confirmed: selected `/Users/dante/Citadel/HardlinkOrganizer` as preferred new top-level workspace path.
 - Confirmed: selected `hardlink-organizer` as preferred standalone repository name.
 - Confirmed: selected simple copy plus fresh repo initialization as the default migration method.
 

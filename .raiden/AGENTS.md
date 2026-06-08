@@ -5,13 +5,9 @@ RAIDEN Instance control plane for this repo.
 
 ## Authoritative workspace root
 
-- WSL path: `/mnt/e/HardlinkOrganizer`
-- Windows path: `E:\HardlinkOrganizer`
-- Deprecated nested path: `E:\StarlightDaemonDev\tools\internal\hardlink-organizer`
+- macOS path: `/Users/dante/Citadel/HardlinkOrganizer`
 
-Treat `/mnt/e/HardlinkOrganizer` as the only live project root. If your
-context points at the deprecated nested copy, stop and switch back here before
-doing anything.
+Treat `/Users/dante/Citadel/HardlinkOrganizer` as the only live project root.
 
 ## Control plane
 

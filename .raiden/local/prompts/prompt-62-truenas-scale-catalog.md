@@ -38,7 +38,7 @@ confirmed before writing the `app.yaml`.
 
 ## Repository root
 
-`/mnt/e/HardlinkOrganizer`
+`/Users/dante/Citadel/HardlinkOrganizer`
 
 ## Read first
 

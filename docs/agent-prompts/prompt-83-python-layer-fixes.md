@@ -8,7 +8,7 @@
 
 ## Context
 
-HardlinkOrganizer is a Python/FastAPI tool at `/mnt/e/HardlinkOrganizer`.
+HardlinkOrganizer is a Python/FastAPI tool at `/Users/dante/Citadel/HardlinkOrganizer`.
 These three fixes come from a verified post-release audit. All changes are
 in `hardlink_organizer.py` and `webapp/app.py` only.
 
@@ -100,7 +100,7 @@ executor.
 ## Verification
 
 ```bash
-cd /mnt/e/HardlinkOrganizer && python -m unittest discover -s ./tests -v 2>&1 | tail -20
+cd /Users/dante/Citadel/HardlinkOrganizer && python -m unittest discover -s ./tests -v 2>&1 | tail -20
 ```
 
 All existing tests must pass. Report what passed, what failed, and what you changed.

@@ -24,7 +24,7 @@ docker pull ghcr.io/starlightdaemon/hardlink-organizer:latest
 
 ## Repository root
 
-`/mnt/e/HardlinkOrganizer`
+`/Users/dante/Citadel/HardlinkOrganizer`
 
 ## Read first
 

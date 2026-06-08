@@ -17,7 +17,7 @@ This is a bounded repo-publication pass, not broader release or feature work.
 
 ## Repository root
 
-`/mnt/e/HardlinkOrganizer`
+`/Users/dante/Citadel/HardlinkOrganizer`
 
 ## Read first
 
@@ -33,7 +33,7 @@ This is a bounded repo-publication pass, not broader release or feature work.
 Assume the standalone repository already exists at:
 
 - GitHub repo: `https://github.com/StarlightDaemon/HardlinkOrganizer`
-- local root: `/mnt/e/HardlinkOrganizer`
+- local root: `/Users/dante/Citadel/HardlinkOrganizer`
 
 Assume these local changes may already be present but uncommitted:
 
