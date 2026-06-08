@@ -1,5 +1,15 @@
 # Work Log
 
+## 2026-06-07 WSL→macOS migration remediation
+
+- Confirmed: migration audit completed. Edict v0.6.1 confirmed clean. All findings executed in order P1–P11.
+- Confirmed: P1–P9 — all /mnt/e/ path references replaced with /Users/dante/Citadel/ equivalents across AGENTS.md root, .raiden/AGENTS.md, .raiden/local/prompts/README.md, CURRENT_STATE.md, DECISIONS.md, WORK_LOG.md, DECISIONS.md DEC-008, .raiden/local/legacy/AGENTS.legacy.md, and 47 files via bulk sed across .raiden/local/prompts/, packaging/unraid/, docs/agent-prompts/.
+- Confirmed: P6 — .claude/settings.local.json deleted (was untracked; contained 13 dead git -C /mnt/e/HardlinkOrganizer entries and 2 /mnt/c/Users/agent007/ python.exe paths from a different user account).
+- Confirmed: P10 — webapp/frontend/node_modules rebuilt clean via npm ci on ARM64 macOS. 95 packages added, 0 vulnerabilities, no native addon warnings.
+- Confirmed: P11 — macOS /proc/ degradation comment added above mountinfo read in hardlink_organizer.py:544.
+- Confirmed: global grep across all .md/.py/.json/.toml/.sh/.ts/.js files finds zero /mnt/e/ references.
+- Confirmed: commit 0d1e973 pushed to main. commit-msg hook not yet executable (non-blocking advisory).
+
 ## 2026-05-07 Frontend polish — display_name in history + stepper state preservation
 
 - Confirmed: `display_name` added to `link_history` table via `_SCHEMA` DDL and `_init_schema()` migration guard (`ALTER TABLE ... ADD COLUMN`, catches `OperationalError` for existing DBs).
