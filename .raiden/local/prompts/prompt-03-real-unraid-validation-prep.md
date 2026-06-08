@@ -3,7 +3,7 @@
 Prepare Hardlink Organizer for a real-host validation pass. This is a documentation and checklist task only.
 
 Repository root:
-`/mnt/e/HardlinkOrganizer`
+`/Users/dante/Citadel/HardlinkOrganizer`
 
 Read first:
 1. `./README.md`

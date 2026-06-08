@@ -60,14 +60,14 @@ created on first startup against an existing DB and be a no-op thereafter.
 ## Verification
 
 ```bash
-cd /mnt/e/HardlinkOrganizer && python -m unittest discover -s ./tests -v 2>&1 | tail -10
+cd /Users/dante/Citadel/HardlinkOrganizer && python -m unittest discover -s ./tests -v 2>&1 | tail -10
 ```
 
 All existing tests must pass. Also confirm that the two index names appear in
 the schema by running:
 
 ```bash
-cd /mnt/e/HardlinkOrganizer && python -c "
+cd /Users/dante/Citadel/HardlinkOrganizer && python -c "
 import tempfile, os
 from engine.db import Database
 with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:

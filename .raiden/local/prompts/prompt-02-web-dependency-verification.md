@@ -3,7 +3,7 @@
 Do a dependency and test-environment verification pass for the Hardlink Organizer web app.
 
 Repository root:
-`/mnt/e/HardlinkOrganizer`
+`/Users/dante/Citadel/HardlinkOrganizer`
 
 Read first:
 1. `./requirements.txt`

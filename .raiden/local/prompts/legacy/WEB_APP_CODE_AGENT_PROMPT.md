@@ -6,7 +6,7 @@ Use this as the prompt for the next coding agent that should start the hosted we
 You are taking over the next implementation phase of Hardlink Organizer.
 
 Repository root:
-/mnt/e/HardlinkOrganizer
+/Users/dante/Citadel/HardlinkOrganizer
 
 Read these first:
 1. ./README.md

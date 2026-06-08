@@ -18,7 +18,7 @@ operations.
 
 ## Repository root
 
-`/mnt/e/HardlinkOrganizer`
+`/Users/dante/Citadel/HardlinkOrganizer`
 
 ## Read first
 

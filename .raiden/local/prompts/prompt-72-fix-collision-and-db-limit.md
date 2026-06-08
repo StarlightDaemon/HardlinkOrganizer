@@ -21,7 +21,7 @@ Two small targeted fixes in two files. Do them in one pass and commit together.
 
 ## Repository root
 
-`/mnt/e/HardlinkOrganizer`
+`/Users/dante/Citadel/HardlinkOrganizer`
 
 ---
 
@@ -177,7 +177,7 @@ Check what fixture name is used for a database instance in the existing
 ## Validation
 
 ```bash
-cd /mnt/e/HardlinkOrganizer
+cd /Users/dante/Citadel/HardlinkOrganizer
 python -m pytest tests/test_hardlink_organizer.py tests/test_engine_db.py -x -q 2>&1 | tail -15
 python -m pytest tests/ -x -q 2>&1 | tail -10
 ```

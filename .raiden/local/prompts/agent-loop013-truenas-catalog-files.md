@@ -11,7 +11,7 @@ human steps that come after this. Your job ends at: files written and committed.
 
 ## Repository root
 
-`/mnt/e/HardlinkOrganizer`
+`/Users/dante/Citadel/HardlinkOrganizer`
 
 Always confirm you are in this directory before doing any work.
 

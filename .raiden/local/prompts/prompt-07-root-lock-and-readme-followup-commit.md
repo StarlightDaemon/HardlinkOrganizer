@@ -18,7 +18,7 @@ reorganization, feature work, or broad prompt rewriting.
 
 ## Repository root
 
-`/mnt/e/HardlinkOrganizer`
+`/Users/dante/Citadel/HardlinkOrganizer`
 
 ## Read first
 
@@ -87,7 +87,7 @@ Out of scope:
 ## What to check carefully
 
 - whether `README.md` still uses commands that do not work in this workspace
-- whether root-lock wording consistently points to `/mnt/e/HardlinkOrganizer`
+- whether root-lock wording consistently points to `/Users/dante/Citadel/HardlinkOrganizer`
   and `E:\HardlinkOrganizer`
 - whether the micro prompt and `prompt-00` match the current standalone-root rule
 - whether `prompt-06` is present and correctly listed in `.raiden/local/prompts/README.md`

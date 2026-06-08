@@ -541,6 +541,7 @@ def _load_mount_points(mountinfo_text: str | None = None) -> list[str]:
     """Return normalized mount points from mountinfo, longest paths first."""
     if mountinfo_text is None:
         try:
+            # macOS: /proc/ does not exist; OSError is caught below and returns []. Mount-layout warnings are silently suppressed on macOS.
             mountinfo_text = Path("/proc/self/mountinfo").read_text(encoding="utf-8")
         except OSError:
             return []

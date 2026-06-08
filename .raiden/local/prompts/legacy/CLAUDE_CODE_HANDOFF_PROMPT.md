@@ -6,7 +6,7 @@ Use this as the prompt for a Claude Sonnet or Opus repo agent that will implemen
 You are taking over implementation of a planned internal tool in this repository.
 
 Repository root:
-/mnt/e/HardlinkOrganizer
+/Users/dante/Citadel/HardlinkOrganizer
 
 Primary brief:
 ./README.md

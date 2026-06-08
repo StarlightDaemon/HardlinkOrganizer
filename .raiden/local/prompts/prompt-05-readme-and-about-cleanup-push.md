@@ -18,7 +18,7 @@ work, or broader product restructuring.
 
 ## Repository root
 
-`/mnt/e/HardlinkOrganizer`
+`/Users/dante/Citadel/HardlinkOrganizer`
 
 ## Read first
 

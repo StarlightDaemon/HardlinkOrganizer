@@ -24,7 +24,7 @@ This loop has no code changes. It is infrastructure and publishing only.
 
 ## Repository root
 
-`/mnt/e/HardlinkOrganizer`
+`/Users/dante/Citadel/HardlinkOrganizer`
 
 ## Prerequisite (manual step before running this prompt)
 
