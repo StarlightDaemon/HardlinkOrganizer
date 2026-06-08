@@ -53,6 +53,8 @@
 
 - Confirmed: LOOP-011 complete 2026-05-07. GHA run 25513495017 (main push) and 25513628167 (v1.0.0-rc.1 tag) both completed success. GHCR image published at ghcr.io/starlightdaemon/hardlink-organizer:latest and ghcr.io/starlightdaemon/hardlink-organizer:v1.0.0-rc.1. Visibility pending manual confirmation — Node.js 20 deprecation warning in workflow is non-blocking (deadline Sept 2026).
 
+- Confirmed: WSL→macOS migration remediation complete 2026-06-07. All /mnt/e/ path references replaced with /Users/dante/Citadel/ equivalents across 54 files (P1–P9). .claude/settings.local.json deleted (was untracked; contained 13 dead WSL git -C entries and 2 Windows python.exe paths). webapp/frontend/node_modules rebuilt clean via npm ci on ARM64 macOS (95 packages, 0 vulnerabilities). macOS /proc/ degradation comment added to hardlink_organizer.py:544. Workspace root is now /Users/dante/Citadel/HardlinkOrganizer on macOS. Edict v0.6.1 confirmed clean. Commit 0d1e973.
+
 ## Provenance
 
 - Migrated from `agent-ledger/CURRENT_STATE.md` on 2026-05-03 during RAIDEN Instance install

@@ -27,3 +27,9 @@ into adjacent work.
 
 - Migrated from `agent-ledger/OPEN_LOOPS.md` on 2026-05-03 during RAIDEN Instance install
 - Original model: GPT-5 Codex — Date: 2026-04-16
+
+## Migration audit — CLOSED 2026-06-07
+
+- Status: closed
+- Scope: WSL→macOS path remediation across all .md, .py, .json, .toml, .sh, .ts, .js files; settings.local.json purge; node_modules ARM64 rebuild; macOS /proc/ degradation comment
+- Result: Edict v0.6.1 confirmed clean; all /mnt/e/ references eliminated; commit 0d1e973 pushed to main
