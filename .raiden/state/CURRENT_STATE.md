@@ -4,7 +4,7 @@
 
 - Confirmed: React SPA frontend (Fujin UI kit) fully scaffolded and implemented at `webapp/frontend/`. `FujinThemeProvider` now encapsulates `MantineProvider` and supports Open Color presets (currently using `violet`). All Carbon CSS, `--cds-*` vars, IBM Plex, and Jinja2 server-side injection removed. FastAPI now serves `webapp/static/dist/` via `StaticFiles(html=True)`. Build: `cd webapp/frontend && npm install && npm run build`. Dev: `npm run dev` (proxies `/api` → port 8000).
 - Confirmed: Hardlink Organizer now operates as its own standalone project workspace rooted at `/Users/dante/Citadel/HardlinkOrganizer`, with a RAIDEN Instance control plane under `.raiden/`.
-- Confirmed: the project is at `0.3.0` verification foundation status.
+- Confirmed: the project is at `1.0.6` stable release.
 - Confirmed: the hosted web UI and CLI both exist, with verification runs persisted and reviewable.
 - Confirmed: the history-driven verification UI slice is closed locally, including browser-triggered verification from prior real link jobs, stored-result review, JSON or CSV exports, and lightweight result filtering.
 - Confirmed: Docker image is now NAS-hardened with PUID/PGID runtime privilege-drop via `gosu` entrypoint; defaults to 1000:1000.
@@ -24,7 +24,6 @@
 - Confirmed: `hardlink_organizer.py` `assess_mount_layout()` emits `mergerfs_pool_path` warning and uses `_MERGERFS_RECOMMENDATION` for OMV paths.
 - Confirmed: `README.md` At A Glance table shows `Docker — Unraid, TrueNAS, OMV, and generic Linux` as primary target.
 - Confirmed: `.github/workflows/hardlink-organizer-image.yml` references `packaging/docker/Dockerfile` (updated from `packaging/unraid/docker/Dockerfile`).
-- Confirmed: `notes/HARDLINK_ORGANIZER_NEXT_STEPS.md` and `notes/HARDLINK_ORGANIZER_FEATURE_EXPANSION_PLAN.md` identify destination management with safe path validation as the next major milestone after verification.
 - Confirmed: `.raiden/local/prompts/prompt-40-destination-registry-validation-backend.md` defined the now-complete LOOP-010 backend slice.
 - Confirmed: `engine/db.py` has a `destinations` table (id, label, path UNIQUE, tag, enabled, notes, created_at, updated_at) with full CRUD methods.
 - Confirmed: `webapp/app.py` routes: `GET /api/destinations`, `POST /api/destinations`, `POST /api/destinations/validate`, `PATCH /api/destinations/{id}`, `DELETE /api/destinations/{id}`.

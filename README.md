@@ -10,7 +10,7 @@ Hardlink Organizer scans configured source directories and lets you hardlink sel
 
 | Area | Current State |
 | --- | --- |
-| Version | `1.0.0` |
+| Version | `1.0.6` |
 | Status | `stable` |
 | Primary target | `Docker — Unraid, TrueNAS, OMV, and generic Linux` |
 | Interface | hosted web UI with CLI fallback |

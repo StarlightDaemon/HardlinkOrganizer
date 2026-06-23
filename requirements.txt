@@ -6,7 +6,6 @@ uvicorn[standard]==0.46.0
 
 # Testing only: httpx is required by FastAPI's TestClient
 httpx==0.28.1
-pytest==9.0.3
 
 # Optional: older Python TOML support (not needed on Python 3.11+)
 # tomli>=2.0.0

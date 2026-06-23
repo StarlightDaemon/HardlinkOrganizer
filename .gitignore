@@ -33,3 +33,4 @@ webapp/frontend/check_console.cjs
 audit-reports/
 .raiden/state/AUDIT_LOG.md
 .raiden/state/last-audit.md
+.audits/

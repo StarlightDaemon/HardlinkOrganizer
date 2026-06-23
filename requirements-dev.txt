@@ -1,0 +1,2 @@
+# Hardlink Organizer — development and test dependencies
+pytest==9.0.3
