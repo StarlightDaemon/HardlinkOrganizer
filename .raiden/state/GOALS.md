@@ -4,7 +4,7 @@
 
 1. Confirmed: keep Hardlink Organizer a safe, preview-first hardlink workflow for Unraid rather than a broad media organizer.
 2. Confirmed: maintain the hosted web UI as the primary operator experience while preserving the CLI as a fallback and maintenance interface.
-3. Confirmed: complete the `0.4.x` destination-management milestone with strong path-safety guardrails.
+3. Confirmed: destination-management milestone complete and shipped at 1.0.x; naming-cleanup sub-feature remains open (LOOP-010).
 4. Confirmed: preserve auditability through persistent history, verification, and exportable records.
 5. Inferred: package and publish the project cleanly enough to complete the later Community Apps submission path.
 
