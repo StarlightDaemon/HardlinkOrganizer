@@ -62,6 +62,19 @@
 - Status: active
 - Impact: the post-move cleanup pass should include a parent-repo stub update to avoid silent removal of the old path.
 
+## DEC-010: pin all packaging images to explicit release version tags
+
+- Date: 2026-06-23
+- Status: active
+- Confirmed: all packaging docker-compose and stack files pin the application image `starlightdaemon/hardlink-organizer` (or local `hardlink-organizer` in docker/) to an explicit release version tag; `:latest` tags are not used.
+- Rationale: prevents accidental deployments of newer unreleased images after a release cut; ensures reproducible, auditable multi-platform packaging at each release milestone.
+- Release bump procedure: at each new release, update all six packaging files using:
+  ```bash
+  sed -i 's/:v[0-9]\+\.[0-9]\+\.[0-9]\+/:v1.0.X/g' packaging/truenas/docker-compose.yml packaging/truenas/catalog/docker-compose.yml packaging/unraid/docker-compose.yml packaging/omv/docker-compose.yml packaging/docker/docker-compose.yml packaging/portainer/stack.yml
+  ```
+  where `X` is the new patch version. Affected files: `packaging/{truenas,truenas/catalog,unraid,omv,docker,portainer}/{docker-compose.yml,stack.yml}`.
+- Impact: each release cycle must include an image-tag bump pass across all six packaging files before the final release commit.
+
 ## Provenance
 
 - Migrated from `agent-ledger/DECISIONS.md` on 2026-05-03 during RAIDEN Instance install

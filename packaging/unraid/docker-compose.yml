@@ -10,7 +10,7 @@
 
 services:
   hardlink-organizer:
-    image: starlightdaemon/hardlink-organizer:latest   # pin to v1.0.0 (or any tag) for version-locked deploys
+    image: starlightdaemon/hardlink-organizer:v1.0.6
     container_name: hardlink-organizer
     restart: unless-stopped
     ports:
