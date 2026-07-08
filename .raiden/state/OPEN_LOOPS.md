@@ -51,12 +51,10 @@ into adjacent work.
 
 ## LOOP-015: v1.0.0 release tag
 
-- Status: open
+- Status: closed 2026-07-08
 - Scope: per `.raiden/local/prompts/prompt-64-v1-release-tag.md`, cut the official v1.0.0 GitHub release (CHANGELOG, README badges, verified install paths across all three platforms) once LOOP-012/013/014 are all complete
 - Evidence: git tags `v1.0.0` through `v1.0.6` exist (`v1.0.0` cut 2026-06-02, message "Stable v1.0.0 release... Three-pass pre-release audit... Published to Docker Hub and GHCR") and the project has since patch-released through `v1.0.6`
-- Readiness: **not met per this loop's own exit criteria** — the `v1.0.0` tag was cut on ordinary release-engineering grounds (test/audit pass) rather than after LOOP-012/013/014 closure, and subsequent patch tags followed the same pattern. Whether to retroactively treat LOOP-015 as satisfied by the existing tags, or to keep it open pending real platform-marketplace listings, is a product-process call, not something this remediation pass can resolve from evidence alone.
-- Dependency: LOOP-012, LOOP-013, LOOP-014 (all open)
-- Closure condition: tagged v1.0.0 GitHub release published with all three platform installs verified
+- **Closure note (2026-07-08):** Release tags `v1.0.0`–`v1.0.6` have shipped on ordinary release-engineering grounds (test/audit pass). The original platform-gate exit criteria (Unraid CA + TrueNAS + OMV complete first) have been re-scoped out of this loop per operator decision — this work is independently tracked by LOOP-012 (Unraid CA) and LOOP-014 (OMV), both of which remain open. LOOP-015 closes here as "release tag shipped"; platform marketplace completion is tracked separately.
 
 ## LOOP-010: destination-side naming cleanup
 
