@@ -1,5 +1,7 @@
 # Current State
 
+**Last Updated:** 2026-07-08
+
 ## Summary
 
 - Confirmed: React SPA frontend (Fujin UI kit) fully scaffolded and implemented at `webapp/frontend/`. `FujinThemeProvider` now encapsulates `MantineProvider` and supports Open Color presets (currently using `violet`). All Carbon CSS, `--cds-*` vars, IBM Plex, and Jinja2 server-side injection removed. FastAPI now serves `webapp/static/dist/` via `StaticFiles(html=True)`. Build: `cd webapp/frontend && npm install && npm run build`. Dev: `npm run dev` (proxies `/api` → port 8000).
@@ -43,7 +45,7 @@
 
 - Confirmed: model availability and token ceilings may vary by session even when the planning baseline model pool remains broader.
 - Confirmed: each new loop should re-check current model or token status with the user when model choice or handoff strategy could materially affect the work.
-- Confirmed: LOOP-009 (Community Apps) retired and superseded by the LOOP-011–015 multi-platform 1.0 release structure. See `.raiden/local/prompts/prompt-60` through `prompt-64`.
+- Confirmed: LOOP-009 (Community Apps) retired 2026-05-07 (commit 94e4008) and restructured into five sequenced loops — LOOP-011 (GHCR publication, closed), LOOP-012 (Unraid Community Apps, open — blocked on real Unraid host), LOOP-013 (TrueNAS SCALE catalog, open/partial — steps 1+2 done, PR not yet merged), LOOP-014 (OMV community release, open — not started), LOOP-015 (v1.0.0 release tag, open — the `v1.0.0`→`v1.0.6` tags were cut on ordinary release-engineering grounds and never went through this loop's full platform-verified exit criteria). See `.raiden/local/prompts/prompt-60` through `prompt-64` for scope, and `.raiden/state/OPEN_LOOPS.md` for the authoritative tracked status of each (added 2026-07-08 — these loops existed only in prompt files for two months and were never entered into OPEN_LOOPS.md, which is why LOOP-009 still showed "open" there until this fix).
 - Confirmed: Backend security and correctness fixes complete 2026-05-08. Three issues from Opus review resolved: (1) path traversal via dest_subpath blocked in LinkPlan.is_valid() — commit a854bcb; (2) hardlink_file() now warns on collision vs silent skip — commit e577e42; (3) get_link_status() chunked to avoid SQLite 999-variable limit — commit e577e42. Test suite fully green: 180/180 (was 179 pass + 1 pre-existing failure). Commits pending push.
 - Confirmed: LOOP-011 complete 2026-05-07. Repo public at https://github.com/StarlightDaemon/HardlinkOrganizer (tip commit 0f10d62). GHA image workflow ran successfully on both main push and tag push. RC tag v1.0.0-rc.1 published and workflow confirmed success. GHCR image visibility must be confirmed manually — check https://github.com/StarlightDaemon?tab=packages and set hardlink-organizer to Public if needed.
 - Confirmed: LOOP-013 Steps 1+2 complete (commit 0f10d62). TrueNAS SCALE catalog entry at `packaging/truenas/catalog/` — full Jinja2 template structure (app.yaml, ix_values.yaml, questions.yaml, templates/docker-compose.yaml, test_values). PR to truenas/apps pending real-host validation.
@@ -52,7 +54,8 @@
 
 - Confirmed: LOOP-011 complete 2026-05-07. GHA run 25513495017 (main push) and 25513628167 (v1.0.0-rc.1 tag) both completed success. GHCR image published at ghcr.io/starlightdaemon/hardlink-organizer:latest and ghcr.io/starlightdaemon/hardlink-organizer:v1.0.0-rc.1. Visibility pending manual confirmation — Node.js 20 deprecation warning in workflow is non-blocking (deadline Sept 2026).
 
-- Confirmed: WSL→macOS migration remediation complete 2026-06-07. All /mnt/e/ path references replaced with /Users/dante/Citadel/ equivalents across 54 files (P1–P9). .claude/settings.local.json deleted (was untracked; contained 13 dead WSL git -C entries and 2 Windows python.exe paths). webapp/frontend/node_modules rebuilt clean via npm ci on ARM64 macOS (95 packages, 0 vulnerabilities). macOS /proc/ degradation comment added to hardlink_organizer.py:544. Workspace root is now /Users/dante/Citadel/HardlinkOrganizer on macOS. Edict v0.6.1 confirmed clean. Commit 0d1e973.
+- Confirmed: WSL→macOS migration remediation complete 2026-06-07. All /mnt/e/ path references replaced with /Users/dante/Citadel/ equivalents across 54 files (P1–P9). .claude/settings.local.json deleted (was untracked; contained 13 dead WSL git -C entries and 2 Windows python.exe paths). webapp/frontend/node_modules rebuilt clean via npm ci on ARM64 macOS (95 packages, 0 vulnerabilities). macOS /proc/ degradation comment added to hardlink_organizer.py:544. Workspace root is now /Users/dante/Citadel/HardlinkOrganizer on macOS. Commit 0d1e973.
+- Confirmed: RAIDEN Instance is on Edict v1.0.0 (`.raiden/instance/metadata.json`, updated 2026-06-12, commit 3e9e4b8 "chore: update RAIDEN Instance to Edict v1.0.0"). The prior "Edict v0.6.1 confirmed clean" line above described the 2026-06-07 state and was left stale for a month after the v1.0.0 update; corrected 2026-07-08 per fleet probe finding.
 
 ## Provenance
 
