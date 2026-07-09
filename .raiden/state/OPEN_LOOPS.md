@@ -26,6 +26,7 @@ into adjacent work.
 ## LOOP-012: Unraid Community Apps submission
 
 - Status: open
+- Gate: hardware
 - Scope: supersedes LOOP-009's Unraid-specific path — carry the validated public Docker image through real Unraid host validation, CA template hardening, dedicated template repository setup, support-thread publication, and formal Community Apps submission
 - Readiness: blocked — requires a real Unraid host; none has been available to this workspace
 - Evidence plan: `packaging/unraid/README.md`, `CA_PUBLISHING_GUIDE.md`, `VALIDATION_CHECKLIST.md`, `SUPPORT_THREAD_DRAFT.md`, `.raiden/local/prompts/prompt-61-unraid-community-apps.md`
@@ -35,6 +36,7 @@ into adjacent work.
 ## LOOP-013: TrueNAS SCALE native catalog
 
 - Status: open (partial — steps 1+2 complete)
+- Gate: operator
 - Scope: submit Hardlink Organizer to the `truenas/apps` community catalog for native install via the SCALE Apps UI
 - Evidence: `packaging/truenas/catalog/` contains `app.yaml`, `ix_values.yaml`, `questions.yaml`, a docker-compose template, and test values (commit `0f10d62`, "feat: add TrueNAS SCALE catalog entry (LOOP-013 step 1+2)")
 - Readiness: PR to `truenas/apps` not yet opened/merged as of this pass — no evidence in git history of a merge; blocked on GHCR visibility confirmation and real-host validation per `CURRENT_STATE.md`
@@ -43,6 +45,7 @@ into adjacent work.
 ## LOOP-014: OMV community release
 
 - Status: open
+- Gate: operator
 - Scope: validate on OpenMediaVault and publish community-facing docs/compose files plus targeted forum posts (OMV has no central app marketplace)
 - Evidence: `packaging/omv/` contains a `README.md` and `docker-compose.yml`; no evidence found of forum/community posts having been made
 - Readiness: packaging scaffolding exists, host validation and community publication not started
@@ -59,6 +62,7 @@ into adjacent work.
 ## LOOP-010: destination-side naming cleanup
 
 - Status: open (naming-cleanup only — destination registry backend and DestRegistry UI are fully shipped)
+- Gate: none
 - Scope: deliver destination-side naming cleanup workflow. The destination registry backend, validation services, and DestRegistry UI are complete and merged. Only the naming-cleanup sub-feature remains open.
 - Readiness: ready
 - Evidence plan: use the current implementation under this workspace and real Unraid validation findings already captured in project docs
