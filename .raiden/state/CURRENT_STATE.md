@@ -1,7 +1,5 @@
 # Current State
 
-**Last Updated:** 2026-07-08
-
 ## Summary
 
 - Confirmed: React SPA frontend (Fujin UI kit) fully scaffolded and implemented at `webapp/frontend/`. `FujinThemeProvider` now encapsulates `MantineProvider` and supports Open Color presets (currently using `violet`). All Carbon CSS, `--cds-*` vars, IBM Plex, and Jinja2 server-side injection removed. FastAPI now serves `webapp/static/dist/` via `StaticFiles(html=True)`. Build: `cd webapp/frontend && npm install && npm run build`. Dev: `npm run dev` (proxies `/api` → port 8000).
@@ -13,7 +11,7 @@
 - Confirmed: packaging is now Docker-first and multi-platform. `packaging/docker/` holds the canonical Dockerfile and entrypoint. Per-platform directories exist for Unraid, TrueNAS, OMV, and Portainer.
 - Confirmed: mount-layout warnings now cover MergerFS/OMV (`mergerfs_pool_path` warning code) alongside the existing Unraid patterns. The `separate_mount_points` condition is platform-neutral. All 5 mount-layout tests pass.
 - Confirmed: `README.md` framing updated to Docker-first multi-platform; all stale `agent-ledger/` and `agent-prompts/` path references replaced with `.raiden/state/` and `.raiden/local/prompts/`.
-- Confirmed: the LOOP-010 destination registry and validation backend is complete. The `destinations` table, all five API routes, and full test coverage are merged. The destination-management UI and naming work remain as the next slice after this.
+- See LOOP-010.
 - Confirmed: RAIDEN Instance installed 2026-05-03; governance migration complete; LEGACY_REVIEW.md shows all three legacy artifacts resolved.
 - Confirmed: planning can generally assume access to these model families in this workspace context: `Gemini 3.1 Pro (high)`, `Gemini 3.1 Pro (low)`, `Gemini 3 Flash`, `Claude Sonnet 4.6 (thinking)`, `Claude Opus 4.6 (thinking)`, `GPT-OSS-120b`, `GPT-5.4`, `GPT-5.2-Codex`, `GPT-5.1-Codex-Max`, `GPT-5.4-Mini`, `GPT-5.3-Codex`, `GPT-5.2`, and `GPT-5.1-Codex-Mini`.
 
@@ -32,30 +30,25 @@
 - Confirmed: validation checks existence, directory type, unsafe-root blocklist (`_UNSAFE_DEST_ROOTS`), writability, Unraid `/mnt/user` (`unraid_user_share`), and MergerFS pool (`mergerfs_pool_path`) — returns structured `DestinationValidateResponse`.
 - Confirmed: two frontend copy fixes applied: mount warning is now platform-neutral; hero Target now says "NAS / homelab workflows".
 - Confirmed: Fujin design system compliance audit complete. All components use only Fujin CSS vars (`var(--fujin-*)`) and `tokens.json` values; no hardcoded hex/px/font-name; `borderRadius: 0` throughout; all Carbon artifacts removed. Integration with Mantine's Open Color system via `FujinThemeProvider` presets is live.
-- Confirmed: test suite — 176 tests pass (47 DB + 129 webapp, 8 skipped on non-Linux) — 0 regressions post-Carbon rebuild.
 
 - Confirmed: Fujin theme color issue resolved. `slate` primary override removed. Chrome (header/statusbar/nav) now uses `--fujin-chrome-bg/text/border` tokens mapped to fully neutral `dark[7]/dark[0]/dark[6]` — no blue tint. Accent (`violet`) is intentionally scoped to interactive elements only. New tokens: `--fujin-chrome-*`, `--fujin-layout-content-width` (`clamp(560px, 78vw, 2400px)`). `ThemeMenu` component (Light/Dark toggle) added to Fujin and wired into `AppLayout.tsx` status bar. Light theme hardened to "Deep" style. `DataTable` generic constraint fixed (`T extends object`). Fujin commit `b645194`.
 - Confirmed: old Carbon/Jinja2 static files (`webapp/static/app.js`, `carbon-overrides.css`, `style.css`, `webapp/templates/index.html`) deleted and committed. SPA migration fully closed.
 
 - Confirmed: DestRegistry UI end-to-end complete. Four targeted fixes applied to `webapp/frontend/src/components/DestRegistry.tsx`: (1) FormPanel stale state on edit-switch fixed via `key={editTarget?.id ?? 'add'}`; (2) double container border removed from form wrapper — only padding remains, `FormShell` owns the visual shell; (3) delete confirmation added via `deletePending` state — Delete ActionMenu item stages a confirm/cancel pair before executing; (4) path validation gated on submit — extracted `validatePath()` shared async function, `handleSubmit` triggers validation and blocks if result is invalid when user never blurred the path field. `tsc --noEmit` and `npm run build` both clean after all changes.
 
-- Confirmed: all four deferred frontend polish items resolved. Items 1 (inline onclick injection) and 4 (renderVerifyStep inline styles) were already eliminated by the React SPA migration — both were Carbon/vanilla JS patterns with no equivalent in the new codebase. Item 2 (`real_name` vs `display_name` in sidebar): `display_name` column added to `link_history` table via `_SCHEMA` + `_init_schema()` migration guard; `record_link()` updated to accept and store it; `get_history` returns it; `HistoryEntry` Pydantic model and TypeScript interface updated; `HistorySidebar` now renders `display_name ?? real_name`. Item 3 (step bar blanks out): `WorkflowStepper` now kept mounted during verify via `display: isVerify ? 'none' : 'block'` wrapper — stepper internal step state is preserved, so back from VerifyPanel restores the correct workflow position. 132 tests pass; tsc and build clean.
+- Confirmed: all four deferred frontend polish items resolved. Items 1 (inline onclick injection) and 4 (renderVerifyStep inline styles) were already eliminated by the React SPA migration — both were Carbon/vanilla JS patterns with no equivalent in the new codebase. Item 2 (`real_name` vs `display_name` in sidebar): `display_name` column added to `link_history` table via `_SCHEMA` + `_init_schema()` migration guard; `record_link()` updated to accept and store it; `get_history` returns it; `HistoryEntry` Pydantic model and TypeScript interface updated; `HistorySidebar` now renders `display_name ?? real_name`. Item 3 (step bar blanks out): `WorkflowStepper` now kept mounted during verify via `display: isVerify ? 'none' : 'block'` wrapper — stepper internal step state is preserved, so back from VerifyPanel restores the correct workflow position.
 
 ## Constraints
 
 - Confirmed: model availability and token ceilings may vary by session even when the planning baseline model pool remains broader.
 - Confirmed: each new loop should re-check current model or token status with the user when model choice or handoff strategy could materially affect the work.
-- Confirmed: LOOP-009 (Community Apps) retired 2026-05-07 (commit 94e4008) and restructured into five sequenced loops — LOOP-011 (GHCR publication, closed), LOOP-012 (Unraid Community Apps, open — blocked on real Unraid host), LOOP-013 (TrueNAS SCALE catalog, open/partial — steps 1+2 done, PR not yet merged), LOOP-014 (OMV community release, open — not started), LOOP-015 (v1.0.0 release tag, closed 2026-07-08 — tags `v1.0.0`–`v1.0.6` shipped; platform-gate exit criteria re-scoped to LOOP-012/LOOP-014). See `.raiden/local/prompts/prompt-60` through `prompt-64` for scope, and `.raiden/state/OPEN_LOOPS.md` for the authoritative tracked status of each (added 2026-07-08 — these loops existed only in prompt files for two months and were never entered into OPEN_LOOPS.md, which is why LOOP-009 still showed "open" there until this fix).
-- Confirmed: Backend security and correctness fixes complete 2026-05-08. Three issues from Opus review resolved: (1) path traversal via dest_subpath blocked in LinkPlan.is_valid() — commit a854bcb; (2) hardlink_file() now warns on collision vs silent skip — commit e577e42; (3) get_link_status() chunked to avoid SQLite 999-variable limit — commit e577e42. Test suite fully green: 180/180 (was 179 pass + 1 pre-existing failure). Commits pending push.
-- Confirmed: LOOP-011 complete 2026-05-07. Repo public at https://github.com/StarlightDaemon/HardlinkOrganizer (tip commit 0f10d62). GHA image workflow ran successfully on both main push and tag push. RC tag v1.0.0-rc.1 published and workflow confirmed success. GHCR image visibility must be confirmed manually — check https://github.com/StarlightDaemon?tab=packages and set hardlink-organizer to Public if needed.
-- Confirmed: LOOP-013 Steps 1+2 complete (commit 0f10d62). TrueNAS SCALE catalog entry at `packaging/truenas/catalog/` — full Jinja2 template structure (app.yaml, ix_values.yaml, questions.yaml, templates/docker-compose.yaml, test_values). PR to truenas/apps pending real-host validation.
-- Confirmed: 1.0 platform targets are Unraid (Community Apps), TrueNAS SCALE (native catalog via truenas/apps PR), and OMV (compose plugin + community posts). Next open loop is LOOP-012 (Unraid CA) — requires real Unraid host. LOOP-013 PR can proceed once GHCR visibility confirmed and host validation done.
+- See LOOP-009.
+- See LOOP-011.
+- See LOOP-013.
+- Confirmed: 1.0 platform targets are Unraid (Community Apps), TrueNAS SCALE (native catalog via truenas/apps PR), and OMV (compose plugin + community posts). See LOOP-012, LOOP-013.
 - Confirmed: full HTTP-level integration coverage remains a separate follow-up because the current local FastAPI dependency stack hangs under `TestClient`.
 
-- Confirmed: LOOP-011 complete 2026-05-07. GHA run 25513495017 (main push) and 25513628167 (v1.0.0-rc.1 tag) both completed success. GHCR image published at ghcr.io/starlightdaemon/hardlink-organizer:latest and ghcr.io/starlightdaemon/hardlink-organizer:v1.0.0-rc.1. Visibility pending manual confirmation — Node.js 20 deprecation warning in workflow is non-blocking (deadline Sept 2026).
-
-- Confirmed: WSL→macOS migration remediation complete 2026-06-07. All /mnt/e/ path references replaced with /Users/dante/Citadel/ equivalents across 54 files (P1–P9). .claude/settings.local.json deleted (was untracked; contained 13 dead WSL git -C entries and 2 Windows python.exe paths). webapp/frontend/node_modules rebuilt clean via npm ci on ARM64 macOS (95 packages, 0 vulnerabilities). macOS /proc/ degradation comment added to hardlink_organizer.py:544. Workspace root is now /Users/dante/Citadel/HardlinkOrganizer on macOS. Commit 0d1e973.
-- Confirmed: RAIDEN Instance is on Edict v1.0.0 (`.raiden/instance/metadata.json`, updated 2026-06-12, commit 3e9e4b8 "chore: update RAIDEN Instance to Edict v1.0.0"). The prior "Edict v0.6.1 confirmed clean" line above described the 2026-06-07 state and was left stale for a month after the v1.0.0 update; corrected 2026-07-08 per fleet probe finding.
+- Confirmed: workspace root is `/Users/dante/Citadel/HardlinkOrganizer` (macOS). See `WORK_LOG.md` § 2026-06-07 for the WSL→macOS migration remediation.
 
 ## Provenance
 

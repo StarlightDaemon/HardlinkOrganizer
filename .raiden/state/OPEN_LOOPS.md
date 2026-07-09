@@ -74,4 +74,4 @@ into adjacent work.
 
 - Status: closed
 - Scope: WSL→macOS path remediation across all .md, .py, .json, .toml, .sh, .ts, .js files; settings.local.json purge; node_modules ARM64 rebuild; macOS /proc/ degradation comment
-- Result: Edict v0.6.1 confirmed clean; all /mnt/e/ references eliminated; commit 0d1e973 pushed to main
+- Result: all /mnt/e/ references eliminated; commit 0d1e973 pushed to main (see `WORK_LOG.md` § 2026-06-07 for the full dated record, including the Edict-version confirmation made at that time)
