@@ -46,10 +46,20 @@ The design does not widen destructive power. Specifically:
 - **In-place only.** Proposed names are always a single path component; path
   separators and traversal tokens (`/`, `\`, `.`, `..`) are rejected, so a
   rename can never be redirected into another directory.
-- **Source-safe.** Any entry that resolves under a configured source set is
-  refused. Renames operate solely on destination entries.
-- **No clobbering.** A rename whose target already exists is skipped, never
-  forced.
+- **Source-safe, fail-closed.** Any entry that resolves under a configured
+  source set is refused (symlinks are resolved before the check). In addition,
+  a real (non-dry-run) apply is refused outright when no source sets are
+  configured — the containment check would be inert — or when the destination
+  path overlaps a configured source root in either direction. Renames operate
+  solely on destination entries.
+- **No clobbering.** For files and symlinks the rename is enforced atomically:
+  the entry is hardlinked to the new name first (`link` + `unlink`), which
+  fails if anything — including a broken symlink, or an entry created after the
+  pre-check — already holds the target name; such items are skipped. Directory
+  renames are guarded by a pre-check, and POSIX `rename()` itself refuses a
+  non-empty directory target; the only theoretical residual window is an
+  *empty* directory created at the target name in the instant between the
+  pre-check and the rename.
 - **Audit-friendly.** Every real rename and every failure is written to the
   `naming_cleanup_ops` table and is reviewable via the history endpoint. Dry-run
   previews write nothing.

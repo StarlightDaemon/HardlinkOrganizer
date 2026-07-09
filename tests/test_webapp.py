@@ -1229,8 +1229,8 @@ class TestNamingCleanupAPI(unittest.TestCase):
         self.assertEqual(data["results"][0]["status"], "skipped")
         self.assertTrue((Path(self.dst_root) / "The.Matrix.1999").exists())
 
-    def test_apply_source_safety_refuses_entry_under_source_root(self):
-        """A destination pointed at the source tree must never rename source entries."""
+    def test_apply_refuses_dest_inside_source_root(self):
+        """A destination pointed at the source tree is refused fail-closed with 400."""
         messy = Path(self.src_root) / "The.Matrix.1999"
         messy.mkdir()
         # Register a destination whose path is the source root itself.
@@ -1241,11 +1241,140 @@ class TestNamingCleanupAPI(unittest.TestCase):
             json={"dry_run": False,
                   "items": [{"old_name": "The.Matrix.1999", "new_name": "The Matrix (1999)"}]},
         )
+        self.assertEqual(res.status_code, 400)
+        self.assertIn("overlaps", res.json()["detail"])
+        self.assertTrue(messy.exists())
+
+    def test_apply_refuses_dest_containing_source_root(self):
+        """A destination that contains a configured source root is refused fail-closed."""
+        res = self.client.post("/api/destinations", json={"label": "Parent", "path": self.tmp.name})
+        dest_id = res.json()["id"]
+        res = self.client.post(
+            f"/api/destinations/{dest_id}/naming/apply",
+            json={"dry_run": False,
+                  "items": [{"old_name": "whatever", "new_name": "whatever else"}]},
+        )
+        self.assertEqual(res.status_code, 400)
+        self.assertIn("overlaps", res.json()["detail"])
+
+    def test_apply_refuses_when_no_source_sets_configured(self):
+        """Fail closed: without source roots the containment check is inert, so
+        the destructive branch must refuse outright. Dry-run stays allowed."""
+        self._touch("The.Matrix.1999", is_dir=True)
+        root = Path(self.tmp.name)
+        db_path = str(root / "test-nosrc.db")
+        cfg = _make_cfg(self.src_root, self.dst_root, db_path)
+        cfg["source_sets"] = {}
+        db2 = self._Database(db_path)
+        try:
+            client = _RouteHarnessClient(self._create_app(cfg, db2, "test-config.toml"))
+            res = client.post("/api/destinations", json={"label": "M", "path": self.dst_root})
+            dest_id = res.json()["id"]
+            items = [{"old_name": "The.Matrix.1999", "new_name": "The Matrix (1999)"}]
+            # dry-run (the default) still works
+            res_dry = client.post(f"/api/destinations/{dest_id}/naming/apply", json={"items": items})
+            self.assertEqual(res_dry.status_code, 200)
+            self.assertEqual(res_dry.json()["results"][0]["status"], "would_rename")
+            # real apply is refused
+            res_real = client.post(
+                f"/api/destinations/{dest_id}/naming/apply",
+                json={"dry_run": False, "items": items},
+            )
+            self.assertEqual(res_real.status_code, 400)
+            self.assertIn("source", res_real.json()["detail"].lower())
+            self.assertTrue((Path(self.dst_root) / "The.Matrix.1999").exists())
+        finally:
+            db2.close()
+
+    def test_apply_skips_symlink_entry_resolving_into_source(self):
+        """Per-entry source safety still fires for symlinks pointing into a source set."""
+        target = Path(self.src_root) / "The.Matrix.1999"
+        target.mkdir()
+        link = Path(self.dst_root) / "The.Matrix.1999"
+        link.symlink_to(target)
+        dest_id = self._register_dest()
+        prev = self.client.get(f"/api/destinations/{dest_id}/naming/preview").json()
+        prop = prev["proposals"][0]
+        self.assertTrue(prop["changed"])
+        res = self.client.post(
+            f"/api/destinations/{dest_id}/naming/apply",
+            json={"dry_run": False,
+                  "items": [{"old_name": prop["old_name"], "new_name": prop["new_name"]}]},
+        )
         data = res.json()
         self.assertEqual(data["renamed_count"], 0)
         self.assertEqual(data["results"][0]["status"], "skipped")
         self.assertIn("source", (data["results"][0]["detail"] or "").lower())
-        self.assertTrue(messy.exists())
+        self.assertTrue(link.is_symlink())
+
+    def test_apply_skips_when_target_is_broken_symlink(self):
+        """A broken symlink holding the target name blocks the rename (lexists check)."""
+        self._touch("The_Matrix_1999.mkv")
+        broken = Path(self.dst_root) / "The Matrix (1999).mkv"
+        broken.symlink_to(Path(self.dst_root) / "does-not-exist")
+        dest_id = self._register_dest()
+        res = self.client.post(
+            f"/api/destinations/{dest_id}/naming/apply",
+            json={"dry_run": False,
+                  "items": [{"old_name": "The_Matrix_1999.mkv", "new_name": "The Matrix (1999).mkv"}]},
+        )
+        data = res.json()
+        self.assertEqual(data["renamed_count"], 0)
+        self.assertEqual(data["results"][0]["status"], "skipped")
+        self.assertTrue((Path(self.dst_root) / "The_Matrix_1999.mkv").exists())
+        self.assertTrue(os.path.islink(str(broken)))
+
+    def test_apply_race_created_target_hits_eexist_skip(self):
+        """A file target that appears after the pre-check is not clobbered:
+        link() fails with EEXIST and the item is skipped."""
+        self._touch("The_Matrix_1999.mkv")
+        clobber_target = Path(self.dst_root) / "The Matrix (1999).mkv"
+        clobber_target.write_text("precious", encoding="utf-8")
+        dest_id = self._register_dest()
+        real_lexists = os.path.lexists
+
+        def fake_lexists(p):
+            # Simulate the race: the pre-check does not see the target, but the
+            # filesystem-level link() call still does.
+            if str(p) == str(clobber_target):
+                return False
+            return real_lexists(p)
+
+        with mock.patch("os.path.lexists", side_effect=fake_lexists):
+            res = self.client.post(
+                f"/api/destinations/{dest_id}/naming/apply",
+                json={"dry_run": False,
+                      "items": [{"old_name": "The_Matrix_1999.mkv", "new_name": "The Matrix (1999).mkv"}]},
+            )
+        data = res.json()
+        self.assertEqual(data["renamed_count"], 0)
+        self.assertEqual(data["results"][0]["status"], "skipped")
+        self.assertEqual(clobber_target.read_text(encoding="utf-8"), "precious")
+        self.assertTrue((Path(self.dst_root) / "The_Matrix_1999.mkv").exists())
+
+    def test_symlink_to_dir_preview_and_apply_agree(self):
+        """Preview and apply both classify a symlink-to-dir non-following, so the
+        proposed rename is actually applied instead of silently skipping."""
+        real_dir = Path(self.dst_root) / "actual"
+        real_dir.mkdir()
+        link = Path(self.dst_root) / "Cool.Show.Link"
+        link.symlink_to(real_dir)
+        dest_id = self._register_dest()
+        prev = self.client.get(f"/api/destinations/{dest_id}/naming/preview").json()
+        by_old = {p["old_name"]: p for p in prev["proposals"]}
+        prop = by_old["Cool.Show.Link"]
+        self.assertTrue(prop["changed"])
+        res = self.client.post(
+            f"/api/destinations/{dest_id}/naming/apply",
+            json={"dry_run": False,
+                  "items": [{"old_name": prop["old_name"], "new_name": prop["new_name"]}]},
+        )
+        data = res.json()
+        self.assertEqual(data["renamed_count"], 1)
+        self.assertEqual(data["results"][0]["status"], "renamed")
+        new_link = Path(self.dst_root) / prop["new_name"]
+        self.assertTrue(new_link.is_symlink())
+        self.assertFalse(os.path.lexists(str(link)))
 
     def test_apply_unknown_destination_404(self):
         res = self.client.post(

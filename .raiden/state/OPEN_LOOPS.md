@@ -61,7 +61,7 @@ into adjacent work.
 
 ## LOOP-010: destination-side naming cleanup
 
-- Status: Closed (2026-07-09) — destination naming preview/apply/history shipped end-to-end (backend routes, DestRegistry "Clean names" panel, docs); preview-first, source-safe, audit-logged, dry-run by default, with Unraid/MergerFS rename constraints explained. See `WORK_LOG.md` § 2026-07-09.
+- Status: Closed (2026-07-09) — destination naming preview/apply/history shipped end-to-end (backend routes, DestRegistry "Clean names" panel, docs); preview-first, source-safe, audit-logged, dry-run by default, with Unraid/MergerFS rename constraints explained. Hardened same day per adversarial probe findings (fail-closed source safety, atomic no-clobber, symlink is_dir alignment). See `WORK_LOG.md` § 2026-07-09 (both entries).
 - Gate: none
 - Scope: deliver destination-side naming cleanup workflow. The destination registry backend, validation services, and DestRegistry UI are complete and merged. Only the naming-cleanup sub-feature remains open.
 - Readiness: ready

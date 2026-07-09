@@ -289,6 +289,10 @@ def _apply_naming_cleanup(
     Safety posture:
     - dry_run defaults True at the request layer, so the destructive branch is
       never the default.
+    - Fail-closed source safety: a non-dry-run apply is refused outright when no
+      source sets are configured (the containment check below would be inert) or
+      when the destination path overlaps a configured source root in either
+      direction.
     - Each item is honoured only if its requested new name matches the exact
       cleanup the server would compute for that entry — the endpoint can never
       perform an arbitrary rename, only the cleanup preview proposed.
@@ -296,7 +300,12 @@ def _apply_naming_cleanup(
       traversal tokens are rejected, so nothing can be redirected elsewhere.
     - Any entry that resolves under a configured source set is refused, so
       source files are never renamed.
-    - Existing targets are never clobbered.
+    - No clobbering: for files and symlinks the rename is enforced atomically
+      via link()+unlink() — an existing target name (including a broken
+      symlink, or one created after the pre-check) fails with EEXIST and is
+      skipped. Directory renames rely on the pre-check plus POSIX rename()
+      refusing non-empty targets; only an empty-directory target created in the
+      microscopic window after the pre-check could be replaced.
     - Only real (non-dry-run) renames and failures are written to the audit log.
     """
     validation = _validate_dest_path(dest_path)
@@ -318,6 +327,34 @@ def _apply_naming_cleanup(
     source_roots = [
         os.path.realpath(p) for p in cfg.get("source_sets", {}).values() if p
     ]
+
+    if not dry_run:
+        # Fail closed: without configured source roots the per-entry containment
+        # refusal below can never fire, so the destructive branch is refused
+        # outright rather than silently running without its safety net.
+        if not source_roots:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "No source sets are configured, so the source-safety check "
+                    "cannot verify that destination entries are not source files. "
+                    "Refusing to apply renames — configure source_sets or use dry_run."
+                ),
+            )
+        # Defense in depth: refuse the whole apply when the destination overlaps
+        # a source root in either direction (destination inside a source tree,
+        # or a source tree nested inside the destination).
+        real_dest = os.path.realpath(normalized)
+        for sr in source_roots:
+            if _is_within(real_dest, sr) or _is_within(sr, real_dest):
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        f"Destination path {normalized!r} overlaps configured "
+                        f"source set {sr!r} — refusing to apply renames."
+                    ),
+                )
+
     now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
     results: list[NamingApplyResultItem] = []
@@ -367,11 +404,16 @@ def _apply_naming_cleanup(
         if os.sep in requested_new or requested_new in {"", ".", ".."}:
             _emit("skipped", "Invalid target name.", persist=False)
             continue
-        if not os.path.exists(old_path):
+        # lexists so symlink entries (even dangling ones) are handled by name,
+        # matching the preview's non-following scandir view.
+        if not os.path.lexists(old_path):
             _emit("skipped", "Entry no longer exists.", persist=False)
             continue
 
-        is_dir = os.path.isdir(old_path)
+        # Non-following is_dir to match the preview's
+        # entry.is_dir(follow_symlinks=False): a symlink-to-dir is treated as a
+        # file-like entry in both stages, so canonical names agree.
+        is_dir = os.path.isdir(old_path) and not os.path.islink(old_path)
         canonical = propose_clean_name(old_name, is_dir)
         # 3. apply may only perform the exact cleanup that preview would compute.
         if requested_new != canonical:
@@ -385,8 +427,10 @@ def _apply_naming_cleanup(
         if any(_is_within(real_old, sr) for sr in source_roots):
             _emit("skipped", "Refusing to rename a path under a configured source set.", persist=False)
             continue
-        # 5. never clobber a different existing target.
-        if os.path.exists(new_path) and os.path.realpath(new_path) != real_old:
+        # 5. never clobber an existing target (lexists also catches broken
+        #    symlinks holding the name). For files/symlinks this is re-enforced
+        #    atomically below; for directories this pre-check is the guard.
+        if os.path.lexists(new_path) and os.path.realpath(new_path) != real_old:
             _emit("skipped", "Target already exists.", persist=False)
             continue
 
@@ -394,11 +438,43 @@ def _apply_naming_cleanup(
             _emit("would_rename", None, persist=False)
             continue
 
-        try:
-            os.rename(old_path, new_path)
-        except OSError as exc:
-            _emit("error", str(exc), persist=True)
-            continue
+        if is_dir:
+            # POSIX rename() refuses a non-empty directory target (ENOTEMPTY);
+            # combined with the pre-check above, only an *empty* directory
+            # created at the target name in the microscopic window since the
+            # pre-check could be replaced.
+            try:
+                os.rename(old_path, new_path)
+            except OSError as exc:
+                _emit("error", str(exc), persist=True)
+                continue
+        else:
+            # Atomic no-replace for files and symlinks: link() fails with
+            # EEXIST when any entry — including a broken symlink or one created
+            # after the pre-check — already holds the target name, unlike
+            # rename() which silently replaces an existing file.
+            try:
+                if os.path.islink(old_path):
+                    os.link(old_path, new_path, follow_symlinks=False)
+                else:
+                    os.link(old_path, new_path)
+            except FileExistsError:
+                _emit("skipped", "Target already exists.", persist=False)
+                continue
+            except OSError as exc:
+                _emit("error", str(exc), persist=True)
+                continue
+            try:
+                os.unlink(old_path)
+            except OSError as exc:
+                # Roll back the new link so the entry does not end up with two
+                # names; report the failure.
+                try:
+                    os.unlink(new_path)
+                except OSError:
+                    pass
+                _emit("error", str(exc), persist=True)
+                continue
         _emit("renamed", None, persist=True)
 
     return NamingApplyResponse(
