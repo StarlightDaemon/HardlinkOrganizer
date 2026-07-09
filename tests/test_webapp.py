@@ -1058,6 +1058,203 @@ class TestDestinationAPI(unittest.TestCase):
         self.assertIn("unraid_user_share", codes)
 
 
+class TestNamingCleanupAPI(unittest.TestCase):
+    """Tests for the destination-side naming cleanup routes (preview/apply/history)."""
+
+    @classmethod
+    def setUpClass(cls):
+        try:
+            from engine.db import Database
+            from webapp.app import create_app
+            cls._skip = False
+            cls._Database = Database
+            cls._create_app = staticmethod(create_app)
+        except ImportError as exc:
+            cls._skip = True
+            cls._skip_reason = str(exc)
+
+    def setUp(self):
+        if self._skip:
+            self.skipTest(f"Skipping naming cleanup tests — missing dependency: {self._skip_reason}")
+        self.tmp = tempfile.TemporaryDirectory()
+        root = Path(self.tmp.name)
+        self.src_root = str(root / "src")
+        self.dst_root = str(root / "dst")
+        Path(self.src_root).mkdir()
+        Path(self.dst_root).mkdir()
+        db_path = str(root / "test.db")
+        cfg = _make_cfg(self.src_root, self.dst_root, db_path)
+        self.db = self._Database(db_path)
+        app = self._create_app(cfg, self.db, "test-config.toml")
+        self.client = _RouteHarnessClient(app)
+
+    def tearDown(self):
+        if hasattr(self, "db") and self.db:
+            self.db.close()
+        self.tmp.cleanup()
+
+    def _register_dest(self, path=None) -> int:
+        path = path or self.dst_root
+        res = self.client.post("/api/destinations", json={"label": "Movies", "path": path})
+        return res.json()["id"]
+
+    def _touch(self, name, is_dir=False):
+        p = Path(self.dst_root) / name
+        if is_dir:
+            p.mkdir()
+        else:
+            p.write_text("x", encoding="utf-8")
+        return str(p)
+
+    # ---- preview -----------------------------------------------------------
+
+    def test_preview_lists_changed_proposals(self):
+        self._touch("The.Matrix.1999", is_dir=True)
+        self._touch("Already Clean", is_dir=True)
+        dest_id = self._register_dest()
+        res = self.client.get(f"/api/destinations/{dest_id}/naming/preview")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data["valid"])
+        self.assertEqual(data["total_count"], 2)
+        self.assertEqual(data["changed_count"], 1)
+        by_old = {p["old_name"]: p for p in data["proposals"]}
+        self.assertEqual(by_old["The.Matrix.1999"]["new_name"], "The Matrix (1999)")
+        self.assertTrue(by_old["The.Matrix.1999"]["changed"])
+        self.assertFalse(by_old["Already Clean"]["changed"])
+
+    def test_preview_file_keeps_extension(self):
+        self._touch("The_Matrix_1999.mkv")
+        dest_id = self._register_dest()
+        data = self.client.get(f"/api/destinations/{dest_id}/naming/preview").json()
+        prop = data["proposals"][0]
+        self.assertEqual(prop["new_name"], "The Matrix (1999).mkv")
+        self.assertEqual(prop["entry_type"], "file")
+
+    def test_preview_flags_collision_as_blocked(self):
+        self._touch("The.Matrix.1999", is_dir=True)
+        self._touch("The Matrix (1999)", is_dir=True)  # cleaned target already present
+        dest_id = self._register_dest()
+        data = self.client.get(f"/api/destinations/{dest_id}/naming/preview").json()
+        by_old = {p["old_name"]: p for p in data["proposals"]}
+        self.assertTrue(by_old["The.Matrix.1999"]["blocked"])
+
+    def test_preview_unknown_destination_404(self):
+        res = self.client.get("/api/destinations/999999/naming/preview")
+        self.assertEqual(res.status_code, 404)
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "POSIX path test")
+    def test_preview_unraid_share_attaches_rename_note(self):
+        res = self.client.post("/api/destinations", json={"label": "Share", "path": "/mnt/user/Movies"})
+        dest_id = res.json()["id"]
+        data = self.client.get(f"/api/destinations/{dest_id}/naming/preview").json()
+        codes = [w["code"] for w in data["warnings"]]
+        self.assertIn("unraid_user_share_rename", codes)
+
+    # ---- apply -------------------------------------------------------------
+
+    def test_apply_defaults_to_dry_run_and_changes_nothing(self):
+        self._touch("The.Matrix.1999", is_dir=True)
+        dest_id = self._register_dest()
+        res = self.client.post(
+            f"/api/destinations/{dest_id}/naming/apply",
+            json={"items": [{"old_name": "The.Matrix.1999", "new_name": "The Matrix (1999)"}]},
+        )
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data["dry_run"])
+        self.assertEqual(data["results"][0]["status"], "would_rename")
+        # filesystem untouched
+        self.assertTrue((Path(self.dst_root) / "The.Matrix.1999").exists())
+        self.assertFalse((Path(self.dst_root) / "The Matrix (1999)").exists())
+        # nothing persisted to the audit log on dry-run
+        hist = self.client.get(f"/api/destinations/{dest_id}/naming/history").json()
+        self.assertEqual(hist["total"], 0)
+
+    def test_apply_real_renames_and_audits(self):
+        self._touch("The.Matrix.1999", is_dir=True)
+        dest_id = self._register_dest()
+        res = self.client.post(
+            f"/api/destinations/{dest_id}/naming/apply",
+            json={"dry_run": False,
+                  "items": [{"old_name": "The.Matrix.1999", "new_name": "The Matrix (1999)"}]},
+        )
+        data = res.json()
+        self.assertFalse(data["dry_run"])
+        self.assertEqual(data["renamed_count"], 1)
+        self.assertEqual(data["results"][0]["status"], "renamed")
+        self.assertFalse((Path(self.dst_root) / "The.Matrix.1999").exists())
+        self.assertTrue((Path(self.dst_root) / "The Matrix (1999)").exists())
+        hist = self.client.get(f"/api/destinations/{dest_id}/naming/history").json()
+        self.assertEqual(hist["total"], 1)
+        self.assertEqual(hist["ops"][0]["status"], "renamed")
+        self.assertEqual(hist["ops"][0]["dry_run"], False)
+
+    def test_apply_rejects_arbitrary_rename(self):
+        """new_name that isn't the computed cleanup proposal is skipped, not applied."""
+        self._touch("The.Matrix.1999", is_dir=True)
+        dest_id = self._register_dest()
+        res = self.client.post(
+            f"/api/destinations/{dest_id}/naming/apply",
+            json={"dry_run": False,
+                  "items": [{"old_name": "The.Matrix.1999", "new_name": "totally-different-name"}]},
+        )
+        data = res.json()
+        self.assertEqual(data["renamed_count"], 0)
+        self.assertEqual(data["results"][0]["status"], "skipped")
+        self.assertTrue((Path(self.dst_root) / "The.Matrix.1999").exists())
+
+    def test_apply_refuses_path_separator_in_old_name(self):
+        dest_id = self._register_dest()
+        res = self.client.post(
+            f"/api/destinations/{dest_id}/naming/apply",
+            json={"dry_run": False,
+                  "items": [{"old_name": "../escape", "new_name": "whatever"}]},
+        )
+        data = res.json()
+        self.assertEqual(data["renamed_count"], 0)
+        self.assertEqual(data["results"][0]["status"], "skipped")
+
+    def test_apply_no_clobber(self):
+        self._touch("The.Matrix.1999", is_dir=True)
+        self._touch("The Matrix (1999)", is_dir=True)
+        dest_id = self._register_dest()
+        res = self.client.post(
+            f"/api/destinations/{dest_id}/naming/apply",
+            json={"dry_run": False,
+                  "items": [{"old_name": "The.Matrix.1999", "new_name": "The Matrix (1999)"}]},
+        )
+        data = res.json()
+        self.assertEqual(data["renamed_count"], 0)
+        self.assertEqual(data["results"][0]["status"], "skipped")
+        self.assertTrue((Path(self.dst_root) / "The.Matrix.1999").exists())
+
+    def test_apply_source_safety_refuses_entry_under_source_root(self):
+        """A destination pointed at the source tree must never rename source entries."""
+        messy = Path(self.src_root) / "The.Matrix.1999"
+        messy.mkdir()
+        # Register a destination whose path is the source root itself.
+        res = self.client.post("/api/destinations", json={"label": "Danger", "path": self.src_root})
+        dest_id = res.json()["id"]
+        res = self.client.post(
+            f"/api/destinations/{dest_id}/naming/apply",
+            json={"dry_run": False,
+                  "items": [{"old_name": "The.Matrix.1999", "new_name": "The Matrix (1999)"}]},
+        )
+        data = res.json()
+        self.assertEqual(data["renamed_count"], 0)
+        self.assertEqual(data["results"][0]["status"], "skipped")
+        self.assertIn("source", (data["results"][0]["detail"] or "").lower())
+        self.assertTrue(messy.exists())
+
+    def test_apply_unknown_destination_404(self):
+        res = self.client.post(
+            "/api/destinations/999999/naming/apply",
+            json={"items": []},
+        )
+        self.assertEqual(res.status_code, 404)
+
+
 class RunPyConfigArgTests(unittest.TestCase):
     """Unit tests for M-1: HARDLINK_CONFIG env var support in webapp/run.py."""
 

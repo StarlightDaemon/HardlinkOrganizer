@@ -36,6 +36,7 @@ from engine import (
     execute_link_plan,
     suggest_destination_name,
     generate_display_name,
+    propose_clean_name,
     ScanError,
     ConfigError,
 )
@@ -67,6 +68,13 @@ from webapp.models import (
     DestinationValidateChecks,
     DestinationValidateWarning,
     DestinationValidateResponse,
+    NamingProposal,
+    NamingPreviewResponse,
+    NamingApplyRequest,
+    NamingApplyResultItem,
+    NamingApplyResponse,
+    NamingCleanupOp,
+    NamingHistoryResponse,
     InodePeer,
     InventoryDetailResponse,
 )
@@ -147,6 +155,260 @@ def _validate_dest_path(path: str) -> DestinationValidateResponse:
         ),
         warnings=warnings,
         errors=errors,
+    )
+
+
+def _naming_layout_warning(path: str) -> DestinationValidateWarning | None:
+    """Return the Unraid/MergerFS constraint note for renaming under a pool mount.
+
+    This is deliberately distinct from the hardlink-creation EXDEV warning. An
+    in-place rename within one directory is a metadata-only operation: it does
+    not relocate data across disks and it keeps the entry's inode, so any
+    hardlink back to the source survives untouched. That is *safe* on Unraid
+    user shares — the note explains why rather than discouraging the action.
+    """
+    kind = classify_mount_layout(path)
+    if kind == "user_share":
+        return DestinationValidateWarning(
+            code="unraid_user_share_rename",
+            severity="info",
+            message=(
+                "This destination is under /mnt/user, Unraid's share-style virtual "
+                "mount. Naming cleanup only renames entries in place within this same "
+                "directory — a metadata-only operation that does not move data across "
+                "disks and preserves each entry's inode, so the hardlink back to the "
+                "source is kept. Source files are never touched."
+            ),
+        )
+    if kind == "mergerfs_pool":
+        return DestinationValidateWarning(
+            code="mergerfs_pool_rename",
+            severity="info",
+            message=(
+                "This destination is under a MergerFS pool mount (/srv/mergerfs/). "
+                "Cleanup performs in-place renames only, which stay on the same branch "
+                "disk and preserve each entry's inode and its hardlink to the source. "
+                "Source files are never touched."
+            ),
+        )
+    return None
+
+
+def _is_within(child: str, parent: str) -> bool:
+    """True if normalized *child* is equal to or nested under normalized *parent*."""
+    if not parent:
+        return False
+    child_n = os.path.normpath(child)
+    parent_n = os.path.normpath(parent)
+    return child_n == parent_n or child_n.startswith(parent_n + os.sep)
+
+
+def _build_naming_preview(dest_id: int, dest_path: str) -> NamingPreviewResponse:
+    """Non-destructive: scan a destination's top-level entries and propose tidied
+    names. Never touches the filesystem — this is the preview half of the feature.
+    """
+    validation = _validate_dest_path(dest_path)
+    warnings: list[DestinationValidateWarning] = list(validation.warnings)
+    layout_note = _naming_layout_warning(dest_path)
+    if layout_note is not None:
+        warnings.append(layout_note)
+
+    if not validation.valid:
+        return NamingPreviewResponse(
+            destination_id=dest_id,
+            path=validation.path,
+            valid=False,
+            errors=validation.errors,
+            warnings=warnings,
+        )
+
+    normalized = validation.path
+    try:
+        with os.scandir(normalized) as it:
+            entries = sorted(it, key=lambda e: e.name.lower())
+    except OSError as exc:
+        return NamingPreviewResponse(
+            destination_id=dest_id,
+            path=normalized,
+            valid=False,
+            errors=[f"Cannot read destination directory: {exc}"],
+            warnings=warnings,
+        )
+
+    existing_names = {e.name for e in entries}
+    proposals: list[NamingProposal] = []
+    changed = 0
+
+    for entry in entries:
+        is_dir = entry.is_dir(follow_symlinks=False)
+        old_name = entry.name
+        new_name = propose_clean_name(old_name, is_dir)
+        is_changed = new_name != old_name
+
+        blocked = False
+        reason: str | None = None
+        if is_changed and new_name in existing_names:
+            blocked = True
+            reason = f"An entry named {new_name!r} already exists in this directory."
+
+        proposals.append(NamingProposal(
+            old_name=old_name,
+            new_name=new_name,
+            old_path=os.path.join(normalized, old_name),
+            new_path=os.path.join(normalized, new_name),
+            entry_type="dir" if is_dir else "file",
+            changed=is_changed,
+            blocked=blocked,
+            block_reason=reason,
+        ))
+        if is_changed:
+            changed += 1
+
+    return NamingPreviewResponse(
+        destination_id=dest_id,
+        path=normalized,
+        valid=True,
+        errors=[],
+        warnings=warnings,
+        proposals=proposals,
+        changed_count=changed,
+        total_count=len(proposals),
+    )
+
+
+def _apply_naming_cleanup(
+    cfg: Config,
+    db: Database,
+    dest_id: int,
+    dest_path: str,
+    items: list,
+    dry_run: bool,
+) -> NamingApplyResponse:
+    """Apply (or dry-run) an explicit list of destination-entry renames.
+
+    Safety posture:
+    - dry_run defaults True at the request layer, so the destructive branch is
+      never the default.
+    - Each item is honoured only if its requested new name matches the exact
+      cleanup the server would compute for that entry — the endpoint can never
+      perform an arbitrary rename, only the cleanup preview proposed.
+    - Renames are in-place within the destination directory; separators and
+      traversal tokens are rejected, so nothing can be redirected elsewhere.
+    - Any entry that resolves under a configured source set is refused, so
+      source files are never renamed.
+    - Existing targets are never clobbered.
+    - Only real (non-dry-run) renames and failures are written to the audit log.
+    """
+    validation = _validate_dest_path(dest_path)
+    if validation.checks.is_unsafe_root:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Path {validation.path!r} is a system root and cannot be cleaned.",
+        )
+    if not (validation.checks.exists and validation.checks.is_directory):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Destination path is not a usable directory: {validation.path!r}",
+        )
+
+    normalized = validation.path
+    # Resolve source roots through realpath so the containment check is robust to
+    # symlinked mount prefixes (e.g. macOS /var → /private/var) — real_old below
+    # is also realpath-resolved.
+    source_roots = [
+        os.path.realpath(p) for p in cfg.get("source_sets", {}).values() if p
+    ]
+    now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+    results: list[NamingApplyResultItem] = []
+    renamed = skipped = errored = 0
+
+    for item in items:
+        old_name = item.old_name
+        requested_new = item.new_name
+        old_path = os.path.join(normalized, old_name)
+        new_path = os.path.join(normalized, requested_new)
+
+        def _emit(status: str, detail: str | None, *, persist: bool) -> None:
+            nonlocal renamed, skipped, errored
+            results.append(NamingApplyResultItem(
+                old_name=old_name,
+                new_name=requested_new,
+                old_path=old_path,
+                new_path=new_path,
+                status=status,
+                detail=detail,
+            ))
+            if status == "renamed":
+                renamed += 1
+            elif status == "error":
+                errored += 1
+            else:
+                skipped += 1
+            if persist:
+                db.record_naming_cleanup_op(
+                    destination_id=dest_id,
+                    dest_path=normalized,
+                    old_name=old_name,
+                    new_name=requested_new,
+                    old_path=old_path,
+                    new_path=new_path,
+                    status=status,
+                    dry_run=dry_run,
+                    created_at=now,
+                    detail=detail,
+                )
+
+        # 1. old_name must be a bare component living directly in the dest dir.
+        if os.sep in old_name or old_name in {"", ".", ".."}:
+            _emit("skipped", "Invalid source entry name.", persist=False)
+            continue
+        # 2. requested target must be a bare component too.
+        if os.sep in requested_new or requested_new in {"", ".", ".."}:
+            _emit("skipped", "Invalid target name.", persist=False)
+            continue
+        if not os.path.exists(old_path):
+            _emit("skipped", "Entry no longer exists.", persist=False)
+            continue
+
+        is_dir = os.path.isdir(old_path)
+        canonical = propose_clean_name(old_name, is_dir)
+        # 3. apply may only perform the exact cleanup that preview would compute.
+        if requested_new != canonical:
+            _emit("skipped", "Requested name does not match the computed cleanup proposal.", persist=False)
+            continue
+        if canonical == old_name:
+            _emit("skipped", "Already clean — nothing to do.", persist=False)
+            continue
+        # 4. source safety — never rename anything that resolves under a source root.
+        real_old = os.path.realpath(old_path)
+        if any(_is_within(real_old, sr) for sr in source_roots):
+            _emit("skipped", "Refusing to rename a path under a configured source set.", persist=False)
+            continue
+        # 5. never clobber a different existing target.
+        if os.path.exists(new_path) and os.path.realpath(new_path) != real_old:
+            _emit("skipped", "Target already exists.", persist=False)
+            continue
+
+        if dry_run:
+            _emit("would_rename", None, persist=False)
+            continue
+
+        try:
+            os.rename(old_path, new_path)
+        except OSError as exc:
+            _emit("error", str(exc), persist=True)
+            continue
+        _emit("renamed", None, persist=True)
+
+    return NamingApplyResponse(
+        destination_id=dest_id,
+        path=normalized,
+        dry_run=dry_run,
+        results=results,
+        renamed_count=renamed,
+        skipped_count=skipped,
+        error_count=errored,
     )
 
 
@@ -928,6 +1190,57 @@ def create_app(cfg: Config, db: Database, config_path: str) -> FastAPI:
         deleted = d.delete_destination(dest_id)
         if not deleted:
             raise HTTPException(status_code=404, detail=f"Destination {dest_id} not found.")
+
+    # -----------------------------------------------------------------------
+    # Destination naming cleanup (preview-first, source-safe)
+    # -----------------------------------------------------------------------
+
+    @app.get("/api/destinations/{dest_id}/naming/preview", response_model=NamingPreviewResponse)
+    async def preview_naming(request: Request, dest_id: int):
+        """Non-destructive preview of tidied names for a destination's entries."""
+        d: Database = request.app.state.db
+        row = d.get_destination(dest_id)
+        if row is None:
+            raise HTTPException(status_code=404, detail=f"Destination {dest_id} not found.")
+        return await run_in_threadpool(_build_naming_preview, dest_id, row["path"])
+
+    @app.post("/api/destinations/{dest_id}/naming/apply", response_model=NamingApplyResponse)
+    async def apply_naming(request: Request, dest_id: int, body: NamingApplyRequest):
+        """Apply (or dry-run) explicit destination-entry renames. Dry-run by default."""
+        c: Config = request.app.state.cfg
+        d: Database = request.app.state.db
+        row = d.get_destination(dest_id)
+        if row is None:
+            raise HTTPException(status_code=404, detail=f"Destination {dest_id} not found.")
+        return await run_in_threadpool(
+            _apply_naming_cleanup, c, d, dest_id, row["path"], body.items, body.dry_run
+        )
+
+    @app.get("/api/destinations/{dest_id}/naming/history", response_model=NamingHistoryResponse)
+    async def naming_history(request: Request, dest_id: int, limit: int = 100):
+        """Return the persisted audit trail of applied renames for a destination."""
+        d: Database = request.app.state.db
+        row = d.get_destination(dest_id)
+        if row is None:
+            raise HTTPException(status_code=404, detail=f"Destination {dest_id} not found.")
+        rows = d.get_naming_cleanup_ops(destination_id=dest_id, limit=limit)
+        ops = [
+            NamingCleanupOp(
+                id=r["id"],
+                destination_id=r.get("destination_id"),
+                dest_path=r["dest_path"],
+                old_name=r["old_name"],
+                new_name=r["new_name"],
+                old_path=r["old_path"],
+                new_path=r["new_path"],
+                status=r["status"],
+                dry_run=bool(r["dry_run"]),
+                detail=r.get("detail"),
+                created_at=r["created_at"],
+            )
+            for r in rows
+        ]
+        return NamingHistoryResponse(destination_id=dest_id, ops=ops, total=len(ops))
 
     # Serve the built React SPA — must be mounted last so API routes take priority.
     app.mount("/", StaticFiles(directory=str(_DIST_DIR), html=True), name="spa")

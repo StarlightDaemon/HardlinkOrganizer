@@ -15,6 +15,9 @@ import type {
   DestinationListResponse,
   DestinationValidateRequest,
   DestinationValidateResponse,
+  NamingPreviewResponse,
+  NamingApplyRequest,
+  NamingApplyResponse,
   HealthResponse,
 } from './types';
 
@@ -82,4 +85,10 @@ export const api = {
 
   deleteDestination: (id: number) =>
     request<void>('DELETE', `/api/destinations/${id}`),
+
+  previewNaming: (id: number) =>
+    request<NamingPreviewResponse>('GET', `/api/destinations/${id}/naming/preview`),
+
+  applyNaming: (id: number, body: NamingApplyRequest) =>
+    request<NamingApplyResponse>('POST', `/api/destinations/${id}/naming/apply`, body),
 };

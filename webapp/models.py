@@ -284,3 +284,79 @@ class DestinationValidateResponse(BaseModel):
     checks: DestinationValidateChecks
     warnings: list[DestinationValidateWarning] = Field(default_factory=list)
     errors: list[str] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Destination naming cleanup (preview-first, source-safe rename of dest entries)
+# ---------------------------------------------------------------------------
+
+class NamingProposal(BaseModel):
+    old_name: str
+    new_name: str
+    old_path: str
+    new_path: str
+    entry_type: str            # "dir" or "file"
+    changed: bool              # True when new_name differs from old_name
+    blocked: bool = False      # True when the rename cannot be safely applied
+    block_reason: Optional[str] = None
+
+
+class NamingPreviewResponse(BaseModel):
+    destination_id: int
+    path: str
+    valid: bool
+    errors: list[str] = Field(default_factory=list)
+    warnings: list[DestinationValidateWarning] = Field(default_factory=list)
+    proposals: list[NamingProposal] = Field(default_factory=list)
+    changed_count: int = 0
+    total_count: int = 0
+
+
+class NamingApplyItem(BaseModel):
+    old_name: str
+    new_name: str
+
+
+class NamingApplyRequest(BaseModel):
+    # dry_run defaults to True so the destructive branch is never the default.
+    dry_run: bool = True
+    items: list[NamingApplyItem] = Field(default_factory=list)
+
+
+class NamingApplyResultItem(BaseModel):
+    old_name: str
+    new_name: str
+    old_path: str
+    new_path: str
+    status: str                # "renamed" | "would_rename" | "skipped" | "error"
+    detail: Optional[str] = None
+
+
+class NamingApplyResponse(BaseModel):
+    destination_id: int
+    path: str
+    dry_run: bool
+    results: list[NamingApplyResultItem] = Field(default_factory=list)
+    renamed_count: int = 0
+    skipped_count: int = 0
+    error_count: int = 0
+
+
+class NamingCleanupOp(BaseModel):
+    id: int
+    destination_id: Optional[int] = None
+    dest_path: str
+    old_name: str
+    new_name: str
+    old_path: str
+    new_path: str
+    status: str
+    dry_run: bool
+    detail: Optional[str] = None
+    created_at: str
+
+
+class NamingHistoryResponse(BaseModel):
+    destination_id: int
+    ops: list[NamingCleanupOp] = Field(default_factory=list)
+    total: int = 0

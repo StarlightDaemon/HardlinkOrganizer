@@ -142,6 +142,41 @@ class TestSuggestDestinationName(unittest.TestCase):
         self.assertEqual(hlo.suggest_destination_name("Show Name"), "Show Name")
 
 
+class TestProposeCleanName(unittest.TestCase):
+    """Destination-side naming cleanup proposals (pure, non-destructive)."""
+
+    def test_dir_normalizes_dots_and_year(self):
+        self.assertEqual(hlo.propose_clean_name("The.Matrix.1999", True), "The Matrix (1999)")
+
+    def test_file_preserves_extension(self):
+        self.assertEqual(
+            hlo.propose_clean_name("The_Matrix_1999.mkv", False),
+            "The Matrix (1999).mkv",
+        )
+
+    def test_file_uncommon_extension_preserved(self):
+        # .iso is not in the display-name strip set, but cleanup must keep it.
+        self.assertEqual(
+            hlo.propose_clean_name("Some_Disc.iso", False),
+            "Some Disc.iso",
+        )
+
+    def test_already_clean_dir_is_noop(self):
+        self.assertEqual(hlo.propose_clean_name("Already Clean", True), "Already Clean")
+
+    def test_never_returns_path_separator(self):
+        result = hlo.propose_clean_name("weird/name", False)
+        self.assertNotIn("/", result)
+
+    def test_backslash_neutralised(self):
+        result = hlo.propose_clean_name("weird\\name", False)
+        self.assertNotIn("\\", result)
+
+    def test_traversal_tokens_return_original(self):
+        self.assertEqual(hlo.propose_clean_name("..", False), "..")
+        self.assertEqual(hlo.propose_clean_name(".", True), ".")
+
+
 class TestVersioning(unittest.TestCase):
 
     def test_version_constant_present(self):

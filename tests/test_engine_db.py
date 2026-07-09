@@ -481,6 +481,75 @@ class TestDestinationDB(unittest.TestCase):
         self.assertEqual(rows[1]["id"], id2)
 
 
+class TestNamingCleanupOps(unittest.TestCase):
+    """Audit log for destination-side naming cleanup renames."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.db = Database(str(Path(self.tmp.name) / "test.db"))
+
+    def tearDown(self):
+        self.db.close()
+        self.tmp.cleanup()
+
+    def test_schema_creates_ops_table(self):
+        tables = {
+            r[0] for r in self.db._conn().execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            ).fetchall()
+        }
+        self.assertIn("naming_cleanup_ops", tables)
+
+    def _record(self, **kwargs) -> int:
+        base = dict(
+            destination_id=1,
+            dest_path="/dest/movies",
+            old_name="The.Matrix.1999",
+            new_name="The Matrix (1999)",
+            old_path="/dest/movies/The.Matrix.1999",
+            new_path="/dest/movies/The Matrix (1999)",
+            status="renamed",
+            dry_run=False,
+            created_at="2026-01-01T00:00:00Z",
+            detail=None,
+        )
+        base.update(kwargs)
+        return self.db.record_naming_cleanup_op(**base)
+
+    def test_record_returns_id(self):
+        op_id = self._record()
+        self.assertIsInstance(op_id, int)
+        self.assertGreater(op_id, 0)
+
+    def test_get_ops_empty(self):
+        self.assertEqual(self.db.get_naming_cleanup_ops(destination_id=1), [])
+
+    def test_get_ops_filters_by_destination(self):
+        self._record(destination_id=1, old_path="/dest/movies/a", new_path="/dest/movies/A")
+        self._record(destination_id=2, old_path="/dest/shows/b", new_path="/dest/shows/B")
+        rows = self.db.get_naming_cleanup_ops(destination_id=1)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["destination_id"], 1)
+
+    def test_get_ops_newest_first(self):
+        first = self._record(old_path="/dest/movies/1", new_path="/dest/movies/one")
+        second = self._record(old_path="/dest/movies/2", new_path="/dest/movies/two")
+        rows = self.db.get_naming_cleanup_ops(destination_id=1)
+        self.assertEqual(rows[0]["id"], second)
+        self.assertEqual(rows[1]["id"], first)
+
+    def test_dry_run_flag_persisted(self):
+        self._record(dry_run=True)
+        rows = self.db.get_naming_cleanup_ops(destination_id=1)
+        self.assertEqual(rows[0]["dry_run"], 1)
+
+    def test_error_status_and_detail_persisted(self):
+        self._record(status="error", detail="Permission denied")
+        rows = self.db.get_naming_cleanup_ops(destination_id=1)
+        self.assertEqual(rows[0]["status"], "error")
+        self.assertEqual(rows[0]["detail"], "Permission denied")
+
+
 class TestInodePeers(unittest.TestCase):
 
     def setUp(self):

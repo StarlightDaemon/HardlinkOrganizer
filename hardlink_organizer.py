@@ -249,6 +249,41 @@ def _extract_clean_title(display_name: str) -> str:
     return display_name.strip()
 
 
+def propose_clean_name(name: str, is_dir: bool) -> str:
+    """Propose a tidied, filesystem-safe basename for an existing destination entry.
+
+    This is a *pure* function: it computes a suggested new basename and never
+    touches the filesystem. It is the basis for the destination-side naming
+    cleanup preview.
+
+    Rules (conservative):
+    - Reuses ``generate_display_name`` normalization (dots/underscores → spaces,
+      whitespace collapse, year re-formatting) on the name stem.
+    - For files, the original extension is always preserved verbatim so the
+      cleaned name stays a valid media file.
+    - The result is always a single path component: any path separators are
+      neutralised so a proposal can never redirect a rename into another
+      directory.
+    - If cleanup would yield an empty string, the original name is returned
+      unchanged (a no-op proposal).
+    """
+    if is_dir:
+        cleaned = generate_display_name(name)
+    else:
+        suffix = Path(name).suffix
+        stem = name[: -len(suffix)] if suffix else name
+        cleaned_stem = generate_display_name(stem)
+        cleaned = f"{cleaned_stem}{suffix}" if cleaned_stem else ""
+
+    # A proposed basename must never contain a path separator or resolve to a
+    # traversal token — collapse those defensively before returning.
+    cleaned = cleaned.replace("/", " ").replace("\\", " ")
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    if not cleaned or cleaned in {".", ".."}:
+        return name
+    return cleaned
+
+
 # ---------------------------------------------------------------------------
 # Scanning
 # ---------------------------------------------------------------------------

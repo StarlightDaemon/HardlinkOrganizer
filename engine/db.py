@@ -99,6 +99,20 @@ CREATE TABLE IF NOT EXISTS destinations (
     updated_at TEXT    NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS naming_cleanup_ops (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    destination_id INTEGER,
+    dest_path      TEXT    NOT NULL,
+    old_name       TEXT    NOT NULL,
+    new_name       TEXT    NOT NULL,
+    old_path       TEXT    NOT NULL,
+    new_path       TEXT    NOT NULL,
+    status         TEXT    NOT NULL,
+    dry_run        INTEGER NOT NULL DEFAULT 0,
+    detail         TEXT,
+    created_at     TEXT    NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_scans_source_set
     ON scans (source_set);
 
@@ -116,6 +130,9 @@ CREATE INDEX IF NOT EXISTS idx_inventory_inode
 
 CREATE INDEX IF NOT EXISTS idx_link_history_full_path
     ON link_history (full_path);
+
+CREATE INDEX IF NOT EXISTS idx_naming_cleanup_ops_destination_id
+    ON naming_cleanup_ops (destination_id);
 """
 
 
@@ -558,3 +575,58 @@ class Database:
             cur = conn.execute("DELETE FROM destinations WHERE id = ?", (dest_id,))
             conn.commit()
         return cur.rowcount > 0
+
+    # ------------------------------------------------------------------
+    # Destination naming cleanup audit log
+    # ------------------------------------------------------------------
+
+    def record_naming_cleanup_op(
+        self,
+        destination_id: int | None,
+        dest_path: str,
+        old_name: str,
+        new_name: str,
+        old_path: str,
+        new_path: str,
+        status: str,
+        dry_run: bool,
+        created_at: str,
+        detail: str | None = None,
+    ) -> int:
+        """Persist one destination-side rename attempt for auditing. Returns its id."""
+        with self._lock:
+            conn = self._conn()
+            cur = conn.execute(
+                """INSERT INTO naming_cleanup_ops
+                   (destination_id, dest_path, old_name, new_name, old_path,
+                    new_path, status, dry_run, detail, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    destination_id, dest_path, old_name, new_name, old_path,
+                    new_path, status, int(dry_run), detail, created_at,
+                ),
+            )
+            conn.commit()
+            return cur.lastrowid
+
+    def get_naming_cleanup_ops(
+        self,
+        destination_id: int | None = None,
+        limit: int = 100,
+    ) -> list[dict]:
+        """Return recent naming-cleanup audit rows, newest first."""
+        with self._lock:
+            conn = self._conn()
+            if destination_id is not None:
+                rows = conn.execute(
+                    """SELECT * FROM naming_cleanup_ops
+                       WHERE destination_id = ?
+                       ORDER BY id DESC LIMIT ?""",
+                    (destination_id, limit),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT * FROM naming_cleanup_ops ORDER BY id DESC LIMIT ?",
+                    (limit,),
+                ).fetchall()
+        return [dict(r) for r in rows]

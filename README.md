@@ -22,6 +22,7 @@ Hardlink Organizer scans configured source directories and lets you hardlink sel
 - Shows a preview of the proposed destination path and validation results before writing
 - Validates same-device compatibility before hardlinking
 - Links without moving or renaming source files
+- Tidies destination entry names in place — preview-first, source-safe, audit-logged ([details](docs/DESTINATION_NAMING_CLEANUP.md))
 - Records scan, link, and verification history in SQLite
 - Supports CLI fallback alongside the web app
 
@@ -114,6 +115,7 @@ python3 -m pytest ./tests/
 
 ## More Detail
 
+- Destination naming cleanup: `docs/DESTINATION_NAMING_CLEANUP.md`
 - Platform packaging: `packaging/README.md`
 - Docker setup: `packaging/docker/README.md`
 - Unraid setup: `packaging/unraid/`

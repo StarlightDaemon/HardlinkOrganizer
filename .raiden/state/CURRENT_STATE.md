@@ -28,6 +28,7 @@
 - Confirmed: `engine/db.py` has a `destinations` table (id, label, path UNIQUE, tag, enabled, notes, created_at, updated_at) with full CRUD methods.
 - Confirmed: `webapp/app.py` routes: `GET /api/destinations`, `POST /api/destinations`, `POST /api/destinations/validate`, `PATCH /api/destinations/{id}`, `DELETE /api/destinations/{id}`.
 - Confirmed: validation checks existence, directory type, unsafe-root blocklist (`_UNSAFE_DEST_ROOTS`), writability, Unraid `/mnt/user` (`unraid_user_share`), and MergerFS pool (`mergerfs_pool_path`) — returns structured `DestinationValidateResponse`.
+- Confirmed: destination-side naming cleanup shipped — routes `GET/POST /api/destinations/{id}/naming/preview|apply` and `GET .../naming/history`, backed by pure `propose_clean_name()` and the `naming_cleanup_ops` audit table; UI is `NamingCleanupPanel.tsx` via the DestRegistry "Clean names" action. Preview-first, source-safe, dry-run by default, audit-logged; see `docs/DESTINATION_NAMING_CLEANUP.md`.
 - Confirmed: two frontend copy fixes applied: mount warning is now platform-neutral; hero Target now says "NAS / homelab workflows".
 - Confirmed: Fujin design system compliance audit complete. All components use only Fujin CSS vars (`var(--fujin-*)`) and `tokens.json` values; no hardcoded hex/px/font-name; `borderRadius: 0` throughout; all Carbon artifacts removed. Integration with Mantine's Open Color system via `FujinThemeProvider` presets is live.
 

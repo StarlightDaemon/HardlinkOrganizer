@@ -4,6 +4,7 @@ import { SectionHeader, DataTable, StatusBadge, ActionMenu, FormShell, type Data
 import { useToast } from '@fujin';
 import tokens from '@tokens';
 import { api } from '../api/client';
+import { NamingCleanupPanel } from './NamingCleanupPanel';
 import type { DestinationEntry, DestinationCreate, DestinationValidateResponse } from '../api/types';
 
 interface FormValues {
@@ -217,6 +218,7 @@ export function DestRegistry() {
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState('');
   const [deletePending, setDeletePending] = useState<number | null>(null);
+  const [cleanupTarget, setCleanupTarget] = useState<DestinationEntry | null>(null);
   const { show } = useToast();
 
   const load = useCallback(async () => {
@@ -405,6 +407,14 @@ export function DestRegistry() {
         </div>
       )}
 
+      {cleanupTarget && (
+        <NamingCleanupPanel
+          key={cleanupTarget.id}
+          dest={cleanupTarget}
+          onClose={() => setCleanupTarget(null)}
+        />
+      )}
+
       <DataTable
         columns={columns}
         rows={destinations}
@@ -416,6 +426,7 @@ export function DestRegistry() {
           <ActionMenu
             items={[
               { label: 'Edit', onClick: () => openEdit(row) },
+              { label: 'Clean names', onClick: () => setCleanupTarget(row) },
               { label: row.enabled ? 'Disable' : 'Enable', onClick: () => handleToggleEnabled(row) },
               ...(deletePending === row.id
                 ? [

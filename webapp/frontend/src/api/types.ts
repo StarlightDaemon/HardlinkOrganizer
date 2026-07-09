@@ -200,6 +200,57 @@ export interface DestinationValidateResponse {
   errors: string[];
 }
 
+export interface NamingProposal {
+  old_name: string;
+  new_name: string;
+  old_path: string;
+  new_path: string;
+  entry_type: string;
+  changed: boolean;
+  blocked: boolean;
+  block_reason: string | null;
+}
+
+export interface NamingPreviewResponse {
+  destination_id: number;
+  path: string;
+  valid: boolean;
+  errors: string[];
+  warnings: DestinationValidateWarning[];
+  proposals: NamingProposal[];
+  changed_count: number;
+  total_count: number;
+}
+
+export interface NamingApplyItem {
+  old_name: string;
+  new_name: string;
+}
+
+export interface NamingApplyRequest {
+  dry_run: boolean;
+  items: NamingApplyItem[];
+}
+
+export interface NamingApplyResultItem {
+  old_name: string;
+  new_name: string;
+  old_path: string;
+  new_path: string;
+  status: string;
+  detail: string | null;
+}
+
+export interface NamingApplyResponse {
+  destination_id: number;
+  path: string;
+  dry_run: boolean;
+  results: NamingApplyResultItem[];
+  renamed_count: number;
+  skipped_count: number;
+  error_count: number;
+}
+
 export interface HealthResponse {
   status: string;
   version: string;
