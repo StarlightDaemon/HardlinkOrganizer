@@ -38,7 +38,7 @@
 ## 2026-06-07 WSL→macOS migration remediation
 
 - Confirmed: migration audit completed. Edict v0.6.1 confirmed clean. All findings executed in order P1–P11.
-- Confirmed: P1–P9 — all /mnt/e/ path references replaced with /Users/dante/Citadel/ equivalents across AGENTS.md root, .raiden/AGENTS.md, .raiden/local/prompts/README.md, CURRENT_STATE.md, DECISIONS.md, WORK_LOG.md, DECISIONS.md DEC-008, .raiden/local/legacy/AGENTS.legacy.md, and 47 files via bulk sed across .raiden/local/prompts/, packaging/unraid/, docs/agent-prompts/.
+- Confirmed: P1–P9 — all /mnt/e/ path references replaced with E:\Citadel/ equivalents across AGENTS.md root, .raiden/AGENTS.md, .raiden/local/prompts/README.md, CURRENT_STATE.md, DECISIONS.md, WORK_LOG.md, DECISIONS.md DEC-008, .raiden/local/legacy/AGENTS.legacy.md, and 47 files via bulk sed across .raiden/local/prompts/, packaging/unraid/, docs/agent-prompts/.
 - Confirmed: P6 — .claude/settings.local.json deleted (was untracked; contained 13 dead git -C /mnt/e/HardlinkOrganizer entries and 2 /mnt/c/Users/agent007/ python.exe paths from a different user account).
 - Confirmed: P10 — webapp/frontend/node_modules rebuilt clean via npm ci on ARM64 macOS. 95 packages added, 0 vulnerabilities, no native addon warnings.
 - Confirmed: P11 — macOS /proc/ degradation comment added above mountinfo read in hardlink_organizer.py:544.
@@ -98,7 +98,7 @@
 
 ## 2026-05-05 React SPA + Fujin UI rebuild session
 
-- Confirmed: `webapp/frontend/` scaffolded with Vite 5 + React 18 + TypeScript 5. `@fujin` alias → `/Users/dante/Citadel/Fujin/components`; `@tokens` alias → `/Users/dante/Citadel/Fujin/tokens.json`. Build outputs to `webapp/static/dist/`.
+- Confirmed: `webapp/frontend/` scaffolded with Vite 5 + React 18 + TypeScript 5. `@fujin` alias → `E:\Citadel/Fujin/components`; `@tokens` alias → `E:\Citadel/Fujin/tokens.json`. Build outputs to `webapp/static/dist/`.
 - Confirmed: `webapp/app.py` — Jinja2 template route and imports removed; `StaticFiles(directory=dist, html=True)` mounted at `/` after all API routes.
 - Confirmed: `src/api/types.ts` — TypeScript interfaces mirroring all Pydantic models in `webapp/models.py` exactly.
 - Confirmed: `src/api/client.ts` — typed fetch wrappers for every API endpoint (health, config/sets, scan, inventory, preview, execute, history, verify, destinations CRUD + validate).
@@ -126,7 +126,7 @@
 
 ## 2026-05-03 RAIDEN Instance install and governance migration
 
-- Confirmed: RAIDEN Instance installed from central RAIDEN repo (`/Users/dante/Citadel/Raiden`) using `raiden_guide.py install` with sample_package (Edict v0.2.0).
+- Confirmed: RAIDEN Instance installed from central RAIDEN repo (`E:\Citadel/Raiden`) using `raiden_guide.py install` with sample_package (Edict v0.2.0).
 - Confirmed: full `init → plan → apply → doctor` cycle passed cleanly; no conflicts or anomalies.
 - Confirmed: `AGENTS.md` merged — legacy content preserved and updated to point at `.raiden/state/` control plane.
 - Confirmed: `agent-ledger/` content migrated to `.raiden/state/` (CURRENT_STATE, GOALS, OPEN_LOOPS, DECISIONS, WORK_LOG).
@@ -144,7 +144,7 @@
 ## 2026-04-16 workspace extraction planning entry
 
 - Confirmed: created `notes/PROJECT_WORKSPACE_EXTRACTION_PLAN.md`.
-- Confirmed: selected `/Users/dante/Citadel/HardlinkOrganizer` as preferred new top-level workspace path.
+- Confirmed: selected `E:\Citadel/HardlinkOrganizer` as preferred new top-level workspace path.
 - Confirmed: selected `hardlink-organizer` as preferred standalone repository name.
 - Confirmed: selected simple copy plus fresh repo initialization as the default migration method.
 

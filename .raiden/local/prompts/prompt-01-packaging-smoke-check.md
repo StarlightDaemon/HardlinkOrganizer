@@ -3,7 +3,7 @@
 Review the Unraid Docker packaging for Hardlink Organizer and do only a packaging smoke-validation pass.
 
 Repository root:
-`/Users/dante/Citadel/HardlinkOrganizer`
+`E:\Citadel/HardlinkOrganizer`
 
 Read first:
 1. `packaging/unraid/README.md`

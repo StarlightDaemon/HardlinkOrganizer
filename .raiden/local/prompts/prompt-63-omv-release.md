@@ -19,7 +19,7 @@ LOOP-011 (prompt-60) must be complete. The GHCR image must be public.
 
 ## Repository root
 
-`/Users/dante/Citadel/HardlinkOrganizer`
+`E:\Citadel/HardlinkOrganizer`
 
 ## Read first
 

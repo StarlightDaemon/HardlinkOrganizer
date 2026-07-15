@@ -24,7 +24,7 @@ overlap at all.
 
 ## Repository root
 
-`/Users/dante/Citadel/HardlinkOrganizer`
+`E:\Citadel/HardlinkOrganizer`
 
 ---
 

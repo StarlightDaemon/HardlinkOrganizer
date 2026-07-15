@@ -15,7 +15,7 @@ into a full UI build or another real Unraid validation cycle.
 
 ## Repository root
 
-`/Users/dante/Citadel/HardlinkOrganizer`
+`E:\Citadel/HardlinkOrganizer`
 
 ## Read first
 

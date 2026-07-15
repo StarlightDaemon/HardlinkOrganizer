@@ -5,9 +5,9 @@ RAIDEN Instance control plane for this repo.
 
 ## Authoritative workspace root
 
-- macOS path: `/Users/dante/Citadel/HardlinkOrganizer`
+- macOS path: `E:\Citadel/HardlinkOrganizer`
 
-Treat `/Users/dante/Citadel/HardlinkOrganizer` as the only live project root.
+Treat `E:\Citadel/HardlinkOrganizer` as the only live project root.
 
 ## Control plane
 

@@ -18,7 +18,7 @@ cleanup, or broader verification modes.
 
 ## Repository root
 
-`/Users/dante/Citadel/HardlinkOrganizer`
+`E:\Citadel/HardlinkOrganizer`
 
 ## Read first
 

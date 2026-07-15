@@ -52,8 +52,8 @@ Still open:
 3. Ensure git status --porcelain is empty before signaling readiness.
 4. Signal to the operator: HardlinkOrganizer is ready for the RAIDEN central agent
    to run the v0.4.0 migration prompt from
-   /Users/dante/Citadel/Raiden/toolkit/prompts/audit-protocol-migration-v0.4.0-prompt.md
-   targeting --instance /Users/dante/Citadel/HardlinkOrganizer. (v0.3.0 skipped; v0.4.0 direct.)
+   E:\Citadel/Raiden/toolkit/prompts/audit-protocol-migration-v0.4.0-prompt.md
+   targeting --instance E:\Citadel/HardlinkOrganizer. (v0.3.0 skipped; v0.4.0 direct.)
 
 Do not:
 - reopen settled naming or architecture

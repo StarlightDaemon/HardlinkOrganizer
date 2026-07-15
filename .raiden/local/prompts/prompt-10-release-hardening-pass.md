@@ -3,7 +3,7 @@
 Do a bounded `0.2.1` release-hardening pass for Hardlink Organizer.
 
 Repository root:
-`/Users/dante/Citadel/HardlinkOrganizer`
+`E:\Citadel/HardlinkOrganizer`
 
 Read first:
 1. `./README.md`

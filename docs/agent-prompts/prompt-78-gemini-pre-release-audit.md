@@ -25,7 +25,7 @@ authentication layer — all API callers are assumed to be the operator.
 
 ## Repository root
 
-`/Users/dante/Citadel/HardlinkOrganizer`
+`E:\Citadel/HardlinkOrganizer`
 
 ---
 

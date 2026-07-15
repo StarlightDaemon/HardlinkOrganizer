@@ -7,10 +7,10 @@ Work only on the prompt located at:
 PROMPT_FILE_PATH
 
 Repository root:
-/Users/dante/Citadel/HardlinkOrganizer
+E:\Citadel/HardlinkOrganizer
 
 Authoritative workspace rule:
-- The only live repo root for this project is `/Users/dante/Citadel/HardlinkOrganizer`.
+- The only live repo root for this project is `E:\Citadel/HardlinkOrganizer`.
 - On Windows, that same root is `E:\HardlinkOrganizer`.
 - Do not work from `StarlightDaemonDev/tools/internal/hardlink-organizer`.
 - If your current working directory is not the standalone root, stop and report it immediately.
@@ -35,10 +35,10 @@ Work only on the prompt located at:
 .raiden/local/prompts/prompt-02-web-dependency-verification.md
 
 Repository root:
-/Users/dante/Citadel/HardlinkOrganizer
+E:\Citadel/HardlinkOrganizer
 
 Authoritative workspace rule:
-- The only live repo root for this project is `/Users/dante/Citadel/HardlinkOrganizer`.
+- The only live repo root for this project is `E:\Citadel/HardlinkOrganizer`.
 - On Windows, that same root is `E:\HardlinkOrganizer`.
 - Do not work from `StarlightDaemonDev/tools/internal/hardlink-organizer`.
 - If your current working directory is not the standalone root, stop and report it immediately.

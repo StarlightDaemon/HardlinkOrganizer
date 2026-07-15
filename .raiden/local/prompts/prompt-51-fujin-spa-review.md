@@ -1,6 +1,6 @@
 # Prompt 51: Fujin SPA Implementation Review
 
-**Governance Authority:** Fujin UI Kit (`/Users/dante/Citadel/Fujin/llms-full.txt`)
+**Governance Authority:** Fujin UI Kit (`E:\Citadel/Fujin/llms-full.txt`)
 **Reviewer Role:** Fujin Design System Agent — Compliance audit
 **Strategy:** Review only — no changes unless a violation requires immediate correction
 **Recommended model:** Claude Sonnet 4.6
@@ -23,11 +23,11 @@ product decision for the user.
 
 ## 1. Repository and design system
 
-- **Project root:** `/Users/dante/Citadel/HardlinkOrganizer`
+- **Project root:** `E:\Citadel/HardlinkOrganizer`
 - **Frontend source:** `webapp/frontend/src/`
-- **Fujin reference (read this first):** `/Users/dante/Citadel/Fujin/llms-full.txt`
-- **Fujin components:** `/Users/dante/Citadel/Fujin/components/`
-- **Tokens file:** `/Users/dante/Citadel/Fujin/tokens.json`
+- **Fujin reference (read this first):** `E:\Citadel/Fujin/llms-full.txt`
+- **Fujin components:** `E:\Citadel/Fujin/components/`
+- **Tokens file:** `E:\Citadel/Fujin/tokens.json`
 
 Do not open any other Fujin file beyond `llms-full.txt`.
 

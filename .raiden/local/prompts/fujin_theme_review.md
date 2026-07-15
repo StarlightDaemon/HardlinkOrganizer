@@ -11,7 +11,7 @@ Even after registering the 10-step `slate` array properly without `as const` (so
 However, the user feels it still looks "blue" and wants a more neutral gray or true slate without the blue tint. 
 
 ## Instructions for Fujin Agent
-Please review the integration in `/Users/dante/Citadel/HardlinkOrganizer/webapp/frontend/src/main.tsx` and determine the best path forward within the Fujin design contract:
+Please review the integration in `E:\Citadel/HardlinkOrganizer/webapp/frontend/src/main.tsx` and determine the best path forward within the Fujin design contract:
 1. Should we define a strictly neutral `gray` palette in `tokens.json` to be used for components that currently use the `slate` primary?
 2. Is there a different way we should be wiring the MantineProvider to fully adhere to Fujin's design intent while eliminating the blue tint?
 3. Review how Mantine handles primary colors and ensure our tokens align with Mantine's contrast expectations for active states.

@@ -3,7 +3,7 @@
 ## Summary
 
 - Confirmed: React SPA frontend (Fujin UI kit) fully scaffolded and implemented at `webapp/frontend/`. `FujinThemeProvider` now encapsulates `MantineProvider` and supports Open Color presets (currently using `violet`). All Carbon CSS, `--cds-*` vars, IBM Plex, and Jinja2 server-side injection removed. FastAPI now serves `webapp/static/dist/` via `StaticFiles(html=True)`. Build: `cd webapp/frontend && npm install && npm run build`. Dev: `npm run dev` (proxies `/api` → port 8000).
-- Confirmed: Hardlink Organizer now operates as its own standalone project workspace rooted at `/Users/dante/Citadel/HardlinkOrganizer`, with a RAIDEN Instance control plane under `.raiden/`.
+- Confirmed: Hardlink Organizer now operates as its own standalone project workspace rooted at `E:\Citadel/HardlinkOrganizer`, with a RAIDEN Instance control plane under `.raiden/`.
 - Confirmed: the project is at `1.0.6` stable release.
 - Confirmed: the hosted web UI and CLI both exist, with verification runs persisted and reviewable.
 - Confirmed: the history-driven verification UI slice is closed locally, including browser-triggered verification from prior real link jobs, stored-result review, JSON or CSV exports, and lightweight result filtering.
@@ -49,7 +49,7 @@
 - Confirmed: 1.0 platform targets are Unraid (Community Apps), TrueNAS SCALE (native catalog via truenas/apps PR), and OMV (compose plugin + community posts). See LOOP-012, LOOP-013.
 - Confirmed: full HTTP-level integration coverage remains a separate follow-up because the current local FastAPI dependency stack hangs under `TestClient`.
 
-- Confirmed: workspace root is `/Users/dante/Citadel/HardlinkOrganizer` (macOS). See `WORK_LOG.md` § 2026-06-07 for the WSL→macOS migration remediation.
+- Confirmed: workspace root is `E:\Citadel/HardlinkOrganizer` (macOS). See `WORK_LOG.md` § 2026-06-07 for the WSL→macOS migration remediation.
 
 ## Provenance
 

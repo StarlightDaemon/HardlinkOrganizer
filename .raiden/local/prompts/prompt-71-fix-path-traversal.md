@@ -17,7 +17,7 @@ execution.
 
 ## Repository root
 
-`/Users/dante/Citadel/HardlinkOrganizer`
+`E:\Citadel/HardlinkOrganizer`
 
 ---
 
@@ -101,7 +101,7 @@ def test_link_plan_rejects_dest_subpath_traversal(tmp_path):
 ## Validation
 
 ```bash
-cd /Users/dante/Citadel/HardlinkOrganizer
+cd E:\Citadel/HardlinkOrganizer
 python -m pytest tests/test_hardlink_organizer.py -x -q 2>&1 | tail -10
 python -m pytest tests/ -x -q 2>&1 | tail -10
 ```

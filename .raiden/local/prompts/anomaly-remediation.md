@@ -1,4 +1,4 @@
-You are the HardlinkOrganizer Instance agent, operating inside /Users/dante/Citadel/HardlinkOrganizer.
+You are the HardlinkOrganizer Instance agent, operating inside E:\Citadel/HardlinkOrganizer.
 
 Read first:
 - .raiden/instance/baseline.json
@@ -54,10 +54,10 @@ After RAIDEN central signals completion:
      ls -l .git/hooks/commit-msg
    Expected: file present, executable bit set (-rwxr-xr-x or similar)
 
-2. Run from /Users/dante/Citadel/Raiden/toolkit/updater/:
+2. Run from E:\Citadel/Raiden/toolkit/updater/:
      python3 -m raiden_updater.cli plan \
-       --instance /Users/dante/Citadel/HardlinkOrganizer \
-       --package /Users/dante/Citadel/Raiden/toolkit/updater/fixtures/sample_package
+       --instance E:\Citadel/HardlinkOrganizer \
+       --package E:\Citadel/Raiden/toolkit/updater/fixtures/sample_package
 
    If Option A was chosen:
      → expected: Block reason: Already up to date — no changes needed

@@ -10,7 +10,7 @@ RAIDEN Instance install. Path references in older prompt files may still cite
 
 All prompt execution should happen from the standalone repository root:
 
-- macOS path: `/Users/dante/Citadel/HardlinkOrganizer`
+- macOS path: `E:\Citadel/HardlinkOrganizer`
 
 Do not use the deprecated nested copy under
 `StarlightDaemonDev/tools/internal/hardlink-organizer/` for new work.
@@ -61,5 +61,5 @@ See `legacy/README.md` for the legacy prompt inventory.
 1. Pick one prompt file.
 2. Paste the micro prompt.
 3. Replace `PROMPT_FILE_PATH` with the exact prompt file path.
-4. Confirm the agent is actually operating in `/Users/dante/Citadel/HardlinkOrganizer`.
+4. Confirm the agent is actually operating in `E:\Citadel/HardlinkOrganizer`.
 5. Let the other agent handle only that slice.

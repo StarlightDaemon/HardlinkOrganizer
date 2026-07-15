@@ -6,11 +6,11 @@ Start here before chasing parent-repo context.
 
 ## Authoritative workspace root
 
-- Active repository root: `/Users/dante/Citadel/HardlinkOrganizer`
+- Active repository root: `E:\Citadel/HardlinkOrganizer`
 - Windows path for the same workspace: `E:\HardlinkOrganizer`
 - Deprecated old nested path: `E:\StarlightDaemonDev\tools\internal\hardlink-organizer`
 
-Agents must treat `/Users/dante/Citadel/HardlinkOrganizer` as the only live project root for
+Agents must treat `E:\Citadel/HardlinkOrganizer` as the only live project root for
 new work.
 
 If your current working directory or prompt context points at the old nested

@@ -49,7 +49,7 @@
 - Status: active
 - Impact: local prompt roots, ignore files, and state references should point at this workspace rather than assuming a parent repository root.
 
-## DEC-008: workspace is `/Users/dante/Citadel/HardlinkOrganizer`; standalone repo name is `hardlink-organizer`
+## DEC-008: workspace is `E:\Citadel/HardlinkOrganizer`; standalone repo name is `hardlink-organizer`
 
 - Date: 2026-04-16
 - Status: active

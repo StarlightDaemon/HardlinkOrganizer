@@ -1,4 +1,4 @@
-You are the HardlinkOrganizer Instance agent, operating inside /Users/dante/Citadel/HardlinkOrganizer.
+You are the HardlinkOrganizer Instance agent, operating inside E:\Citadel/HardlinkOrganizer.
 
 Read first:
 - AGENTS.md
@@ -32,10 +32,10 @@ Already true (RAIDEN central wrote these on 2026-05-15; baseline corrected 2026-
 Still open:
 1. Run `git status --porcelain` — confirm only migration files appear. Stop if unexpected.
 2. Run `grep installed_edict_version .raiden/instance/metadata.json` → expect "0.4.0"
-3. Run from /Users/dante/Citadel/Raiden/toolkit/updater/:
+3. Run from E:\Citadel/Raiden/toolkit/updater/:
      python3 -m raiden_updater.cli plan \
-       --instance /Users/dante/Citadel/HardlinkOrganizer \
-       --package /Users/dante/Citadel/Raiden/toolkit/updater/fixtures/sample_package
+       --instance E:\Citadel/HardlinkOrganizer \
+       --package E:\Citadel/Raiden/toolkit/updater/fixtures/sample_package
    → expect: Block reason: Already up to date — no changes needed
 4. Commit the following files:
      .raiden/writ/WORKSPACE_AUDIT_PROTOCOL.md

@@ -1,6 +1,6 @@
 # Agent Handoff — Refine check_already_linked to use nlink heuristic
 
-You are refining an existing feature in the HardlinkOrganizer project at `/Users/dante/Citadel/HardlinkOrganizer`. Read every file referenced below before writing anything. The codebase is clean and consistent — match its style exactly.
+You are refining an existing feature in the HardlinkOrganizer project at `E:\Citadel/HardlinkOrganizer`. Read every file referenced below before writing anything. The codebase is clean and consistent — match its style exactly.
 
 ---
 
@@ -74,7 +74,7 @@ If `_logger` and the `logging` import are now unused after this removal, remove 
 ## Verification
 
 ```bash
-cd /Users/dante/Citadel/HardlinkOrganizer && python -m unittest discover -s ./tests -v
+cd E:\Citadel/HardlinkOrganizer && python -m unittest discover -s ./tests -v
 ```
 
 Report what passed, what failed, and what you changed.

@@ -1,6 +1,6 @@
 # Agent Handoff — Filesystem-based hardlink detection
 
-You are implementing a new feature in the HardlinkOrganizer project at `/Users/dante/Citadel/HardlinkOrganizer`. Read every file referenced below before writing a single line of code. The codebase is clean and consistent — match its style exactly.
+You are implementing a new feature in the HardlinkOrganizer project at `E:\Citadel/HardlinkOrganizer`. Read every file referenced below before writing a single line of code. The codebase is clean and consistent — match its style exactly.
 
 ---
 
@@ -96,7 +96,7 @@ Use `tempfile` and `os.link` to create real hardlinks in a temp directory, match
 After implementing, run the test suite:
 
 ```bash
-cd /Users/dante/Citadel/HardlinkOrganizer && python -m unittest discover -s ./tests -v
+cd E:\Citadel/HardlinkOrganizer && python -m unittest discover -s ./tests -v
 ```
 
 Report what passed, what failed, and what you changed.

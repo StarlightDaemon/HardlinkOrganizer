@@ -1,6 +1,6 @@
 # Agent Handoff — File-entry subfolder wrapping for Radarr-compatible linking
 
-You are implementing a focused feature in the HardlinkOrganizer project at `/Users/dante/Citadel/HardlinkOrganizer`. Read every file referenced below before writing a single line of code. The codebase is clean and consistent — match its style exactly.
+You are implementing a focused feature in the HardlinkOrganizer project at `E:\Citadel/HardlinkOrganizer`. Read every file referenced below before writing a single line of code. The codebase is clean and consistent — match its style exactly.
 
 ---
 
@@ -144,7 +144,7 @@ Add a `TestSuggestDestinationName` class:
 ## Verification
 
 ```bash
-cd /Users/dante/Citadel/HardlinkOrganizer && python3 -m unittest discover -s ./tests -v 2>&1 | tail -20
+cd E:\Citadel/HardlinkOrganizer && python3 -m unittest discover -s ./tests -v 2>&1 | tail -20
 ```
 
 All existing tests must pass. Report what passed, what failed, and what you changed.
