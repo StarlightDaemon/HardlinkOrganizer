@@ -37,3 +37,6 @@ audit-reports/
 .raiden/state/AUDIT_LOG.md
 .raiden/state/last-audit.md
 .audits/
+
+# macOS
+._*
