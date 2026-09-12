@@ -1,8 +1,8 @@
 # Hardlink Organizer — web application dependencies
 # Python 3.11+ is recommended (tomllib is stdlib); for older versions add tomli.
 
-fastapi==0.136.1
-uvicorn[standard]==0.46.0
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
 
 # Testing only: httpx is required by FastAPI's TestClient
 httpx==0.28.1

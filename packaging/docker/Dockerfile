@@ -3,7 +3,7 @@
 #   docker build -f packaging/docker/Dockerfile -t hardlink-organizer:v1.0.0-rc.1 .
 
 # --- Stage 1: build the React frontend ---
-FROM node:20-slim AS frontend-builder
+FROM node:22-slim AS frontend-builder
 
 WORKDIR /app/webapp/frontend
 
