@@ -77,6 +77,6 @@ Before submitting to `truenas/apps`:
 
 - Replace `icon:` URL in `app.yaml` with the CDN URL provided by the PR reviewer.
 - Add screenshot URLs once hosted on the TrueNAS CDN.
-- Verify that LOOP-011 (GHCR image publication) is complete and
-  `ghcr.io/starlightdaemon/hardlink-organizer:1.0.0` is publicly pullable.
+- Verify that `starlightdaemon/hardlink-organizer:1.0.0` is publicly pullable
+  from Docker Hub (the actively maintained registry; GHCR is historical only).
 - Run the catalog CI locally (`python .github/scripts/ci.py`) before filing the PR.

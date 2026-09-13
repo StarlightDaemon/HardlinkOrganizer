@@ -16,15 +16,15 @@ packaging/
 
 ## Canonical Docker image
 
-The image is published to Docker Hub (primary) and GHCR (mirror):
+The image is published to Docker Hub, the sole actively maintained registry:
 
 ```bash
-# Docker Hub (default — no registry prefix needed)
 docker pull starlightdaemon/hardlink-organizer:latest
-
-# GHCR mirror
-docker pull ghcr.io/starlightdaemon/hardlink-organizer:latest
 ```
+
+Older images remain available at `ghcr.io/starlightdaemon/hardlink-organizer`
+as a historical artifact, but GHCR is no longer an actively maintained
+publication target.
 
 To build locally from source, see [`packaging/docker/README.md`](docker/README.md).
 
@@ -41,7 +41,7 @@ To build locally from source, see [`packaging/docker/README.md`](docker/README.m
 ## Published image
 
 Built and published automatically by `.github/workflows/hardlink-organizer-image.yml`
-on every version tag. Pushed simultaneously to Docker Hub and GHCR.
+on every version tag. Pushed to Docker Hub only.
 
 ## Key considerations for all platforms
 

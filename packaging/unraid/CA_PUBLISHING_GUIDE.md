@@ -95,7 +95,7 @@ After submission:
 - XML support URL updated to that thread
 - categories present
 - icon URL reachable
-- GHCR image published and pullable
+- Docker Hub image published and pullable
 - real Unraid validation completed
 
 ## Current status
