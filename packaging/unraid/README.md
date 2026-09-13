@@ -25,7 +25,7 @@ This repository is prepared to build and publish the Docker image with GitHub Ac
 ### Workflow
 
 - Workflow file: `.github/workflows/hardlink-organizer-image.yml`
-- Registry target: `ghcr.io/<github-owner>/hardlink-organizer`
+- Registry target: `starlightdaemon/hardlink-organizer` on Docker Hub
 
 ### What it does
 
@@ -38,14 +38,14 @@ This repository is prepared to build and publish the Docker image with GitHub Ac
 
 - the repository must be pushed to GitHub
 - GitHub Actions must be enabled
-- the repository package permissions must allow publishing to GHCR with `GITHUB_TOKEN`
+- the `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repository secrets must be set
 
 ### Recommended release flow
 
 1. Merge Docker-related changes to `main`
 2. Verify the GitHub Actions build succeeds
 3. Create and push a version tag such as `v1.0.0-rc.1`
-4. Pull the published image from GHCR on Unraid
+4. Pull the published image from Docker Hub on Unraid
 
 ## Community Apps publishing prep
 
@@ -58,7 +58,7 @@ This repository also includes draft assets for eventual Community Apps publicati
 
 Recommended workflow:
 
-- publish the Docker image to GHCR first
+- publish the Docker image to Docker Hub first
 - create the real Unraid support thread
 - move or copy the template assets into a dedicated template repository
 - submit that repository to Community Apps

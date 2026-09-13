@@ -55,12 +55,12 @@ id -g   # → use as PGID
 
 ## Published image
 
-GitHub Actions publishes to Docker Hub and GHCR on every version tag:
+GitHub Actions publishes to Docker Hub (canonical) on every version tag:
 
 ```bash
-# Docker Hub (primary)
 docker pull starlightdaemon/hardlink-organizer:latest
-
-# GHCR mirror
-docker pull ghcr.io/starlightdaemon/hardlink-organizer:latest
 ```
+
+Older images remain available at `ghcr.io/starlightdaemon/hardlink-organizer`
+as a historical artifact, but GHCR is no longer an actively maintained
+publication target.
