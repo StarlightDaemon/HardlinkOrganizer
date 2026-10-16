@@ -1,4 +1,4 @@
-# Hardlink Organizer — Docker image
+# Hardlink Organizer â€” Docker image
 # Build from the Hardlink Organizer root:
 #   docker build -f packaging/docker/Dockerfile -t hardlink-organizer:v1.0.7 .
 
@@ -31,7 +31,9 @@ WORKDIR /app
 
 # Install Python dependencies first (layer cache)
 COPY ./requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && python -m pip uninstall --yes wheel setuptools pip \
+    && rm -rf /usr/local/lib/python3.11/ensurepip
 
 # Copy application source
 COPY ./hardlink_organizer.py .

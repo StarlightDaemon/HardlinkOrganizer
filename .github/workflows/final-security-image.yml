@@ -69,14 +69,12 @@ jobs:
 
       - name: Run full Python suite against candidate as nonroot
         run: |
+          python -m pip install --target "$RUNNER_TEMP/test-libs" -r requirements-dev.txt
           docker run --rm \
             --mount "type=bind,src=$GITHUB_WORKSPACE/tests,dst=/app/tests,readonly" \
-            --mount "type=bind,src=$GITHUB_WORKSPACE/requirements-dev.txt,dst=/tmp/requirements-dev.txt,readonly" \
-            -e PYTHONPATH=/app -e PYTHONDONTWRITEBYTECODE=1 \
-            "$IMAGE:$RELEASE_TAG" sh -c \
-            'python -m venv --system-site-packages /tmp/test-env &&
-             /tmp/test-env/bin/python -m pip install --no-cache-dir -r /tmp/requirements-dev.txt &&
-             /tmp/test-env/bin/python -m pytest /app/tests -q -p no:cacheprovider' \
+            --mount "type=bind,src=$RUNNER_TEMP/test-libs,dst=/tmp/test-libs,readonly" \
+            -e PYTHONPATH=/tmp/test-libs:/app -e PYTHONDONTWRITEBYTECODE=1 \
+            "$IMAGE:$RELEASE_TAG" python -m pytest /app/tests -q -p no:cacheprovider \
             | tee "$RUNNER_TEMP/image-reports/python-tests.txt"
 
       - name: Verify candidate HTTP runtime and security behavior
@@ -114,13 +112,13 @@ jobs:
           for result in report.get("Results", []):
               for vulnerability in result.get("Vulnerabilities", []):
                   counts[vulnerability["Severity"]] += 1
-                  if vulnerability["Severity"] in {"HIGH", "CRITICAL"} and vulnerability.get("FixedVersion"):
+                  if vulnerability["Severity"] in {"MEDIUM", "HIGH", "CRITICAL"} and vulnerability.get("FixedVersion"):
                       blockers.append(vulnerability)
           print("All reported image vulnerabilities by severity:", dict(counts))
           for vulnerability in blockers:
               print("FIXABLE BLOCKER:", vulnerability["VulnerabilityID"], vulnerability["PkgName"],
                     vulnerability["InstalledVersion"], "->", vulnerability["FixedVersion"])
-          assert not blockers, "Image has fixable high/critical vulnerabilities."
+          assert not blockers, "Image has fixable medium/high/critical vulnerabilities."
           PY
 
       - name: Log in to Docker Hub after candidate verification
