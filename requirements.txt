@@ -1,4 +1,4 @@
-# Hardlink Organizer â€” web application dependencies
+# Hardlink Organizer — web application dependencies
 # Python 3.11+ is recommended (tomllib is stdlib); for older versions add tomli.
 
 fastapi==0.141.1

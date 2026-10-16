@@ -1,4 +1,4 @@
-# Hardlink Organizer â€” Docker image
+# Hardlink Organizer — Docker image
 # Build from the Hardlink Organizer root:
 #   docker build -f packaging/docker/Dockerfile -t hardlink-organizer:v1.0.7 .
 
@@ -24,7 +24,9 @@ LABEL org.opencontainers.image.version="1.0.7"
 RUN addgroup --system hlo && adduser --system --ingroup hlo hlo
 
 # gosu for PUID/PGID privilege-drop entrypoint
-RUN apt-get update && apt-get install -y --no-install-recommends gosu \
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && apt-get install -y --no-install-recommends gosu \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

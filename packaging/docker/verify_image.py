@@ -38,11 +38,11 @@ def main() -> None:
     # Exercise the actual entrypoint's defaults without bind mounts.
     docker(
         "run", "--rm", args.image, "python", "-c",
-        "import os; from pathlib import Path; assert os.geteuid() == 1000; "
+        "import os, importlib.util; from pathlib import Path; assert os.geteuid() == 1000; "
         "assert os.getegid() == 1000; "
         "assert not Path('/app/webapp/frontend/node_modules').exists(); "
-        "assert not any(__import__('importlib.util', fromlist=['find_spec']).find_spec(name) "
-        "for name in ('pip', 'setuptools', 'ensurepip'))",
+        "assert not any(importlib.util.find_spec(name) "
+        "for name in ('pip', 'setuptools', 'pkg_resources', 'wheel', 'ensurepip'))",
     )
 
     uid, gid = os.getuid(), os.getgid()
