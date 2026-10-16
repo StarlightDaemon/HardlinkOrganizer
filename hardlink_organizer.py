@@ -18,11 +18,13 @@ from __future__ import annotations
 
 import argparse
 import csv
+from contextlib import contextmanager
 from dataclasses import dataclass
 import json
 import logging
 import os
 import re
+import stat
 import sys
 import time
 from pathlib import Path
@@ -871,6 +873,57 @@ class LinkResult:
         )
 
 
+def _reject_destination_links(path: Path) -> None:
+    """Refuse symlink directories, including Windows junctions."""
+    for directory in (path, *path.parents):
+        try:
+            info = directory.lstat()
+        except FileNotFoundError:
+            continue
+        if stat.S_ISLNK(info.st_mode) or (
+            getattr(info, "st_file_attributes", 0)
+            & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+        ):
+            raise OSError(f"Destination directory is a symlink or reparse point: {directory}")
+
+
+@contextmanager
+def _destination_directory(path: Path):
+    """Create/open a destination without following directory symlinks.
+
+    On POSIX, walk from the filesystem root using directory descriptors and
+    O_NOFOLLOW. Keeping the final descriptor open also prevents a symlink swap
+    between parent validation and os.link from redirecting the write.
+    """
+    absolute = Path(os.path.abspath(path))
+    if os.name != "posix":
+        # The supported deployment platform is Linux. On Windows, reject
+        # existing symlinks/junctions before and after parent creation.
+        _reject_destination_links(absolute)
+        absolute.mkdir(parents=True, exist_ok=True)
+        _reject_destination_links(absolute)
+        yield None
+        return
+
+    flags = getattr(os, "O_PATH", os.O_RDONLY) | os.O_DIRECTORY | os.O_NOFOLLOW
+    directory_fd = os.open(absolute.anchor, flags)
+    try:
+        for part in absolute.parts[1:]:
+            try:
+                child_fd = os.open(part, flags, dir_fd=directory_fd)
+            except FileNotFoundError:
+                try:
+                    os.mkdir(part, dir_fd=directory_fd)
+                except FileExistsError:
+                    pass  # Another process may have created it; open checks it.
+                child_fd = os.open(part, flags, dir_fd=directory_fd)
+            os.close(directory_fd)
+            directory_fd = child_fd
+        yield directory_fd
+    finally:
+        os.close(directory_fd)
+
+
 def hardlink_file(src: Path, dst: Path, result: LinkResult, dry_run: bool = False) -> None:
     """
     Create a hardlink at *dst* pointing to *src*.
@@ -899,14 +952,18 @@ def hardlink_file(src: Path, dst: Path, result: LinkResult, dry_run: bool = Fals
         result.skipped.append(str(dst))
         return
 
-    if dry_run:
-        _logger.info("DRY-RUN link: %s -> %s", src, dst)
-        result.linked.append(str(dst))
-        return
-
     try:
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        os.link(src, dst)
+        _reject_destination_links(dst.parent)
+        if dry_run:
+            _logger.info("DRY-RUN link: %s -> %s", src, dst)
+            result.linked.append(str(dst))
+            return
+
+        with _destination_directory(dst.parent) as parent_fd:
+            if parent_fd is None:
+                os.link(src, dst)
+            else:
+                os.link(src, dst.name, dst_dir_fd=parent_fd)
         _logger.info("LINKED: %s -> %s", src, dst)
         result.linked.append(str(dst))
     except OSError as exc:
@@ -925,13 +982,15 @@ def hardlink_tree(
     Directories are created normally (never hardlinked).
     Continues past individual file failures.
     """
-    if not dry_run:
-        try:
-            dst_dir.mkdir(parents=True, exist_ok=True)
-        except OSError as exc:
-            _logger.error("Cannot create directory %s: %s", dst_dir, exc)
-            result.failed.append(str(dst_dir))
-            return
+    try:
+        _reject_destination_links(dst_dir)
+        if not dry_run:
+            with _destination_directory(dst_dir):
+                pass
+    except OSError as exc:
+        _logger.error("Unsafe or unavailable destination directory %s: %s", dst_dir, exc)
+        result.failed.append(str(dst_dir))
+        return
 
     try:
         children = list(src_dir.iterdir())

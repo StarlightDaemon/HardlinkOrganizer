@@ -809,6 +809,136 @@ class TestHardlinkTree(unittest.TestCase):
         self.assertFalse(dst.exists())
 
 
+
+
+@unittest.skipUnless(sys.platform.startswith("linux"), "Linux destination symlink safety")
+class TestDestinationContainment(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        self.source = self.root / "source" / "Movie"
+        _write_file(self.source / "Extras" / "bonus.mkv", "bonus")
+        _write_file(self.source / "movie.mkv", "movie")
+        self.dest = self.root / "dest"
+        self.dest.mkdir()
+        self.outside = self.root / "outside"
+        self.outside.mkdir()
+
+    def _plan(self, entry_type="dir"):
+        return hlo.LinkPlan(
+            source_path=str(self.source if entry_type == "dir" else self.source / "movie.mkv"),
+            dest_root=str(self.dest),
+            dest_subpath="Movie" if entry_type == "dir" else "Movie/movie.mkv",
+            entry_type=entry_type,
+            display_name="Movie",
+        )
+
+    def _redirect_extras(self):
+        movie = self.dest / "Movie"
+        movie.mkdir()
+        (movie / "Extras").symlink_to(self.outside, target_is_directory=True)
+        return movie
+
+    def test_nested_destination_symlink_is_refused(self):
+        movie = self._redirect_extras()
+        result = hlo.execute_link_plan(self._plan())
+        self.assertIsNotNone(result)
+        self.assertIn(str(movie / "Extras"), result.failed)
+        self.assertEqual(list(self.outside.iterdir()), [])
+        self.assertTrue(os.path.samefile(self.source / "movie.mkv", movie / "movie.mkv"))
+
+    def test_dry_run_refuses_nested_destination_symlink(self):
+        movie = self._redirect_extras()
+        result = hlo.execute_link_plan(self._plan(), dry_run=True)
+        self.assertIsNotNone(result)
+        self.assertIn(str(movie / "Extras"), result.failed)
+        self.assertEqual(list(self.outside.iterdir()), [])
+        self.assertFalse((movie / "movie.mkv").exists())
+
+    def test_file_parent_swapped_after_validation_is_refused(self):
+        from unittest import mock
+
+        movie = self.dest / "Movie"
+        movie.mkdir()
+        plan = self._plan("file")
+        validate = plan.is_valid
+
+        def validate_then_redirect():
+            outcome = validate()
+            movie.rmdir()
+            movie.symlink_to(self.outside, target_is_directory=True)
+            return outcome
+
+        with mock.patch.object(plan, "is_valid", side_effect=validate_then_redirect):
+            result = hlo.execute_link_plan(plan)
+        self.assertIsNotNone(result)
+        self.assertTrue(result.failed)
+        self.assertEqual(list(self.outside.iterdir()), [])
+
+    def test_parent_swap_at_link_does_not_redirect_write(self):
+        from unittest import mock
+
+        movie = self.dest / "Movie"
+        movie.mkdir()
+        saved = self.dest / "Movie.original"
+        link = os.link
+
+        def swap_then_link(*args, **kwargs):
+            movie.rename(saved)
+            movie.symlink_to(self.outside, target_is_directory=True)
+            return link(*args, **kwargs)
+
+        with mock.patch.object(hlo.os, "link", side_effect=swap_then_link):
+            result = hlo.execute_link_plan(self._plan("file"))
+        self.assertIsNotNone(result)
+        self.assertEqual(list(self.outside.iterdir()), [])
+        self.assertTrue(os.path.samefile(self.source / "movie.mkv", saved / "movie.mkv"))
+
+    def test_directory_creation_does_not_follow_a_racing_symlink(self):
+        from unittest import mock
+
+        movie = self.dest / "Movie"
+        mkdir = os.mkdir
+        redirected = False
+
+        def redirect_before_mkdir(path, *args, **kwargs):
+            nonlocal redirected
+            if not redirected and str(path) in {"Movie", str(movie)}:
+                redirected = True
+                movie.symlink_to(self.outside, target_is_directory=True)
+            return mkdir(path, *args, **kwargs)
+
+        with mock.patch.object(hlo.os, "mkdir", side_effect=redirect_before_mkdir):
+            result = hlo.execute_link_plan(self._plan("file"))
+        self.assertTrue(redirected)
+        self.assertIsNotNone(result)
+        self.assertTrue(result.failed)
+        self.assertEqual(list(self.outside.iterdir()), [])
+
+    def test_traverse_only_ancestor_still_allows_linking(self):
+        ancestor = self.dest / "searchable"
+        parent = ancestor / "writable"
+        parent.mkdir(parents=True)
+        ancestor.chmod(0o111)
+        try:
+            result = hlo.LinkResult()
+            target = parent / "movie.mkv"
+            hlo.hardlink_file(self.source / "movie.mkv", target, result)
+            self.assertEqual(result.linked, [str(target)])
+            self.assertTrue(os.path.samefile(self.source / "movie.mkv", target))
+        finally:
+            ancestor.chmod(0o755)
+
+    def test_direct_tree_rejects_destination_symlink(self):
+        redirect = self.dest / "Movie"
+        redirect.symlink_to(self.outside, target_is_directory=True)
+        result = hlo.LinkResult()
+        hlo.hardlink_tree(self.source, redirect, result)
+        self.assertEqual(result.failed, [str(redirect)])
+        self.assertEqual(list(self.outside.iterdir()), [])
+
+
 # ---------------------------------------------------------------------------
 # list_entries filter tests
 # ---------------------------------------------------------------------------
