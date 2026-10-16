@@ -9,7 +9,7 @@ services:
     build:
       context: ../..
       dockerfile: packaging/docker/Dockerfile
-    image: starlightdaemon/hardlink-organizer:v1.0.7
+    image: starlightdaemon/hardlink-organizer:v1.0.8
     container_name: hardlink-organizer
     restart: unless-stopped
     ports:

@@ -30,7 +30,7 @@ import time
 from pathlib import Path
 from typing import TypedDict
 
-__version__ = "1.0.7"
+__version__ = "1.0.8"
 
 # ---------------------------------------------------------------------------
 # Conditional import: tomllib is stdlib in Python 3.11+; fall back to tomli.

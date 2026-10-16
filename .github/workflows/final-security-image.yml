@@ -16,7 +16,7 @@ concurrency:
 
 env:
   IMAGE: starlightdaemon/hardlink-organizer
-  RELEASE_TAG: v1.0.7
+  RELEASE_TAG: v1.0.8
 
 jobs:
   publish:
