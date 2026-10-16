@@ -180,7 +180,7 @@ class TestProposeCleanName(unittest.TestCase):
 class TestVersioning(unittest.TestCase):
 
     def test_version_constant_present(self):
-        self.assertEqual(hlo.__version__, "1.0.6")
+        self.assertEqual(hlo.__version__, "1.0.7")
 
 
 # ---------------------------------------------------------------------------
@@ -411,7 +411,7 @@ class TestValidation(unittest.TestCase):
         src.mkdir()
         dst = self.root / "dst"
         dst.mkdir()
-        # Same temp directory — guaranteed same device.
+        # Same temp directory â€” guaranteed same device.
         self.assertTrue(hlo.validate_same_device(str(src), str(dst)))
 
     def test_validate_same_device_path_check(self):
@@ -555,7 +555,7 @@ class TestMountLayoutAssessment(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# Hardlink execution tests (integration — same filesystem)
+# Hardlink execution tests (integration â€” same filesystem)
 # ---------------------------------------------------------------------------
 
 class TestHardlinkFile(unittest.TestCase):
@@ -660,12 +660,12 @@ class TestHardlinkFile(unittest.TestCase):
 
         self.assertIn(str(dst), result.skipped)
         self.assertEqual(len(result.linked), 0)
-        # dst must still be a symlink — not replaced with a real hardlink
+        # dst must still be a symlink â€” not replaced with a real hardlink
         self.assertTrue(dst.is_symlink())
 
     def test_dangling_symlink_at_dst_is_skipped_not_crashed(self):
         # A dangling symlink at dst (target deleted) must not cause an
-        # obscure EEXIST failure — it should be skipped with a warning.
+        # obscure EEXIST failure â€” it should be skipped with a warning.
         src = self.root / "src" / "movie.mkv"
         _write_file(src, "content")
         dst = self.root / "dst" / "movie.mkv"
@@ -758,7 +758,7 @@ class TestHardlinkTree(unittest.TestCase):
     def test_symlink_to_file_in_source_is_skipped(self):
         # A symlink-to-file in the source tree must be skipped, not hardlinked.
         # os.link on a symlink path creates a hardlink to the symlink inode,
-        # not to the file data — so the operation would be silently wrong.
+        # not to the file data â€” so the operation would be silently wrong.
         src = self._build_source_tree()
         link = src / "fake_link.mkv"
         link.symlink_to(src / "show.nfo")
@@ -1062,12 +1062,12 @@ class TestCheckAlreadyLinked(unittest.TestCase):
         dst_dir = self.dst_root / "Movie"
         dst_dir.mkdir()
         os.link(main, dst_dir / "movie.mkv")
-        # sidecar has nlink=1; main has nlink=2 — must return True
+        # sidecar has nlink=1; main has nlink=2 â€” must return True
         self.assertTrue(hlo.check_already_linked(str(src_dir)))
 
 
 # ---------------------------------------------------------------------------
-# Main – allow running this file directly
+# Main â€“ allow running this file directly
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":

@@ -1,10 +1,11 @@
-# Hardlink Organizer — web application dependencies
+# Hardlink Organizer â€” web application dependencies
 # Python 3.11+ is recommended (tomllib is stdlib); for older versions add tomli.
 
 fastapi==0.141.1
 uvicorn[standard]==0.52.4
 
-# Patch the packaging tool bundled with Python 3.11 (PYSEC-2026-3447).
+# Patch the packaging tools bundled with Python 3.11.
+pip==26.2.1
 setuptools==83.0.0
 
 # Testing only: httpx is required by FastAPI's TestClient

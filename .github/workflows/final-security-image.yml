@@ -94,7 +94,7 @@ jobs:
           "$RUNNER_TEMP/audit-env/bin/python" -m pip install pip-audit==2.10.1
           "$RUNNER_TEMP/audit-env/bin/python" -m pip_audit \
             --no-deps --disable-pip -r "$RUNNER_TEMP/image-reports/python-packages.txt" \
-            | tee "$RUNNER_TEMP/image-reports/python-audit.txt"
+            2>&1 | tee "$RUNNER_TEMP/image-reports/python-audit.txt"
 
       - name: Scan candidate OS and language packages
         run: |
