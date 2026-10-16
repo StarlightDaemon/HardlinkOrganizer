@@ -2,6 +2,7 @@
 
 ## Summary
 
+- Security follow-up: see DEC-012 and LOOP-017; detailed evidence is in docs/SECURITY_FOLLOWUP_2026-10-16.md.
 - Lifecycle decision: see DEC-011 in DECISIONS.md and the public notice in README.md. The implementation details below are a historical snapshot, not an active development plan.
 - Retirement review: see LOOP-016 and docs/DEPRECATION_REVIEW.md.
 - Confirmed: React SPA frontend (Fujin UI kit) fully scaffolded and implemented at `webapp/frontend/`. `FujinThemeProvider` now encapsulates `MantineProvider` and supports Open Color presets (currently using `violet`). All Carbon CSS, `--cds-*` vars, IBM Plex, and Jinja2 server-side injection removed. FastAPI now serves `webapp/static/dist/` via `StaticFiles(html=True)`. Build: `cd webapp/frontend && npm install && npm run build`. Dev: `npm run dev` (proxies `/api` → port 8000).

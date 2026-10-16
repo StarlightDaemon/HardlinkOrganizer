@@ -76,6 +76,13 @@ into adjacent work.
 - Validation: Gitleaks working-directory and all-ref history scans; manual credential-pattern and sensitive-filename review; GitHub secret-scanning and Dependabot alert checks.
 - Closure condition: documentation and review complete. Remote archiving is the final administration step after publication; consult GitHub's archived property for its current state.
 
+## LOOP-017: verify security fixes and re-archive
+
+- Status: open — fixes published; Linux verification in progress
+- Scope: audit current published dependencies, fix confirmed security findings, verify the fixes on Linux, publish the evidence, and archive again under DEC-012.
+- Evidence: docs/SECURITY_FOLLOWUP_2026-10-16.md and the security-verification workflow.
+- Closure condition: dependency audits and regression verification pass, findings and limitations are recorded, and the repository is ready for the final re-archive operation. Consult GitHub's archived property for remote lifecycle state.
+
 ## Provenance
 
 - Migrated from `agent-ledger/OPEN_LOOPS.md` on 2026-05-03 during RAIDEN Instance install

@@ -84,6 +84,14 @@
 - Public notice: see the banner at the top of README.md.
 - GitHub lifecycle: archive the repository after publishing the deprecation documentation. GitHub's archived property is the authoritative record of whether the remote is read-only.
 
+## DEC-012: allow a bounded security follow-up before re-archiving
+
+- Date: 2026-10-16
+- Status: active
+- Confirmed: the operator authorized fixing and verifying current vulnerabilities, followed by archiving the repository again.
+- Impact: this is a one-off security exception to DEC-011, not a resumption of feature development or ongoing maintenance. Keep container publication disabled; use a manual verification workflow without publishing images.
+- Evidence: LOOP-017 and docs/SECURITY_FOLLOWUP_2026-10-16.md.
+
 ## Provenance
 
 - Migrated from `agent-ledger/DECISIONS.md` on 2026-05-03 during RAIDEN Instance install

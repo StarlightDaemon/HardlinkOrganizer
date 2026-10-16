@@ -4,6 +4,9 @@
 fastapi==0.141.1
 uvicorn[standard]==0.52.4
 
+# Patch the packaging tool bundled with Python 3.11 (PYSEC-2026-3447).
+setuptools==83.0.0
+
 # Testing only: httpx is required by FastAPI's TestClient
 httpx==0.28.1
 
