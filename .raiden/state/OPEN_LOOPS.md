@@ -78,7 +78,7 @@ into adjacent work.
 
 ## LOOP-017: verify security fixes and re-archive
 
-- Status: open — fixes published; Linux verification in progress
+- Status: closed 2026-10-16 — security fixes and Linux verification complete
 - Scope: audit current published dependencies, fix confirmed security findings, verify the fixes on Linux, publish the evidence, and archive again under DEC-012.
 - Evidence: docs/SECURITY_FOLLOWUP_2026-10-16.md and the security-verification workflow.
 - Closure condition: dependency audits and regression verification pass, findings and limitations are recorded, and the repository is ready for the final re-archive operation. Consult GitHub's archived property for remote lifecycle state.

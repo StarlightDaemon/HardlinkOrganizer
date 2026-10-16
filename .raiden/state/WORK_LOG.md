@@ -1,5 +1,16 @@
 # Work Log
 
+## 2026-10-16 — bounded security follow-up and re-archive
+
+- Operator authorized a one-off security exception to retirement; see DEC-012 and LOOP-017.
+- Fixed source-map-js 1.2.1 to 1.2.2 (GHSA-68fv-2mgg-jv7q, high), pinned setuptools 83.0.0 to replace vulnerable Python 3.11 bootstrap copies (PYSEC-2026-3447, medium), and blocked nested destination symlinks plus parent-swap redirection during hardlink execution (medium).
+- Added seven Linux safety/compatibility tests and a manual-only verification workflow. Independent static review checked directory descriptor lifetime, atomic no-overwrite semantics, traverse-only permission compatibility, and the regression test injection.
+- Verification run 38939325123 succeeded against 42e0e46: 270 Python tests passed on Ubuntu/Python 3.11; frontend build and one frontend test passed; npm audit and pip-audit found zero known vulnerabilities. The six security tests failed against the original engine as expected, with the permission compatibility test passing.
+- An initial Linux verification run caught the vulnerable bundled setuptools; it was fixed before the successful rerun. Windows local full-suite failures were Linux path assumptions and missing symlink privilege, not a substitute for production-platform verification.
+- GitHub Dependabot reported zero open alerts before re-archiving. Staged secret scans found no leaks; broad scanner matches were confined to license identifiers inside an untracked audit-tool dependency.
+- Image publishing remained disabled, and the one-off verification workflow was disabled after success. Publish the evidence report, then re-archive; consult GitHub's archived property for remote lifecycle state.
+- Report: docs/SECURITY_FOLLOWUP_2026-10-16.md. Existing images and deployments were not replaced; the project remains deprecated. Original local commits and package edits were preserved.
+
 ## 2026-10-15 — deprecation and credential review
 
 - Operator requested retirement of this original media pipeline component; see DEC-011. Added the README notice and updated the status, historical goals, and LOOP-012/013/014 cancellation records.

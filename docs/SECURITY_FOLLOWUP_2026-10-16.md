@@ -24,7 +24,21 @@ Seven focused tests cover six security regressions plus the traverse-only permis
 
 ## Verification
 
-Pending: record the completed Linux verification run here before re-archiving.
+[Linux verification run 38939325123](https://github.com/StarlightDaemon/HardlinkOrganizer/actions/runs/38939325123) completed successfully against 42e0e46a00212c254aaa8b7a3cddeb8e4ed6524f. Subsequent changes record the evidence only.
+
+| Check | Result |
+| --- | --- |
+| Full Python suite, Ubuntu / Python 3.11 | 270 passed |
+| Six security regressions against the original engine | All six failed as expected; the compatibility test passed |
+| The same regressions against the fixed engine | Passed as part of the full suite |
+| Frontend production build | Passed |
+| Frontend test | 1 passed |
+| npm audit | 0 vulnerabilities |
+| pip-audit | No known vulnerabilities |
+| GitHub Dependabot before re-archiving | 0 open alerts, including 0 critical and 0 medium |
+| Workflow administration | Image-publishing and one-off verification workflows disabled manually |
+
+No current critical advisory was reproduced; the actual findings fixed were one high dependency advisory, one medium packaging-tool advisory, and the medium filesystem containment defect.
 
 Local checks completed:
 
@@ -42,4 +56,4 @@ Destination directory symlinks are now refused even when they point inside a lib
 
 This follow-up verifies the source repository, its currently resolved dependencies, and the confirmed filesystem defect. It does not claim an exhaustive application penetration test, a container-image vulnerability scan, or protection against all hostile filesystem changes. No existing container image, release tag, or deployment was replaced; users of distributed images must rebuild from the fixed source to receive the filesystem change.
 
-Image publishing remains disabled. After successful verification and publication of this report, disable the manual verification workflow and archive again. GitHub's archived property is the authority for the remote read-only state.
+Image publishing and the manual verification workflow are disabled. Final administration is to re-archive after publishing this evidence. GitHub's archived property is the authority for the remote read-only state.
