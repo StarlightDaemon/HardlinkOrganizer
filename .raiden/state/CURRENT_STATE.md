@@ -7,7 +7,7 @@
 - Retirement review: see LOOP-016 and docs/DEPRECATION_REVIEW.md.
 - Confirmed: React SPA frontend (Fujin UI kit) fully scaffolded and implemented at `webapp/frontend/`. `FujinThemeProvider` now encapsulates `MantineProvider` and supports Open Color presets (currently using `violet`). All Carbon CSS, `--cds-*` vars, IBM Plex, and Jinja2 server-side injection removed. FastAPI now serves `webapp/static/dist/` via `StaticFiles(html=True)`. Build: `cd webapp/frontend && npm install && npm run build`. Dev: `npm run dev` (proxies `/api` → port 8000).
 - Confirmed: Hardlink Organizer now operates as its own standalone project workspace rooted at `E:\Citadel/HardlinkOrganizer`, with a RAIDEN Instance control plane under `.raiden/`.
-- Confirmed: the project is at `1.0.6` stable release.
+- Release identity: see VERSION; final security image publication is tracked by LOOP-018.
 - Confirmed: the hosted web UI and CLI both exist, with verification runs persisted and reviewable.
 - Confirmed: the history-driven verification UI slice is closed locally, including browser-triggered verification from prior real link jobs, stored-result review, JSON or CSV exports, and lightweight result filtering.
 - Confirmed: Docker image is now NAS-hardened with PUID/PGID runtime privilege-drop via `gosu` entrypoint; defaults to 1000:1000.

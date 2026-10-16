@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Container version="2">
   <Category>Tools:Utilities</Category>
-  <Date>2026-06-02</Date>
+  <Date>2026-10-16</Date>
   <Name>hardlink-organizer</Name>
-  <Repository>starlightdaemon/hardlink-organizer:latest</Repository>
+  <Repository>starlightdaemon/hardlink-organizer:v1.0.7</Repository>
   <Registry>https://registry.hub.docker.com</Registry>
   <Project>https://github.com/StarlightDaemon/HardlinkOrganizer</Project>
   <Support>https://github.com/StarlightDaemon/HardlinkOrganizer/issues</Support>
@@ -16,7 +16,7 @@
   <ExtraParams/>
   <PostArgs/>
   <TemplateURL/>
-  <Version>1.0.0</Version>
+  <Version>1.0.7</Version>
 
   <Config Name="Web UI Port" Target="7700" Default="7700" Mode="tcp" Description="Container Port: 7700" Type="Port" Display="always" Required="true" Mask="false">7700</Config>
   <Config Name="Config Directory" Target="/config" Default="/mnt/user/appdata/hardlink-organizer" Mode="rw" Description="Place config.toml here. DB and logs are stored here by default." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/hardlink-organizer</Config>

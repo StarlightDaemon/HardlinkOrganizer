@@ -20,7 +20,7 @@ export const DEST_SET = 'media-library';
 
 export const healthResponse: HealthResponse = {
   status: 'ok',
-  version: '1.0.6',
+  version: '1.0.7',
   config_loaded: true,
   db_connected: true,
 };

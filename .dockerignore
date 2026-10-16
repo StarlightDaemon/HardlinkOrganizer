@@ -13,3 +13,7 @@ node_modules/
 dist/
 build/
 .raiden/
+
+# Nested dependencies and Python caches must never enter the runtime image.
+**/node_modules/
+**/__pycache__/

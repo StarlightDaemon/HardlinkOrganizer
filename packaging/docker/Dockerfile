@@ -1,6 +1,6 @@
 # Hardlink Organizer — Docker image
 # Build from the Hardlink Organizer root:
-#   docker build -f packaging/docker/Dockerfile -t hardlink-organizer:v1.0.0-rc.1 .
+#   docker build -f packaging/docker/Dockerfile -t hardlink-organizer:v1.0.7 .
 
 # --- Stage 1: build the React frontend ---
 FROM node:22-slim AS frontend-builder
@@ -18,7 +18,7 @@ FROM python:3.11-slim
 
 LABEL org.opencontainers.image.title="Hardlink Organizer"
 LABEL org.opencontainers.image.description="Safely plan and execute hardlinks across NAS storage pools with a preview-first web UI"
-LABEL org.opencontainers.image.version="1.0.6"
+LABEL org.opencontainers.image.version="1.0.7"
 
 # Non-root user for privilege-drop at runtime
 RUN addgroup --system hlo && adduser --system --ingroup hlo hlo

@@ -92,6 +92,15 @@
 - Impact: this is a one-off security exception to DEC-011, not a resumption of feature development or ongoing maintenance. Keep container publication disabled; use a manual verification workflow without publishing images.
 - Evidence: LOOP-017 and docs/SECURITY_FOLLOWUP_2026-10-16.md.
 
+## DEC-013: publish one final security image before re-archiving
+
+- Date: 2026-10-16
+- Status: active
+- Confirmed: the operator explicitly authorized rebuilding and publishing a final Docker image with the security fixes, verifying it, and archiving again.
+- Impact: extends DEC-012 solely to the final image release. Publish a new immutable version tag and the latest alias on the existing Docker Hub repository, preserving Linux/amd64 compatibility. Keep ordinary automatic publishing disabled.
+- Release identity: VERSION. Evidence: LOOP-018 and docs/FINAL_SECURITY_IMAGE.md.
+- Retirement under DEC-011 remains in force after publication.
+
 ## Provenance
 
 - Migrated from `agent-ledger/DECISIONS.md` on 2026-05-03 during RAIDEN Instance install
