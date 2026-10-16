@@ -6,6 +6,11 @@
 > with no planned updates, maintenance, or security fixes. Development may
 > resume someday, but no future updates are promised.
 
+Final security image: `starlightdaemon/hardlink-organizer:v1.0.8` (`linux/amd64`).
+Pull it and recreate existing containers to receive the fixes.
+See the [image verification report](docs/FINAL_SECURITY_IMAGE.md) for the immutable
+digest, test results, and remaining unfixed Debian advisories.
+
 > Preview-first hardlink planning for NAS ingress folders — browser UI with CLI fallback, source-safe, same-device validated.
 
 Hardlink Organizer scans configured source directories and lets you hardlink selected items into library destinations without moving or renaming the originals. It runs as a lightweight Docker container with a web UI, and works on Unraid, TrueNAS SCALE, OpenMediaVault, and any generic Linux Docker host.

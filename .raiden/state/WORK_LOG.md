@@ -1,5 +1,17 @@
 # Work Log
 
+## 2026-10-16 — final security Docker image publication
+
+- Operator explicitly requested a final rebuild, publication, verification, and re-archive; see DEC-013 and LOOP-018.
+- Published Docker Hub v1.0.8 and latest, linux/amd64, at `sha256:6d091e09bb074d7a822aab4ec689bcdfea8343de8c481dc30b800f5aa524e660`; OCI revision `6dc0bb5f5bb50a270e2739b1a66f109fcfe4340b`. Docker Hub read-back confirmed both tag digests match.
+- Successful workflow: https://github.com/StarlightDaemon/HardlinkOrganizer/actions/runs/38942322273. Candidate tests: 270 passed as nonroot; frontend test/build and npm audit passed; candidate package audit found no known vulnerabilities.
+- Candidate and remote digest-pulled image passed default/custom UID/GID, PID 1 privilege drop, HTTP/config/database/SPA/assets, scan/preview/dry-run/real hardlink/collision, source-preservation and destination-symlink refusal checks.
+- Fresh-base build upgraded Debian packages, including liblzma5. Removed unused installer/build tooling and ensurepip from runtime, and excluded nested development dependencies/caches from the build context.
+- Final Trivy scan: 0 critical, 0 fixable findings, 0 Python/Node findings; Debian package findings remaining: 44 high, 58 medium, 61 low, 1 unknown, with no fixed versions listed. Full evidence is attached to the final release; no findings were suppressed.
+- Intermediate v1.0.7 is preserved as an immutable published image; v1.0.8 supersedes it with the Debian update. All active packaging refs, application version, and version assertion now align to the final release.
+- Publication/verification workflows disabled after success; publish this evidence and final source tag/release, then re-archive. Original checkout's local commits and package edits preserved.
+- Report: docs/FINAL_SECURITY_IMAGE.md. Retirement and trusted-network limitations remain in effect.
+
 ## 2026-10-16 — bounded security follow-up and re-archive
 
 - Operator authorized a one-off security exception to retirement; see DEC-012 and LOOP-017.

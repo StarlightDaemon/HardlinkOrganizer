@@ -85,7 +85,7 @@ into adjacent work.
 
 ## LOOP-018: publish and verify the final security image
 
-- Status: open
+- Status: closed 2026-10-16 — final image published and remotely verified
 - Scope: build from the security-fixed source and fresh base images; verify tests, runtime behavior, and dependency/image scans; publish the final versioned image and latest alias; pull back by digest; publish evidence and archive again under DEC-013.
 - Evidence: docs/FINAL_SECURITY_IMAGE.md and the final-security-image workflow.
 - Closure condition: candidate checks and immutable remote pull verification pass, release evidence is recorded, publication workflows are disabled, and the repository is ready for re-archiving. GitHub's archived property remains the authority for remote lifecycle state.
