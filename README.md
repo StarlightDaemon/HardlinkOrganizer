@@ -1,5 +1,11 @@
 # Hardlink Organizer
 
+> **Deprecated — no longer developed or maintained (2026-10-15).**
+> Hardlink Organizer was part of the original media pipeline ecosystem. Newer
+> styles and designs have superseded it, and this project is provided as-is,
+> with no planned updates, maintenance, or security fixes. Development may
+> resume someday, but no future updates are promised.
+
 > Preview-first hardlink planning for NAS ingress folders — browser UI with CLI fallback, source-safe, same-device validated.
 
 Hardlink Organizer scans configured source directories and lets you hardlink selected items into library destinations without moving or renaming the originals. It runs as a lightweight Docker container with a web UI, and works on Unraid, TrueNAS SCALE, OpenMediaVault, and any generic Linux Docker host.
@@ -11,7 +17,7 @@ Hardlink Organizer scans configured source directories and lets you hardlink sel
 | Area | Current State |
 | --- | --- |
 | Version | `1.0.6` |
-| Status | `stable` |
+| Status | `deprecated / unmaintained` |
 | Primary target | `Docker — Unraid, TrueNAS, OMV, and generic Linux` |
 | Interface | hosted web UI with CLI fallback |
 | Safety stance | preview-first, source-safe, same-device validation |

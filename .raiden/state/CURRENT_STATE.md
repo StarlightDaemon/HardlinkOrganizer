@@ -2,6 +2,8 @@
 
 ## Summary
 
+- Lifecycle decision: see DEC-011 in DECISIONS.md and the public notice in README.md. The implementation details below are a historical snapshot, not an active development plan.
+- Retirement review: see LOOP-016 and docs/DEPRECATION_REVIEW.md.
 - Confirmed: React SPA frontend (Fujin UI kit) fully scaffolded and implemented at `webapp/frontend/`. `FujinThemeProvider` now encapsulates `MantineProvider` and supports Open Color presets (currently using `violet`). All Carbon CSS, `--cds-*` vars, IBM Plex, and Jinja2 server-side injection removed. FastAPI now serves `webapp/static/dist/` via `StaticFiles(html=True)`. Build: `cd webapp/frontend && npm install && npm run build`. Dev: `npm run dev` (proxies `/api` → port 8000).
 - Confirmed: Hardlink Organizer now operates as its own standalone project workspace rooted at `E:\Citadel/HardlinkOrganizer`, with a RAIDEN Instance control plane under `.raiden/`.
 - Confirmed: the project is at `1.0.6` stable release.

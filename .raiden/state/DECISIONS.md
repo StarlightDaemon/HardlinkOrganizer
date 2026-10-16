@@ -75,6 +75,15 @@
   where `X` is the new patch version. Affected files: `packaging/{truenas,truenas/catalog,unraid,omv,docker,portainer}/{docker-compose.yml,stack.yml}`.
 - Impact: each release cycle must include an image-tag bump pass across all six packaging files before the final release commit.
 
+## DEC-011: deprecate Hardlink Organizer and end active maintenance
+
+- Date: 2026-10-15
+- Status: active
+- Confirmed: the operator retired this component of the original media pipeline ecosystem because newer styles and designs supersede it.
+- Impact: preserve the existing software as-is; no development, maintenance, security fixes, releases, or platform submissions are planned. Future revival remains possible but is not promised and requires an explicit operator decision.
+- Public notice: see the banner at the top of README.md.
+- GitHub lifecycle: archive the repository after publishing the deprecation documentation. GitHub's archived property is the authoritative record of whether the remote is read-only.
+
 ## Provenance
 
 - Migrated from `agent-ledger/DECISIONS.md` on 2026-05-03 during RAIDEN Instance install

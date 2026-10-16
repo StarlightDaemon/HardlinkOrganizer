@@ -1,5 +1,15 @@
 # Work Log
 
+## 2026-10-15 — deprecation and credential review
+
+- Operator requested retirement of this original media pipeline component; see DEC-011. Added the README notice and updated the status, historical goals, and LOOP-012/013/014 cancellation records.
+- Credential review: Gitleaks 8.30.1 found no leaks in the working directory (approximately 11.70 MB) or all-ref Git history after fetching origin (100 commits scanned, approximately 1.59 MB; 101 commits reachable including merge history). Manual keyword and sensitive-filename review found no credential material.
+- GitHub checks: secret scanning enabled, push protection enabled, zero secret-scanning alerts, and zero open Dependabot alerts (14 historical alerts). Actions secrets were inspected by name only; no stored values were retrieved.
+- Review and limitations: docs/DEPRECATION_REVIEW.md. Existing no-authentication network exposure remains a deployment risk; no critical credential issue was identified.
+- Publication prepared from origin/main at f7662eb in a clean managed worktree. The original checkout's two local commits and pre-existing package.json/package-lock.json edits were preserved.
+- Administration sequence: disable the image-publishing workflow, publish the documentation, mark the repository description deprecated, then archive. Verify the published README, workflow state, and GitHub archived property after those operations.
+- Validation is limited to documentation, secret scans, and repository administration; application tests are not needed because runtime behavior is unchanged.
+
 ## 2026-07-09 — LOOP-010 naming cleanup hardening (adversarial probe findings)
 
 - Confirmed: an adversarial safety probe of the LOOP-010 commit (`f5473b2`) independently reproduced 248/9 and confirmed the core safety design (server-recomputed-renames-only, dry-run defaults in model and route, per-entry apply-time realpath containment, prefix-bypass refuted, symlink-rename semantics, audit persistence, UI confirm gating). It reported three defects, all fixed same-day in `webapp/app.py` `_apply_naming_cleanup`:

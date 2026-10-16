@@ -1,6 +1,10 @@
 # Goals
 
-## Current goals
+## Retirement direction
+
+See DEC-011 in DECISIONS.md. Preserve the existing software and its history; the prior goals and priorities below are retained as historical context and must not trigger further work without an explicit operator decision.
+
+## Historical goals
 
 1. Confirmed: keep Hardlink Organizer a safe, preview-first hardlink workflow for Unraid rather than a broad media organizer.
 2. Confirmed: maintain the hosted web UI as the primary operator experience while preserving the CLI as a fallback and maintenance interface.
@@ -8,7 +12,7 @@
 4. Confirmed: preserve auditability through persistent history, verification, and exportable records.
 5. Inferred: package and publish the project cleanly enough to complete the later Community Apps submission path.
 
-## Near-term priorities
+## Historical priorities
 
 - Confirmed: deliver destination registry and validation backend
 - Confirmed: deliver destination-management UI on top of that backend

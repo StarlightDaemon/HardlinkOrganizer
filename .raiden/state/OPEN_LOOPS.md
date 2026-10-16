@@ -25,7 +25,7 @@ into adjacent work.
 
 ## LOOP-012: Unraid Community Apps submission
 
-- Status: open
+- Status: cancelled 2026-10-15 — project deprecated per DEC-011; the scope and readiness notes below are historical.
 - Gate: hardware
 - Scope: supersedes LOOP-009's Unraid-specific path — carry the validated public Docker image through real Unraid host validation, CA template hardening, dedicated template repository setup, support-thread publication, and formal Community Apps submission
 - Readiness: blocked — requires a real Unraid host; none has been available to this workspace
@@ -35,7 +35,7 @@ into adjacent work.
 
 ## LOOP-013: TrueNAS SCALE native catalog
 
-- Status: open (partial — steps 1+2 complete)
+- Status: cancelled 2026-10-15 — project deprecated per DEC-011; the scope and readiness notes below are historical.
 - Gate: operator
 - Scope: submit Hardlink Organizer to the `truenas/apps` community catalog for native install via the SCALE Apps UI
 - Evidence: `packaging/truenas/catalog/` contains `app.yaml`, `ix_values.yaml`, `questions.yaml`, a docker-compose template, and test values (commit `0f10d62`, "feat: add TrueNAS SCALE catalog entry (LOOP-013 step 1+2)")
@@ -44,7 +44,7 @@ into adjacent work.
 
 ## LOOP-014: OMV community release
 
-- Status: open
+- Status: cancelled 2026-10-15 — project deprecated per DEC-011; the scope and readiness notes below are historical.
 - Gate: operator
 - Scope: validate on OpenMediaVault and publish community-facing docs/compose files plus targeted forum posts (OMV has no central app marketplace)
 - Evidence: `packaging/omv/` contains a `README.md` and `docker-compose.yml`; no evidence found of forum/community posts having been made
@@ -67,6 +67,14 @@ into adjacent work.
 - Evidence plan: use the current implementation under this workspace and real Unraid validation findings already captured in project docs
 - Validation plan: verify the feature remains preview-first and audit-friendly, preserves source safety, correctly explains Unraid filesystem constraints, and improves usability without widening destructive power by default
 - Closure condition: destination-side naming preview and cleanup are available through the hosted UI with the corresponding backend and documentation support
+
+## LOOP-016: deprecation documentation and repository secret review
+
+- Status: closed 2026-10-15
+- Scope: publish the deprecation notice, retire development goals and outstanding platform-submission work, and review working files plus reachable Git history for credentials.
+- Evidence: docs/DEPRECATION_REVIEW.md; lifecycle authority is DEC-011.
+- Validation: Gitleaks working-directory and all-ref history scans; manual credential-pattern and sensitive-filename review; GitHub secret-scanning and Dependabot alert checks.
+- Closure condition: documentation and review complete. Remote archiving is the final administration step after publication; consult GitHub's archived property for its current state.
 
 ## Provenance
 
